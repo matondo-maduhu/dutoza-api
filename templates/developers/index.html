@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dutoza API — Developer Portal</title>
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f8fc;color:#172033}
+.top{height:64px;background:#101827;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:20px}
+.logo{width:38px;height:38px;border-radius:10px;background:#2563eb;display:grid;place-items:center;font-weight:900}
+.online{font-size:13px;color:#cbd5e1;display:flex;gap:8px;align-items:center}
+.dot{width:8px;height:8px;background:#22c55e;border-radius:50%}
+.layout{display:flex}
+.side{position:fixed;top:64px;bottom:0;width:245px;background:#fff;border-right:1px solid #e5e7eb;padding:25px 14px;overflow:auto}
+.side h5{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin:12px}
+.side a{display:block;text-decoration:none;color:#475569;padding:10px 12px;border-radius:8px;font-size:14px;margin:3px 0}
+.side a:hover{background:#eff6ff;color:#2563eb}
+.main{margin-left:245px;width:calc(100% - 245px);max-width:1250px;padding:42px 50px 70px}
+.hero{background:linear-gradient(135deg,#111827,#1d4ed8);color:white;border-radius:18px;padding:45px;margin-bottom:40px}
+.hero small{color:#bfdbfe;font-weight:700}
+.hero h1{font-size:43px;line-height:1.12;margin:14px 0}
+.hero p{max-width:760px;color:#dbeafe;font-size:17px}
+.base{margin-top:25px;background:#0b1220;border:1px solid #334155;border-radius:9px;padding:14px 16px;font-family:monospace;color:#93c5fd;display:flex;justify-content:space-between;gap:15px;align-items:center}
+button{cursor:pointer}
+.copy,.try{border:0;border-radius:7px;padding:8px 13px;background:#2563eb;color:#fff;font-weight:700}
+.copy:hover,.try:hover{background:#1d4ed8}
+section{scroll-margin-top:85px;margin-bottom:55px}
+h2{font-size:29px;margin-bottom:7px}
+.desc{color:#64748b;margin-bottom:22px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:13px;padding:22px}
+.card h3{margin:8px 0}
+.card p{font-size:14px;color:#64748b}
+.num{width:32px;height:32px;border-radius:8px;background:#eff6ff;color:#2563eb;display:grid;place-items:center;font-weight:900}
+.auth{background:#111827;color:#fff;padding:24px;border-radius:13px}
+.code{background:#0b1220;color:#dbeafe;padding:17px;border-radius:9px;overflow:auto;font-family:monospace;font-size:13px;margin-top:14px;white-space:pre}
+.warn{margin-top:15px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:16px;border-radius:9px;font-size:14px}
+.endpoint{background:#fff;border:1px solid #e5e7eb;border-radius:13px;margin-bottom:18px;overflow:hidden}
+.head{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #e5e7eb}
+.method{font-size:11px;font-weight:900;padding:5px 8px;border-radius:5px}
+.get{background:#dcfce7;color:#166534}
+.post{background:#dbeafe;color:#1e40af}
+.path{font-family:monospace;font-weight:700}
+.body{padding:20px}
+.body p{color:#64748b;font-size:14px}
+.trybox{background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:15px;margin-top:16px}
+.row{display:flex;gap:9px;margin-top:10px}
+input{flex:1;min-width:0;border:1px solid #cbd5e1;border-radius:7px;padding:10px 12px;background:#fff}
+.result{display:none;margin-top:14px}
+.result label{font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase}
+.result pre{background:#0f172a;color:#dbeafe;padding:15px;border-radius:8px;overflow:auto;max-height:350px;font-size:12px}
+.limit{background:#fff;border:1px solid #e5e7eb;border-radius:13px;padding:25px}
+.big{font-size:38px;color:#2563eb;font-weight:900}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e5e7eb}
+th,td{text-align:left;padding:14px;border-bottom:1px solid #e5e7eb}
+th{background:#f8fafc;font-size:13px}
+td{font-size:14px;color:#475569}
+.footer{text-align:center;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:25px}
+.menu{display:none;background:#1f2937;color:white;border:0;border-radius:7px;padding:8px 11px}
+@media(max-width:950px){.cards{grid-template-columns:1fr}.main{padding:30px 25px}}
+@media(max-width:700px){
+.side{display:none;width:245px;z-index:15;box-shadow:8px 0 25px #0002}
+.side.open{display:block}
+.main{margin-left:0;width:100%;padding:25px 15px}
+.menu{display:block}
+.online{display:none}
+.hero{padding:28px 22px}
+.hero h1{font-size:32px}
+.base,.row{flex-direction:column;align-items:stretch}
+}
+</style>
+</head>
+
+<body>
+
+<header class="top">
+<div class="brand"><div class="logo">D</div>Dutoza API</div>
+<button class="menu" onclick="menu()">☰</button>
+<div class="online"><span class="dot"></span>API Online</div>
+</header>
+
+<aside class="side" id="side">
+<h5>Documentation</h5>
+<a href="#overview">Overview</a>
+<a href="#start">Getting Started</a>
+<a href="#auth">Authentication</a>
+<h5>API Reference</h5>
+<a href="#music">Music</a>
+<a href="#quotes">Quotes</a>
+<h5>Reference</h5>
+<a href="#limits">Rate Limits</a>
+<a href="#errors">Errors</a>
+<a href="#security">Security</a>
+</aside>
+
+<main class="main">
+
+<section id="overview" class="hero">
+<small>DUTOZA API · VERSION 1.0.0</small>
+<h1>Build powerful apps with Dutoza API.</h1>
+<p>Access music, quotes and other Dutoza services through a simple REST API built for developers.</p>
+<div class="base">
+<span>https://dutoza.com/api</span>
+<button class="copy" onclick="copy('https://dutoza.com/api')">Copy</button>
+</div>
+</section>
+
+<section id="start">
+<h2>Getting Started</h2>
+<p class="desc">Start using Dutoza API in three simple steps.</p>
+<div class="cards">
+<div class="card"><div class="num">1</div><h3>Get an API key</h3><p>Create or receive an API key from the Dutoza developer system.</p></div>
+<div class="card"><div class="num">2</div><h3>Authenticate</h3><p>Send the API key using the Authorization Bearer header.</p></div>
+<div class="card"><div class="num">3</div><h3>Make requests</h3><p>Call the API endpoints and process the JSON responses.</p></div>
+</div>
+</section>
+
+<section id="auth">
+<h2>Authentication</h2>
+<p class="desc">Protected endpoints require a valid Dutoza API key.</p>
+<div class="auth">
+<strong>Authorization</strong>
+<div class="code">Authorization: Bearer YOUR_API_KEY</div>
+</div>
+<div class="warn">Keep your API key private. Never place a private key in public GitHub repositories or client-side code.</div>
+</section>
+
+<section id="music">
+<h2>Music API</h2>
+<p class="desc">Access published music and music statistics.</p>
+
+<div class="endpoint">
+<div class="head"><span class="method get">GET</span><span class="path">/api/music</span></div>
+<div class="body">
+<p>Returns the published music library.</p>
+<div class="code">curl https://dutoza.com/api/music \
+-H "Authorization: Bearer YOUR_API_KEY"</div>
+<div class="trybox">
+<strong>Try API</strong>
+<div class="row">
+<input id="musicKey" type="password" placeholder="Enter API key">
+<button class="try" onclick="request('/api/music','musicKey','musicResult')">Send Request</button>
+</div>
+<div class="result" id="musicResult"><label>Response</label><pre></pre></div>
+</div>
+</div>
+</div>
+
+<div class="endpoint">
+<div class="head"><span class="method get">GET</span><span class="path">/api/music/{id}</span></div>
+<div class="body">
+<p>Returns one published song.</p>
+<div class="code">GET /api/music/1</div>
+<div class="trybox">
+<strong>Try API</strong>
+<div class="row">
+<input id="songId" type="number" value="1" min="1" placeholder="Music ID">
+<input id="songKey" type="password" placeholder="Enter API key">
+<button class="try" onclick="song()">Send Request</button>
+</div>
+<div class="result" id="songResult"><label>Response</label><pre></pre></div>
+</div>
+</div>
+</div>
+
+<div class="endpoint">
+<div class="head"><span class="method post">POST</span><span class="path">/api/music/{id}/play</span></div>
+<div class="body">
+<p>Registers a play for a published song.</p>
+<div class="code">POST /api/music/1/play</div>
+</div>
+</div>
+
+<div class="endpoint">
+<div class="head"><span class="method post">POST</span><span class="path">/api/music/{id}/download</span></div>
+<div class="body">
+<p>Registers a download and returns the available audio URL.</p>
+<div class="code">POST /api/music/1/download</div>
+</div>
+</div>
+
+</section>
+
+<section id="quotes">
+<h2>Quotes API</h2>
+<p class="desc">Retrieve quotes from the Dutoza quotes service.</p>
+
+<div class="endpoint">
+<div class="head"><span class="method get">GET</span><span class="path">/api/quotes</span></div>
+<div class="body">
+<p>Returns available quotes.</p>
+<div class="code">curl https://dutoza.com/api/quotes \
+-H "Authorization: Bearer YOUR_API_KEY"</div>
+<div class="trybox">
+<strong>Try API</strong>
+<div class="row">
+<input id="quoteKey" type="password" placeholder="Enter API key">
+<button class="try" onclick="request('/api/quotes','quoteKey','quoteResult')">Send Request</button>
+</div>
+<div class="result" id="quoteResult"><label>Response</label><pre></pre></div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="limits">
+<h2>Rate Limits</h2>
+<p class="desc">Rate limiting protects the API from excessive traffic.</p>
+<div class="limit">
+<div class="big">100</div>
+<strong>requests per 60 seconds</strong>
+<p style="color:#64748b">The default API key limit is 100 requests within a 60-second window.</p>
+</div>
+</section>
+
+<section id="errors">
+<h2>Errors</h2>
+<p class="desc">Common HTTP responses.</p>
+<table>
+<tr><th>Status</th><th>Meaning</th></tr>
+<tr><td>200</td><td>Request successful</td></tr>
+<tr><td>400</td><td>Invalid request</td></tr>
+<tr><td>401</td><td>Missing or invalid API key</td></tr>
+<tr><td>404</td><td>Resource not found</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr>
+</table>
+</section>
+
+<section id="security">
+<h2>Security</h2>
+<p class="desc">Follow these practices when integrating Dutoza API.</p>
+<div class="cards">
+<div class="card"><h3>Protect API keys</h3><p>Store private keys on your backend or secure environment variables.</p></div>
+<div class="card"><h3>Use HTTPS</h3><p>Production API communication should use encrypted HTTPS connections.</p></div>
+<div class="card"><h3>Rotate exposed keys</h3><p>Disable a key immediately if it becomes publicly exposed.</p></div>
+</div>
+</section>
+
+<div class="footer">Dutoza API · Developer Portal · Version 1.0.0</div>
+
+</main>
+
+<script>
+const BASE=window.location.origin;
+
+function menu(){
+document.getElementById("side").classList.toggle("open");
+}
+
+function copy(text){
+navigator.clipboard.writeText(text).then(()=>alert("Copied!")).catch(()=>prompt("Copy:",text));
+}
+
+function show(id,data){
+const box=document.getElementById(id);
+box.style.display="block";
+box.querySelector("pre").textContent=typeof data==="string"?data:JSON.stringify(data,null,2);
+}
+
+async function request(path,keyId,resultId){
+const key=document.getElementById(keyId).value.trim();
+
+if(!key){
+show(resultId,{success:false,error:"Please enter your API key."});
+return;
+}
+
+show(resultId,"Sending request...");
+
+try{
+const r=await fetch(BASE+path,{
+headers:{
+"Authorization":"Bearer "+key,
+"Accept":"application/json"
+}
+});
+
+const text=await r.text();
+let data;
+
+try{data=JSON.parse(text)}
+catch{data={response:text}}
+
+show(resultId,{
+http_status:r.status,
+data:data
+});
+
+}catch(e){
+show(resultId,{success:false,error:e.message});
+}
+}
+
+async function song(){
+const id=document.getElementById("songId").value.trim();
+const key=document.getElementById("songKey").value.trim();
+
+if(!id){
+show("songResult",{success:false,error:"Please enter Music ID."});
+return;
+}
+
+if(!key){
+show("songResult",{success:false,error:"Please enter your API key."});
+return;
+}
+
+show("songResult","Sending request...");
+
+try{
+const r=await fetch(BASE+"/api/music/"+encodeURIComponent(id),{
+headers:{
+"Authorization":"Bearer "+key,
+"Accept":"application/json"
+}
+});
+
+const text=await r.text();
+let data;
+
+try{data=JSON.parse(text)}
+catch{data={response:text}}
+
+show("songResult",{
+http_status:r.status,
+data:data
+});
+
+}catch(e){
+show("songResult",{success:false,error:e.message});
+}
+}
+</script>
+
+</body>
+</html>

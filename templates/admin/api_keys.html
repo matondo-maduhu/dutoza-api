@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dutoza API — API Keys</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f6f8;
+            color: #17202a;
+            font-family: Arial, sans-serif;
+        }
+
+        .topbar {
+            background: #111827;
+            color: white;
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .topbar a {
+            color: white;
+            text-decoration: none;
+            background: #2563eb;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .container {
+            width: min(1100px, calc(100% - 30px));
+            margin: 25px auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 15px rgba(0,0,0,.06);
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 7px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 9px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+        }
+
+        button {
+            border: 0;
+            border-radius: 9px;
+            padding: 11px 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .create {
+            background: #2563eb;
+            color: white;
+            margin-top: 18px;
+        }
+
+        .copy {
+            background: #059669;
+            color: white;
+        }
+
+        .warning {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+
+        .new-key {
+            background: #ecfdf5;
+            border: 1px solid #86efac;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .key-box {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .key-box input {
+            font-family: monospace;
+            background: white;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th, td {
+            padding: 13px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f9fafb;
+        }
+
+        .prefix {
+            font-family: monospace;
+            background: #f3f4f6;
+            padding: 5px 8px;
+            border-radius: 6px;
+        }
+
+        .active {
+            color: #047857;
+            font-weight: 700;
+        }
+
+        .inactive {
+            color: #b91c1c;
+            font-weight: 700;
+        }
+
+        .actions {
+            display: flex;
+            gap: 7px;
+        }
+
+        .toggle {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .delete {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .flash {
+            padding: 13px;
+            border-radius: 9px;
+            margin-bottom: 10px;
+            background: #eef2ff;
+        }
+
+        @media (max-width: 700px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .key-box {
+                flex-direction: column;
+            }
+
+            .topbar {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <h1>🔑 Dutoza API — API Keys</h1>
+
+    <a href="{{ url_for('admin.admin_dashboard') }}">
+        ← Dashboard
+    </a>
+</header>
+
+<main class="container">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if newly_created_key %}
+        <section class="new-key">
+
+            <h2>✅ API Key imetengenezwa</h2>
+
+            <div class="warning">
+                <strong>Muhimu:</strong>
+                Hii ndiyo nafasi pekee ya kuona API Key kamili.
+                Copy na umkabidhi developer. Database imehifadhi hash tu.
+            </div>
+
+            <div class="key-box">
+                <input
+                    id="newApiKey"
+                    type="text"
+                    value="{{ newly_created_key }}"
+                    readonly
+                >
+
+                <button
+                    class="copy"
+                    type="button"
+                    onclick="copyApiKey()"
+                >
+                    Copy Key
+                </button>
+            </div>
+
+        </section>
+    {% endif %}
+
+    <section class="card">
+
+        <h2>➕ Tengeneza API Key mpya</h2>
+
+        <form
+            method="POST"
+            action="{{ url_for('admin.create_api_key') }}"
+        >
+
+            <div class="grid">
+
+                <div>
+                    <label>API Key Name *</label>
+                    <input
+                        name="name"
+                        placeholder="Mfano: Dutoza Android App"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <label>Developer Name</label>
+                    <input
+                        name="owner_name"
+                        placeholder="Mfano: Matondo"
+                    >
+                </div>
+
+                <div>
+                    <label>Developer Email</label>
+                    <input
+                        type="email"
+                        name="owner_email"
+                        placeholder="developer@example.com"
+                    >
+                </div>
+
+            </div>
+
+            <button class="create" type="submit">
+                🔑 Generate API Key
+            </button>
+
+        </form>
+
+    </section>
+
+    <section class="card">
+
+        <h2>API Keys zilizopo</h2>
+
+        {% if api_keys %}
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Owner</th>
+                            <th>Prefix</th>
+                            <th>Status</th>
+                            <th>Last Used</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    {% for key in api_keys %}
+
+                        <tr>
+
+                            <td>
+                                <strong>{{ key[1] }}</strong>
+                            </td>
+
+                            <td>
+                                {{ key[3] or "—" }}<br>
+                                <small>{{ key[4] or "" }}</small>
+                            </td>
+
+                            <td>
+                                <span class="prefix">
+                                    {{ key[2] }}...
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if key[5] == "active" %}
+                                    <span class="active">● Active</span>
+                                {% else %}
+                                    <span class="inactive">● Inactive</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {{ key[6] or "Haijatumika" }}
+                            </td>
+
+                            <td>
+                                {{ key[7] }}
+                            </td>
+
+                            <td>
+
+                                <div class="actions">
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('admin.toggle_api_key', key_id=key[0]) }}"
+                                    >
+                                        <button class="toggle" type="submit">
+                                            {% if key[5] == "active" %}
+                                                Disable
+                                            {% else %}
+                                                Enable
+                                            {% endif %}
+                                        </button>
+                                    </form>
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('admin.delete_api_key', key_id=key[0]) }}"
+                                        onsubmit="return confirm('Una uhakika unataka kufuta API Key hii?');"
+                                    >
+                                        <button class="delete" type="submit">
+                                            Delete
+                                        </button>
+                                    </form>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <p>Hakuna API Keys bado.</p>
+
+        {% endif %}
+
+    </section>
+
+</main>
+
+<script>
+function copyApiKey() {
+    const input = document.getElementById("newApiKey");
+
+    if (!input) {
+        return;
+    }
+
+    navigator.clipboard.writeText(input.value)
+        .then(function () {
+            alert("API Key imenakiliwa.");
+        })
+        .catch(function () {
+            input.select();
+            document.execCommand("copy");
+            alert("API Key imenakiliwa.");
+        });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — Dutoza</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7f9;
+            color: #17212b;
+        }
+
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e6ea;
+            padding: 16px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .main-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link {
+            border-radius: 9px;
+            padding: 9px 13px;
+            color: #4f5b65;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .nav-link:hover {
+            background: #f5f7f9;
+        }
+
+        .nav-link.active {
+            background: #17212b;
+            color: #ffffff;
+        }
+
+        .logout {
+            border: 0;
+            background: #17212b;
+            color: #ffffff;
+            border-radius: 9px;
+            padding: 9px 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .logout:hover {
+            background: #f5f7f9;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 760px;
+            margin: 32px auto;
+            padding: 0 18px;
+        }
+
+        .profile-card {
+            background: #ffffff;
+            border: 1px solid #e2e6ea;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .cover {
+            height: 190px;
+            background:
+                linear-gradient(
+                    135deg,
+                    #17212b,
+                    #3d4a55
+                );
+        }
+
+        .profile-body {
+            padding: 0 28px 28px;
+        }
+
+        .avatar {
+            width: 104px;
+            height: 104px;
+            border-radius: 50%;
+            margin-top: -52px;
+            border: 5px solid #ffffff;
+            background: #e9edf0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-size: 34px;
+            font-weight: 800;
+            color: #17212b;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .name {
+            margin: 15px 0 3px;
+            font-size: 27px;
+            font-weight: 800;
+        }
+
+        .username {
+            color: #68737d;
+            font-size: 15px;
+        }
+
+        .bio {
+            margin-top: 18px;
+            color: #4f5b65;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-top: 1px solid #edf0f2;
+            margin-top: 25px;
+            padding-top: 20px;
+            gap: 10px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .stat-label {
+            margin-top: 4px;
+            color: #7b858d;
+            font-size: 12px;
+        }
+
+        .account {
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid #edf0f2;
+            color: #68737d;
+            font-size: 13px;
+        }
+
+        @media (max-width: 520px) {
+            .topbar {
+                padding: 14px 16px;
+            }
+
+            .main-nav {
+                gap: 4px;
+            }
+
+            .nav-link,
+            .logout {
+                padding: 8px 9px;
+                font-size: 13px;
+            }
+
+            .container {
+                margin-top: 20px;
+                padding: 0 12px;
+            }
+
+            .profile-body {
+                padding: 0 18px 22px;
+            }
+
+            .cover {
+                height: 150px;
+            }
+
+            .avatar {
+                width: 88px;
+                height: 88px;
+                margin-top: -44px;
+            }
+
+            .name {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="topbar">
+    <a href="{{ url_for('user_feed.feed') }}" class="logo">
+        Mercfy
+    </a>
+
+    <nav class="main-nav" aria-label="Navigation">
+        <a href="{{ url_for('user_feed.feed') }}" class="nav-link">
+            Feed
+        </a>
+
+        <a href="{{ url_for('user_auth.profile') }}" class="nav-link active">
+            Profile
+        </a>
+
+        <form method="POST" action="{{ url_for('user_auth.logout') }}">
+            <button class="logout" type="submit">
+                Toka
+            </button>
+        </form>
+    </nav>
+</header>
+
+    <main class="container">
+
+        <section class="profile-card">
+
+            <div class="cover"></div>
+
+            <div class="profile-body">
+
+                <div class="avatar">
+                    {% if user[4] %}
+                        <img src="{{ user[4] }}" alt="Picha ya profile">
+                    {% else %}
+                        {{ user[1][0]|upper }}
+                    {% endif %}
+                </div>
+
+                <div class="name">
+                    {{ user[1] }}
+                </div>
+
+                <div class="username">
+                    @{{ user[2] }}
+                </div>
+
+                {% if user[6] %}
+                    <div class="bio">
+                        {{ user[6] }}
+                    </div>
+                {% else %}
+                    <div class="bio">
+                        Karibu kwenye Dutoza.
+                    </div>
+                {% endif %}
+
+                <div class="stats">
+
+                    <div class="stat">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Followers</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Following</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Posts</div>
+                    </div>
+
+                </div>
+
+                <div class="account">
+                    Akaunti imefunguliwa:
+                    {{ user[8].strftime("%d %b %Y") }}
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,3227 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Feed — Mercfy</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f6f7;
+            color: #1f2937;
+        }
+
+        .topbar {
+            height: 64px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 800;
+            color: #111827;
+            text-decoration: none;
+        }
+
+        .main-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link,
+        .logout-btn,
+        .notification-btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 9px 13px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .nav-link {
+            color: #4b5563;
+            background: transparent;
+        }
+
+        .nav-link:hover {
+            background: #f0f2f5;
+            color: #111827;
+        }
+
+        .nav-link.active {
+            background: #111827;
+            color: #ffffff;
+        }
+
+        .logout-btn {
+            background: #111827;
+            color: #ffffff;
+        }
+
+        .notification-wrap {
+            position: relative;
+        }
+
+        .notification-btn {
+            background: transparent;
+            color: #4b5563;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .notification-btn:hover {
+            background: #f0f2f5;
+            color: #111827;
+        }
+
+        .notification-icon {
+            font-size: 17px;
+        }
+
+        .notification-badge {
+            min-width: 19px;
+            height: 19px;
+            padding: 0 5px;
+            border-radius: 999px;
+            background: #dc2626;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification-badge.hidden {
+            display: none;
+        }
+
+        .notification-panel {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            max-width: none;
+            height: 100%;
+            background: #ffffff;
+            z-index: 1000;
+            overflow: hidden;
+            display: none;
+        }
+
+        .notification-panel.open {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-header {
+            min-height: 64px;
+            padding: 12px 18px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .notification-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .notification-close {
+            width: 40px;
+            height: 40px;
+            border: 0;
+            border-radius: 10px;
+            background: #f3f4f6;
+            color: #111827;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+        }
+
+        .notification-close:hover {
+            background: #e5e7eb;
+        }
+
+        .notification-list {
+            flex: 1;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        .notification-item {
+            width: 100%;
+            border: 0;
+            border-bottom: 1px solid #f0f2f4;
+            background: #ffffff;
+            padding: 16px 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 13px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            background: #f8fafc;
+        }
+
+        .notification-item.unread {
+            background: #eff6ff;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 680px;
+            margin: 24px auto;
+            padding: 0 14px;
+        }
+
+        .composer,
+        .post {
+            background: #ffffff;
+            border: 1px solid #e3e6ea;
+            border-radius: 16px;
+        }
+
+        .composer {
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .composer-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 110px;
+            resize: vertical;
+            border: 1px solid #d9dde3;
+            border-radius: 12px;
+            padding: 13px;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #111827;
+        }
+
+        .composer-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+
+        .post-btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 20px;
+            background: #111827;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .post-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .flash {
+            background: #ecfdf3;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 11px 13px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .post {
+            padding: 17px;
+            margin-bottom: 14px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            margin-bottom: 13px;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            font-weight: 800;
+            color: #374151;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .username {
+            color: #6b7280;
+            font-size: 13px;
+            margin-top: 2px;
+            text-decoration: none;
+        }
+
+        .username:hover {
+            text-decoration: underline;
+        }
+
+        .post-time {
+            color: #9ca3af;
+            font-size: 12px;
+            margin-left: auto;
+        }
+
+        .post-content {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            font-size: 15px;
+            line-height: 1.55;
+        }
+
+        .comment-btn {
+            border: 0;
+            background: transparent;
+            color: #6b7280;
+            min-height: 40px;
+            padding: 7px 10px;
+            border-radius: 9px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .comment-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .comments-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f2f4;
+        }
+
+        .comment-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .comment-form input {
+            flex: 1;
+            min-width: 0;
+            height: 42px;
+            padding: 0 13px;
+            border: 1px solid #d9dde3;
+            border-radius: 21px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .comment-form input:focus {
+            border-color: #1EB53A;
+        }
+
+        .comment-form button {
+            width: 42px;
+            height: 42px;
+            border: 0;
+            border-radius: 50%;
+            background: #1EB53A;
+            color: #ffffff;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .comment-form button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .comment-node {
+            min-width: 0;
+        }
+
+        .comment-body {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+        }
+
+        .comment-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #eef0f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .comment-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .comment-main {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .comment-bubble {
+            background: #f2f4f6;
+            border-radius: 15px;
+            padding: 9px 12px;
+            width: fit-content;
+            max-width: 100%;
+        }
+
+        .comment-author {
+            font-size: 13px;
+            font-weight: 700;
+            color: #202124;
+        }
+
+        .comment-replied-to {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 3px;
+        }
+
+        .comment-text {
+            margin-top: 3px;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .comment-meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 5px;
+            padding-left: 5px;
+        }
+
+        .comment-meta button {
+            border: 0;
+            background: transparent;
+            padding: 3px 0;
+            color: #65676b;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .comment-meta button:hover {
+            color: #202124;
+        }
+
+        .comment-children {
+            margin-left: 42px;
+            padding-left: 12px;
+            border-left: 2px solid #edf0f2;
+            margin-top: 9px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .comment-reply-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            margin-left: 43px;
+        }
+
+        .comment-reply-form input {
+            flex: 1;
+            min-width: 0;
+            height: 38px;
+            padding: 0 12px;
+            border: 1px solid #d9dde3;
+            border-radius: 19px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .comment-reply-form input:focus {
+            border-color: #1EB53A;
+        }
+
+        .comment-reply-form button {
+            width: 38px;
+            height: 38px;
+            border: 0;
+            border-radius: 50%;
+            background: #1EB53A;
+            color: #ffffff;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .comment-reply-form button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .comments-loading,
+        .comments-empty,
+        .comments-error {
+            color: #777;
+            font-size: 13px;
+            padding: 8px 2px;
+        }
+
+        @media (max-width: 520px) {
+            .comment-children {
+                margin-left: 20px;
+                padding-left: 9px;
+            }
+
+            .comment-bubble {
+                max-width: 100%;
+            }
+        }
+
+        .loading,
+        .empty,
+        .error {
+            text-align: center;
+            padding: 30px 15px;
+            color: #6b7280;
+        }
+
+        .error {
+            color: #b91c1c;
+        }
+
+        @media (max-width: 600px) {
+            .topbar {
+                padding: 0 10px;
+            }
+
+            .brand {
+                font-size: 21px;
+            }
+
+            .main-nav {
+                gap: 3px;
+            }
+
+            .nav-link,
+            .logout-btn,
+            .notification-btn {
+                padding: 8px 8px;
+                font-size: 12px;
+            }
+
+            .notification-header {
+                min-height: 58px;
+                padding: 10px 12px;
+            }
+
+            .notification-item {
+                padding: 15px 13px;
+            }
+
+            .notification-title {
+                font-size: 15px;
+            }
+
+            .mark-all {
+                font-size: 11px;
+            }
+
+            .page {
+                margin-top: 15px;
+                padding: 0 9px;
+            }
+
+            .composer,
+            .post {
+                border-radius: 13px;
+            }
+
+            .post-time {
+                font-size: 11px;
+            }
+        }
+    
+
+/* ================================
+   MERCFY MUSIC FEED
+   ================================ */
+
+.music-post {
+    overflow: hidden;
+}
+
+.music-card {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 14px;
+}
+
+.music-cover {
+    width: 104px;
+    height: 104px;
+    min-width: 104px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f0f2f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.music-cover-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.music-cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8a8d91;
+    font-size: 34px;
+}
+
+.music-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.music-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: #65676b;
+    margin-bottom: 5px;
+}
+
+.music-title {
+    margin: 0;
+    font-size: 19px;
+    line-height: 1.25;
+    font-weight: 700;
+    color: #1c1e21;
+    word-break: break-word;
+}
+
+.music-artist {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #42454a;
+}
+
+.music-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #65676b;
+}
+
+.music-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.music-description {
+    margin-top: 9px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #65676b;
+    word-break: break-word;
+}
+
+.music-player {
+    margin-top: 16px;
+    width: 100%;
+}
+
+.music-audio {
+    width: 100%;
+    height: 42px;
+    display: block;
+}
+
+.music-stats {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 12px;
+    padding-top: 11px;
+    border-top: 1px solid #e4e6eb;
+    font-size: 12px;
+    color: #65676b;
+}
+
+.music-stats span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.music-actions {
+    display: flex;
+    margin-top: 12px;
+}
+
+.music-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    background: #f0f2f5;
+    color: #1c1e21;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background .15s ease;
+}
+
+.music-action-btn:hover {
+    background: #e4e6eb;
+}
+
+.music-no-audio {
+    margin-top: 14px;
+    padding: 11px 12px;
+    border-radius: 8px;
+    background: #f5f6f7;
+    color: #65676b;
+    font-size: 13px;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .music-card {
+        gap: 12px;
+    }
+
+    .music-cover {
+        width: 86px;
+        height: 86px;
+        min-width: 86px;
+        border-radius: 10px;
+    }
+
+    .music-cover-placeholder {
+        font-size: 28px;
+    }
+
+    .music-title {
+        font-size: 17px;
+    }
+
+    .music-artist {
+        font-size: 13px;
+    }
+
+    .music-description {
+        font-size: 12px;
+    }
+}
+
+
+
+/* ================================
+   MERCFY PROFESSIONAL COMPOSER
+   ================================ */
+
+.composer {
+    width: 100%;
+}
+
+.composer-box {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 14px;
+    transition: border-color .18s ease,
+                box-shadow .18s ease;
+}
+
+.composer-box:focus-within {
+    border-color: #1EB53A;
+    box-shadow: 0 0 0 3px rgba(30,181,58,.08);
+}
+
+.composer-avatar {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f2f5;
+    color: #65676b;
+    font-size: 15px;
+}
+
+#content {
+    flex: 1;
+    min-width: 0;
+    min-height: 42px;
+    max-height: 180px;
+    padding: 9px 4px;
+    border: 0;
+    outline: 0;
+    resize: none;
+    background: transparent;
+    color: #1c1e21;
+    font-size: 14px;
+    line-height: 1.45;
+    font-family: inherit;
+}
+
+#content::placeholder {
+    color: #8a8d91;
+}
+
+.composer-plus-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.composer-plus {
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f2f5;
+    color: #1c1e21;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background .15s ease,
+                transform .15s ease;
+}
+
+.composer-plus:hover {
+    background: #e4e6eb;
+}
+
+.composer-plus:active {
+    transform: scale(.94);
+}
+
+.composer-menu {
+    position: absolute !important;
+    left: 0 !important;
+    bottom: 44px !important;
+    width: 100px !important;
+    min-width: 100px !important;
+    padding: 3px !important;
+    border-radius: 8px !important;
+    z-index: 30 !important;
+}
+
+.composer-menu-item {
+    width: 100%;
+    min-height: 42px;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #1c1e21;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.composer-menu-item:hover {
+    background: #f0f2f5;
+}
+
+.composer-menu-icon {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+
+.composer-menu-icon.music {
+    background: #f0f2f5;
+    color: #1c1e21;
+}
+
+.composer-menu-icon.quote {
+    background: #f0f2f5;
+    color: #1c1e21;
+}
+
+.composer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 7px;
+    padding: 0 4px;
+}
+
+.composer-counter {
+    color: #8a8d91;
+    font-size: 11px;
+}
+
+@media (max-width: 600px) {
+    .composer-box {
+        padding: 10px;
+        border-radius: 12px;
+    }
+
+    .composer-avatar {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+    }
+
+    #content {
+        font-size: 14px;
+    }
+
+    .composer-plus {
+        width: 36px;
+        height: 36px;
+    }
+
+    .composer-menu {
+        position: absolute !important;
+        left: 0 !important;
+        bottom: 44px !important;
+        right: auto !important;
+        width: 100px !important;
+        min-width: 100px !important;
+    }
+}
+
+
+/* ================================
+   QUOTE FEED ITEM
+   ================================ */
+
+.quote-feed-item .quote-content {
+    padding: 22px 24px 24px;
+    text-align: center;
+}
+
+.quote-feed-item .quote-mark {
+    font-size: 22px;
+    opacity: 0.45;
+    margin-bottom: 12px;
+}
+
+.quote-feed-item .quote-text {
+    font-size: 20px;
+    line-height: 1.55;
+    font-weight: 600;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+.quote-feed-item .quote-author {
+    margin-top: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0.65;
+}
+
+@media (max-width: 600px) {
+    .quote-feed-item .quote-content {
+        padding: 18px 16px 20px;
+    }
+
+    .quote-feed-item .quote-text {
+        font-size: 18px;
+        line-height: 1.5;
+    }
+}
+
+</style>
+
+<style id="mercyf-comments-pro-max">
+.comment-node {
+    margin: 0;
+    padding: 0;
+}
+
+.comment-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+}
+
+.comment-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    flex: 0 0 28px;
+    font-size: 10px;
+    background: #eef1f3;
+}
+
+.comment-main {
+    min-width: 0;
+    flex: 1;
+}
+
+.comment-bubble {
+    width: fit-content;
+    max-width: min(92%, 620px);
+    background: #f1f3f5;
+    border-radius: 13px;
+    padding: 6px 10px;
+}
+
+.comment-author {
+    font-size: 12px;
+    line-height: 1.25;
+    font-weight: 700;
+    color: #202124;
+}
+
+.comment-replied-to {
+    font-size: 10px;
+    color: #6b7280;
+    margin-top: 1px;
+    margin-bottom: 2px;
+}
+
+.comment-text {
+    margin-top: 2px;
+    font-size: 13px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+    padding-left: 2px;
+}
+
+.comment-meta button {
+    border: 0;
+    background: transparent;
+    padding: 2px 3px;
+    min-height: 24px;
+    color: #65676b;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.comment-meta button:hover {
+    background: #f0f2f4;
+}
+
+.comment-like-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.comment-like-btn.liked {
+    color: #e11d48;
+}
+
+.comment-like-count {
+    font-size: 10px;
+}
+
+.comment-children {
+    margin-left: 22px;
+    padding-left: 9px;
+    border-left: 1px solid #e1e4e7;
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.comment-reply-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 5px 0 2px 35px;
+}
+
+.comment-reply-form input {
+    height: 32px;
+    min-width: 0;
+    flex: 1;
+    padding: 0 11px;
+    border: 1px solid #d7dbe0;
+    border-radius: 16px;
+    outline: none;
+    font-size: 12px;
+}
+
+.comment-reply-form input:focus {
+    border-color: #1EB53A;
+}
+
+.comment-reply-form button {
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 50%;
+    background: #1EB53A;
+    color: #fff;
+    cursor: pointer;
+    flex: 0 0 32px;
+}
+
+@media (max-width: 520px) {
+    .comment-bubble {
+        max-width: 94%;
+    }
+
+    .comment-children {
+        margin-left: 13px;
+        padding-left: 7px;
+    }
+
+    .comment-reply-form {
+        margin-left: 34px;
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <a href="{{ url_for('user_feed.feed') }}" class="brand">
+        Mercfy
+    </a>
+
+    <nav class="main-nav" aria-label="Navigation">
+
+        <a
+            href="{{ url_for('user_feed.feed') }}"
+            class="nav-link active"
+        >
+            Feed
+        </a>
+
+        <div class="notification-wrap">
+
+            <button
+                type="button"
+                class="notification-btn"
+                id="notificationButton"
+                aria-label="Notifications"
+                aria-expanded="false"
+            >
+                <i class="fa-solid fa-bell notification-icon" aria-hidden="true"></i>
+                <span>Notifications</span>
+                <span
+                    class="notification-badge hidden"
+                    id="notificationBadge"
+                >
+                    0
+                </span>
+            </button>
+
+            <div
+                class="notification-panel"
+                id="notificationPanel"
+            >
+
+                <div class="notification-header">
+
+                    <div class="notification-header-left">
+
+                        <button
+                            type="button"
+                            class="notification-close"
+                            id="notificationClose"
+                            aria-label="Close notifications"
+                        >
+                            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                        </button>
+
+                        <div class="notification-title">
+                            Notifications
+                        </div>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="mark-all"
+                        id="markAllButton"
+                    >
+                        Mark all as read
+                    </button>
+
+                </div>
+
+                <div
+                    class="notification-list"
+                    id="notificationList"
+                >
+                    <div class="notification-loading">
+                        Inapakia notifications...
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <a
+            href="{{ url_for('user_auth.profile') }}"
+            class="nav-link"
+        >
+            Profile
+        </a>
+
+        <form
+            method="POST"
+            action="{{ url_for('user_auth.logout') }}"
+        >
+            <button
+                class="logout-btn"
+                type="submit"
+            >
+                Toka
+            </button>
+        </form>
+
+    </nav>
+
+</header>
+
+<main class="page">
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="flash">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="composer">
+    <form
+        method="POST"
+        action="{{ url_for('user_feed.create_post') }}"
+        id="postForm"
+    >
+        <div class="composer-box">
+
+            <a
+                href="{{ url_for('user_auth.profile') }}"
+                class="composer-avatar"
+                aria-label="Fungua profile yako"
+            >
+                {% if session.get("profile_image_url") %}
+                    <img
+                        src="{{ session.get("profile_image_url") }}"
+                        alt="Profile"
+                    >
+                {% else %}
+                    {% set name = session.get("full_name", "")|trim %}
+                    {% if name %}
+                        <span class="composer-avatar-letter">
+                            {{ name[0]|upper }}
+                        </span>
+                    {% endif %}
+                {% endif %}
+            </a>
+
+            <textarea
+                name="content"
+                id="content"
+                maxlength="5000"
+                placeholder="Andika quote yako..."
+                required
+            ></textarea>
+
+            <div class="composer-bottom-inside">
+
+                <div class="composer-actions">
+                    <button
+                        type="button"
+                        class="composer-action"
+                        id="quoteOption"
+                        aria-label="Quote"
+                    >
+                        <i class="fa-solid fa-quote-left" aria-hidden="true"></i>
+                    </button>
+
+                    <a
+                        href="{{ url_for('user_music.music_composer') }}"
+                        class="composer-action"
+                        aria-label="Music"
+                    >
+                        <i class="fa-solid fa-music" aria-hidden="true"></i>
+                    </a>
+                </div>
+
+                <button
+                    class="composer-send"
+                    id="postButton"
+                    type="submit"
+                    aria-label="Send"
+                >
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                </button>
+
+            </div>
+
+        </div>
+    </form>
+</section>
+
+    <section id="feed">
+
+        <div
+            class="loading"
+            id="loading"
+        >
+            Inapakia posts...
+        </div>
+
+    </section>
+
+</main>
+
+<script>
+(function () {
+
+    const feed = document.getElementById("feed");
+    const loading = document.getElementById("loading");
+
+    /* ================================
+       MERCFY COMPOSER INTERACTION
+       ================================ */
+
+    const composerPlus =
+        document.getElementById("composerPlus");
+
+    const composerMenu =
+        document.getElementById("composerMenu");
+
+    const quoteOption =
+        document.getElementById("quoteOption");
+
+    const composerCounter =
+        document.getElementById("composerCounter");
+
+    const contentInput =
+        document.getElementById("content");
+
+    function updateComposerCounter() {
+        if (!contentInput || !composerCounter) {
+            return;
+        }
+
+        const length = contentInput.value.length;
+        composerCounter.textContent =
+            `${length} / 5000`;
+    }
+
+    function closeComposerMenu() {
+        if (!composerMenu || !composerPlus) {
+            return;
+        }
+
+        composerMenu.hidden = true;
+        composerPlus.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+    }
+
+    function openComposerMenu() {
+        if (!composerMenu || !composerPlus) {
+            return;
+        }
+
+        composerMenu.hidden = false;
+        composerPlus.setAttribute(
+            "aria-expanded",
+            "true"
+        );
+    }
+
+    if (composerPlus && composerMenu) {
+        composerPlus.addEventListener(
+            "click",
+            function (event) {
+                event.stopPropagation();
+
+                if (composerMenu.hidden) {
+                    openComposerMenu();
+                } else {
+                    closeComposerMenu();
+                }
+            }
+        );
+    }
+
+    if (composerMenu) {
+        composerMenu.addEventListener(
+            "click",
+            function (event) {
+                event.stopPropagation();
+            }
+        );
+    }
+
+    document.addEventListener(
+        "click",
+        function () {
+            closeComposerMenu();
+        }
+    );
+
+    if (quoteOption && contentInput) {
+        quoteOption.addEventListener(
+            "click",
+            function () {
+                contentInput.placeholder =
+                    "Andika quote yako...";
+
+                contentInput.focus();
+
+                closeComposerMenu();
+            }
+        );
+    }
+
+    if (contentInput) {
+        contentInput.addEventListener(
+            "input",
+            updateComposerCounter
+        );
+
+        updateComposerCounter();
+    }
+
+
+    const form = document.getElementById("postForm");
+    const postButton = document.getElementById("postButton");
+
+    const notificationButton =
+        document.getElementById("notificationButton");
+
+    const notificationPanel =
+        document.getElementById("notificationPanel");
+
+    const notificationBadge =
+        document.getElementById("notificationBadge");
+
+    const notificationClose =
+        document.getElementById("notificationClose");
+
+    const notificationList =
+        document.getElementById("notificationList");
+
+    const markAllButton =
+        document.getElementById("markAllButton");
+
+
+    function escapeHtml(value) {
+
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
+
+
+    function formatDate(dateString) {
+
+        const date = new Date(dateString);
+
+        if (Number.isNaN(date.getTime())) {
+            return "";
+        }
+
+        return date.toLocaleString("sw-TZ", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+
+    }
+
+
+    function renderPost(post) {
+        const user = post.user || {};
+
+        const name = escapeHtml(
+            user.full_name || "Mercfy User"
+        );
+
+        const username = escapeHtml(
+            user.username || ""
+        );
+
+        const image = user.profile_image_url
+            ? `<img
+                src="${escapeHtml(user.profile_image_url)}"
+                alt="Profile"
+              >`
+            : escapeHtml(
+                (user.full_name || "M")
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase()
+            );
+
+        /* ================================
+           QUOTE FEED ITEM
+           ================================ */
+        if (post.type === "quote") {
+            const content = escapeHtml(
+                post.content || ""
+            );
+
+            const author = escapeHtml(
+                post.quote_author || post.user?.full_name || "Mercfy"
+            );
+
+            const username = escapeHtml(
+                post.user?.username || ""
+            );
+
+            return `
+                <article class="feed-post quote-feed-item">
+                    <div class="post-header">
+                        <div class="post-user">
+                            <div class="post-avatar">
+                                ${
+                                    post.user?.profile_image_url
+                                        ? `<img src="${escapeHtml(post.user.profile_image_url)}" alt="">`
+                                        : `<i class="fa-solid fa-user"></i>`
+                                }
+                            </div>
+
+                            <div class="post-user-info">
+                                <strong>${escapeHtml(
+                                    post.user?.full_name || author
+                                )}</strong>
+                                ${
+                                    username
+                                        ? `<span>@${username}</span>`
+                                        : ""
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quote-content">
+                        <i class="fa-solid fa-quote-left quote-mark"></i>
+
+                        <div class="quote-text">
+                            ${content}
+                        </div>
+
+                        <div class="quote-author">
+                            — ${author}
+                        </div>
+                    </div>
+                </article>
+            `;
+        }
+
+        /* ================================
+           MUSIC FEED ITEM
+           ================================ */
+        if (post.type === "music") {
+            const title = escapeHtml(
+                post.title || "Untitled Song"
+            );
+
+            const description = escapeHtml(
+                post.description || ""
+            );
+
+            const audioUrl = escapeHtml(
+                post.audio_url || ""
+            );
+
+            const coverUrl = post.cover_url
+                ? escapeHtml(post.cover_url)
+                : "";
+
+            const artistName = escapeHtml(
+                post.artist?.name || "Unknown Artist"
+            );
+
+            const albumTitle = escapeHtml(
+                post.album?.title || ""
+            );
+
+            const genre = escapeHtml(
+                post.genre || ""
+            );
+
+            const cover = coverUrl
+                ? `
+                    <img
+                        src="${coverUrl}"
+                        alt="${title} cover"
+                        class="music-cover-image"
+                    >
+                  `
+                : `
+                    <div class="music-cover-placeholder">
+                        <i
+                            class="fa-solid fa-music"
+                            aria-hidden="true"
+                        ></i>
+                    </div>
+                  `;
+
+            return `
+                <article class="post music-post">
+
+                    <div class="post-header">
+
+                        <div class="avatar">
+                            ${image}
+                        </div>
+
+                        <div>
+                            <div class="user-name">
+                                ${name}
+                            </div>
+
+                            <a
+                                class="username"
+                                href="/users/${encodeURIComponent(
+                                    user.username || ""
+                                )}"
+                            >
+                                @${username}
+                            </a>
+                        </div>
+
+                        <div class="post-time">
+                            ${formatDate(post.created_at)}
+                        </div>
+
+                    </div>
+
+                    <div class="music-card">
+
+                        <div class="music-cover">
+                            ${cover}
+                        </div>
+
+                        <div class="music-info">
+
+                            <div class="music-label">
+                                <i
+                                    class="fa-solid fa-music"
+                                    aria-hidden="true"
+                                ></i>
+                                MUSIC
+                            </div>
+
+                            <h3 class="music-title">
+                                ${title}
+                            </h3>
+
+                            <div class="music-artist">
+                                <i
+                                    class="fa-solid fa-microphone"
+                                    aria-hidden="true"
+                                ></i>
+                                ${artistName}
+                            </div>
+
+                            ${
+                                albumTitle || genre
+                                    ? `
+                                        <div class="music-meta">
+
+                                            ${
+                                                albumTitle
+                                                    ? `
+                                                        <span>
+                                                            <i
+                                                                class="fa-solid fa-compact-disc"
+                                                                aria-hidden="true"
+                                                            ></i>
+                                                            ${albumTitle}
+                                                        </span>
+                                                      `
+                                                    : ""
+                                            }
+
+                                            ${
+                                                genre
+                                                    ? `
+                                                        <span>
+                                                            <i
+                                                                class="fa-solid fa-tag"
+                                                                aria-hidden="true"
+                                                            ></i>
+                                                            ${genre}
+                                                        </span>
+                                                      `
+                                                    : ""
+                                            }
+
+                                        </div>
+                                      `
+                                    : ""
+                            }
+
+                            ${
+                                description
+                                    ? `
+                                        <div class="music-description">
+                                            ${description}
+                                        </div>
+                                      `
+                                    : ""
+                            }
+
+                        </div>
+
+                    </div>
+
+                    ${
+                        audioUrl
+                            ? `
+                                <div class="music-player">
+
+                                    <audio
+                                        class="music-audio"
+                                        controls
+                                        preload="metadata"
+                                        src="${audioUrl}"
+                                    ></audio>
+
+                                </div>
+                              `
+                            : `
+                                <div class="music-no-audio">
+                                    Audio haipatikani kwa sasa.
+                                </div>
+                              `
+                    }
+
+                    <div class="music-stats">
+
+                        <span>
+                            <i
+                                class="fa-solid fa-play"
+                                aria-hidden="true"
+                            ></i>
+                            ${Number(post.play_count || 0)}
+                        </span>
+
+                        <span>
+                            <i
+                                class="fa-solid fa-download"
+                                aria-hidden="true"
+                            ></i>
+                            ${Number(post.download_count || 0)}
+                        </span>
+
+                    </div>
+
+                    ${
+                        audioUrl
+                            ? `
+                                <div class="music-actions">
+
+                                    <a
+                                        href="${audioUrl}"
+                                        download
+                                        class="music-action-btn"
+                                    >
+                                        <i
+                                            class="fa-solid fa-download"
+                                            aria-hidden="true"
+                                        ></i>
+                                        Download
+                                    </a>
+
+                                </div>
+                              `
+                            : ""
+                    }
+
+                </article>
+            `;
+        }
+
+        /* ================================
+           NORMAL POST
+           ================================ */
+
+        const content = escapeHtml(
+            post.content || ""
+        );
+
+        return `
+            <article class="post">
+
+                <div class="post-header">
+
+                    <div class="avatar">
+                        ${image}
+                    </div>
+
+                    <div>
+
+                        <div class="user-name">
+                            ${name}
+                        </div>
+
+                        <a
+                            class="username"
+                            href="/users/${encodeURIComponent(
+                                user.username || ""
+                            )}"
+                        >
+                            @${username}
+                        </a>
+
+                    </div>
+
+                    <div class="post-time">
+                        ${formatDate(post.created_at)}
+                    </div>
+
+                </div>
+
+                <div class="post-content">
+                    ${content}
+                </div>
+
+                <div class="post-actions">
+
+                    <button
+                        type="button"
+                        class="like-btn ${post.is_liked ? "liked" : ""}"
+                        data-post-id="${post.id}"
+                        aria-label="${post.is_liked ? "Unlike post" : "Like post"}"
+                    >
+                        <i
+                            class="fa-solid fa-heart"
+                            aria-hidden="true"
+                        ></i>
+
+                        <span class="like-count">
+                            ${Number(post.likes_count || 0)}
+                        </span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="comment-btn"
+                        data-post-id="${post.id}"
+                        aria-label="Open comments"
+                    >
+                        <i
+                            class="fa-regular fa-comment"
+                            aria-hidden="true"
+                        ></i>
+
+                        <span class="comment-count">
+                            0
+                        </span>
+                    </button>
+
+                </div>
+
+                <section
+                    class="comments-section"
+                    id="comments-${post.id}"
+                    hidden
+                    data-post-id="${post.id}"
+                >
+
+                    <form
+                        class="comment-form"
+                        data-post-id="${post.id}"
+                    >
+
+                        <input
+                            type="text"
+                            name="content"
+                            maxlength="5000"
+                            placeholder="Andika comment..."
+                            autocomplete="off"
+                            required
+                        >
+
+                        <button
+                            type="submit"
+                            aria-label="Send comment"
+                        >
+                            <i
+                                class="fa-solid fa-paper-plane"
+                                aria-hidden="true"
+                            ></i>
+                        </button>
+
+                    </form>
+
+                    <div class="comments-list">
+                        <div class="comments-loading">
+                            Inapakia comments...
+                        </div>
+                    </div>
+
+                </section>
+
+            </article>
+        `;
+    }
+
+    async function handleLikeClick(button) {
+
+        const postId = button.dataset.postId;
+
+        if (!postId || button.disabled) {
+            return;
+        }
+
+        const wasLiked =
+            button.classList.contains("liked");
+
+        button.disabled = true;
+
+        try {
+
+            const endpoint = wasLiked
+                ? `/api/user/posts/${encodeURIComponent(postId)}/unlike`
+                : `/api/user/posts/${encodeURIComponent(postId)}/like`;
+
+            const response = await fetch(
+                endpoint,
+                {
+                    method: "POST",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Like request failed");
+            }
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error("Like operation failed");
+            }
+
+            const countElement =
+                button.querySelector(".like-count");
+
+            if (countElement) {
+                countElement.textContent =
+                    String(Number(data.likes_count || 0));
+            }
+
+            if (data.liked) {
+
+                button.classList.add("liked");
+
+                button.setAttribute(
+                    "aria-label",
+                    "Unlike post"
+                );
+
+            } else {
+
+                button.classList.remove("liked");
+
+                button.setAttribute(
+                    "aria-label",
+                    "Like post"
+                );
+            }
+
+            await loadUnreadCount();
+
+        } catch (error) {
+
+            console.error(
+                "Like operation failed:",
+                error
+            );
+
+        } finally {
+
+            button.disabled = false;
+        }
+    }
+
+
+    feed.addEventListener(
+        "click",
+        function (event) {
+
+            const button =
+                event.target.closest(".like-btn");
+
+            if (!button) {
+                return;
+            }
+
+            handleLikeClick(button);
+        }
+    );
+
+
+    function renderCommentTree(comment, depth = 0) {
+
+        const user = comment.user || {};
+
+        const name =
+            escapeHtml(user.full_name || "Mercfy User");
+
+        const username =
+            escapeHtml(user.username || "");
+
+        const content =
+            escapeHtml(comment.content || "");
+
+        const avatar = user.profile_image_url
+            ? `<img
+                src="${escapeHtml(user.profile_image_url)}"
+                alt="Profile"
+              >`
+            : escapeHtml(
+                (user.full_name || "M")
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase()
+            );
+
+        const parentId =
+            comment.parent_comment_id;
+
+        const parentLabel =
+            parentId
+                ? "Amejibu comment hii"
+                : "";
+
+        const children =
+            Array.isArray(comment.children)
+                ? comment.children
+                : [];
+
+        return `
+            <div
+                class="comment-node"
+                data-comment-id="${comment.id}"
+                data-parent-id="${parentId || ""}"
+            >
+
+                <div class="comment-body">
+
+                    <div class="comment-avatar">
+                        ${avatar}
+                    </div>
+
+                    <div class="comment-main">
+
+                        <div class="comment-bubble">
+
+                            <div class="comment-author">
+                                ${name}
+                            </div>
+
+                            ${
+                                parentLabel
+                                    ? `<div class="comment-replied-to">
+                                        ${parentLabel}
+                                       </div>`
+                                    : ""
+                            }
+
+                            <div class="comment-text">
+                                ${content}
+                            </div>
+
+                        </div>
+
+                        <div class="comment-meta">
+
+                            <button
+                                type="button"
+                                class="comment-like-btn ${comment.is_liked ? "liked" : ""}"
+                                data-comment-id="${comment.id}"
+                                aria-label="${comment.is_liked ? "Unlike comment" : "Like comment"}"
+                            >
+                                <i
+                                    class="fa-solid fa-heart"
+                                    aria-hidden="true"
+                                ></i>
+
+                                <span class="comment-like-count">
+                                    ${Number(comment.likes_count || 0)}
+                                </span>
+                            </button>
+
+                            <button
+                                type="button"
+                                
+                                data-comment-id="${comment.id}"
+                                data-username="${username}"
+                            >
+                                <i
+                                    class="fa-solid fa-reply"
+                                    aria-hidden="true"
+                                ></i>
+                                Reply
+                            </button>
+
+                            <span>
+                                ${formatDate(comment.created_at)}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                ${
+                    children.length
+                        ? `<div class="comment-children">
+                            ${children
+                                .map(child =>
+                                    renderCommentTree(
+                                        child,
+                                        depth + 1
+                                    )
+                                )
+                                .join("")}
+                           </div>`
+                        : ""
+                }
+
+            </div>
+        `;
+    }
+
+
+    function renderComments(comments) {
+
+        if (!Array.isArray(comments) || comments.length === 0) {
+            return `
+                <div class="comments-empty">
+                    Bado hakuna comment.
+                </div>
+            `;
+        }
+
+        return comments
+            .map(comment =>
+                renderCommentTree(comment)
+            )
+            .join("");
+    }
+
+
+    async function loadPostComments(postId, section) {
+
+        const list =
+            section.querySelector(".comments-list");
+
+        if (!list) {
+            return;
+        }
+
+        list.innerHTML = `
+            <div class="comments-loading">
+                Inapakia comments...
+            </div>
+        `;
+
+        try {
+
+            const response = await fetch(
+                `/api/user/posts/${encodeURIComponent(postId)}/comments`,
+                {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Comments request failed"
+                );
+            }
+
+            const data =
+                await response.json();
+
+            if (!data.success) {
+                throw new Error(
+                    "Comments loading failed"
+                );
+            }
+
+            list.innerHTML =
+                renderComments(data.comments);
+
+            const button =
+                document.querySelector(
+                    `.comment-btn[data-post-id="${CSS.escape(String(postId))}"]`
+                );
+
+            if (button) {
+
+                const count =
+                    button.querySelector(
+                        ".comment-count"
+                    );
+
+                if (count) {
+                    count.textContent =
+                        String(
+                            Number(
+                                data.comments_count || 0
+                            )
+                        );
+                }
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Comments loading failed:",
+                error
+            );
+
+            list.innerHTML = `
+                <div class="comments-error">
+                    Imeshindikana kupakia comments.
+                </div>
+            `;
+        }
+    }
+
+
+    feed.addEventListener(
+        "click",
+        function (event) {
+
+            const button =
+                event.target.closest(".comment-btn");
+
+            if (!button) {
+                return;
+            }
+
+            const postId =
+                button.dataset.postId;
+
+            const section =
+                document.getElementById(
+                    `comments-${postId}`
+                );
+
+            if (!section) {
+                return;
+            }
+
+            const isHidden =
+                section.hasAttribute("hidden");
+
+            if (isHidden) {
+
+                section.removeAttribute("hidden");
+
+                loadPostComments(
+                    postId,
+                    section
+                );
+
+            } else {
+
+                section.setAttribute(
+                    "hidden",
+                    ""
+                );
+            }
+        }
+    );
+
+
+    feed.addEventListener(
+        "click",
+        function (event) {
+
+            const button =
+                event.target.closest(
+                    ".reply-comment-btn"
+                );
+
+            if (!button) {
+                return;
+            }
+
+            const commentId =
+                button.dataset.commentId;
+
+            if (!commentId) {
+                return;
+            }
+
+            const node =
+                button.closest(".comment-node");
+
+            const section =
+                button.closest(
+                    ".comments-section"
+                );
+
+            if (!node || !section) {
+                return;
+            }
+
+            let form =
+                node.querySelector(
+                    ":scope > .comment-reply-form"
+                );
+
+            if (form) {
+
+                form.remove();
+
+                return;
+            }
+
+            form =
+                document.createElement("form");
+
+            form.className =
+                "comment-reply-form";
+
+            form.innerHTML = `
+                <input
+                    type="text"
+                    name="content"
+                    maxlength="5000"
+                    placeholder="Andika reply..."
+                    autocomplete="off"
+                    required
+                >
+
+                <button
+                    type="submit"
+                    aria-label="Send reply"
+                >
+                    <i
+                        class="fa-solid fa-paper-plane"
+                        aria-hidden="true"
+                    ></i>
+                </button>
+            `;
+
+            node.appendChild(form);
+
+            form
+                .querySelector("input")
+                .focus();
+        }
+    );
+
+
+    feed.addEventListener(
+        "submit",
+        async function (event) {
+
+            const form =
+                event.target;
+
+            if (
+                !form.classList.contains(
+                    "comment-form"
+                ) &&
+                !form.classList.contains(
+                    "comment-reply-form"
+                )
+            ) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const contentInput =
+                form.querySelector(
+                    'input[name="content"]'
+                );
+
+            if (!contentInput) {
+                return;
+            }
+
+            const content =
+                contentInput.value.trim();
+
+            if (!content) {
+                return;
+            }
+
+            const button =
+                form.querySelector("button");
+
+            if (button) {
+                button.disabled = true;
+            }
+
+            try {
+
+                let response;
+
+                if (
+                    form.classList.contains(
+                        "comment-form"
+                    )
+                ) {
+
+                    const postId =
+                        form.dataset.postId;
+
+                    response =
+                        await fetch(
+                            `/api/user/posts/${encodeURIComponent(postId)}/comments`,
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type":
+                                        "application/json",
+                                    "Accept":
+                                        "application/json"
+                                },
+                                body: JSON.stringify({
+                                    content: content
+                                })
+                            }
+                        );
+
+                } else {
+
+                    const node =
+                        form.closest(
+                            ".comment-node"
+                        );
+
+                    const commentId =
+                        node &&
+                        node.dataset.commentId;
+
+                    response =
+                        await fetch(
+                            `/api/user/comments/${encodeURIComponent(commentId)}/reply`,
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type":
+                                        "application/json",
+                                    "Accept":
+                                        "application/json"
+                                },
+                                body: JSON.stringify({
+                                    content: content
+                                })
+                            }
+                        );
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Comment submission failed"
+                    );
+                }
+
+                const data =
+                    await response.json();
+
+                if (!data.success) {
+                    throw new Error(
+                        "Comment submission failed"
+                    );
+                }
+
+                const section =
+                    form.closest(
+                        ".comments-section"
+                    );
+
+                if (!section) {
+                    return;
+                }
+
+                const postId =
+                    section.dataset.postId;
+
+                contentInput.value = "";
+
+                if (
+                    form.classList.contains(
+                        "comment-reply-form"
+                    )
+                ) {
+                    form.remove();
+                }
+
+                await loadPostComments(
+                    postId,
+                    section
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Comment submission failed:",
+                    error
+                );
+
+            } finally {
+
+                if (
+                    button &&
+                    document.body.contains(button)
+                ) {
+                    button.disabled = false;
+                }
+            }
+        }
+    );
+
+
+    async function loadFeed() {
+
+        try {
+
+            const response = await fetch(
+                "{{ url_for('user_feed.get_posts') }}",
+                {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Feed request failed");
+            }
+
+            const data = await response.json();
+
+            if (loading) {
+                loading.remove();
+            }
+
+            if (!data.posts || data.posts.length === 0) {
+
+                feed.innerHTML = `
+                    <div class="empty">
+                        Bado hakuna post. Kuwa wa kwanza ku-post.
+                    </div>
+                `;
+
+                return;
+            }
+
+            feed.innerHTML = data.posts
+                .map(renderPost)
+                .join("");
+
+        } catch (error) {
+
+            if (loading) {
+                loading.remove();
+            }
+
+            feed.innerHTML = `
+                <div class="error">
+                    Imeshindikana kupakia Feed.
+                    Jaribu tena.
+                </div>
+            `;
+
+            console.error(error);
+
+        }
+
+    }
+
+
+    function updateBadge(count) {
+
+        const safeCount =
+            Number.isFinite(Number(count))
+                ? Math.max(0, Number(count))
+                : 0;
+
+        if (safeCount <= 0) {
+
+            notificationBadge.classList.add("hidden");
+            notificationBadge.textContent = "0";
+
+            return;
+        }
+
+        notificationBadge.classList.remove("hidden");
+
+        notificationBadge.textContent =
+            safeCount > 99
+                ? "99+"
+                : String(safeCount);
+
+    }
+
+
+    async function loadUnreadCount() {
+
+        try {
+
+            const response = await fetch(
+                "{{ url_for('user_feed.get_unread_notification_count') }}",
+                {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            updateBadge(data.unread_count);
+
+        } catch (error) {
+
+            console.error(
+                "Unread notification count failed:",
+                error
+            );
+
+        }
+
+    }
+
+
+    function renderNotification(notification) {
+
+        const actor =
+            notification.actor || {};
+
+        const name =
+            escapeHtml(actor.full_name || "Mercfy User");
+
+        const message =
+            escapeHtml(
+                notification.message ||
+                `${name} amekufanyia action.`
+            );
+
+        const time =
+            formatDate(notification.created_at);
+
+        const avatar =
+            actor.profile_image_url
+                ? `<img
+                    src="${escapeHtml(
+                        actor.profile_image_url
+                    )}"
+                    alt="Profile"
+                  >`
+                : escapeHtml(
+                    (actor.full_name || "M")
+                        .trim()
+                        .charAt(0)
+                        .toUpperCase()
+                );
+
+        const unreadClass =
+            notification.is_read
+                ? ""
+                : "unread";
+
+        const dot =
+            notification.is_read
+                ? ""
+                : `<span
+                    class="unread-dot"
+                    aria-label="Unread"
+                  ></span>`;
+
+        return `
+            <button
+                type="button"
+                class="notification-item ${unreadClass}"
+                data-notification-id="${escapeHtml(
+                    notification.id
+                )}"
+                data-read="${notification.is_read ? "1" : "0"}"
+            >
+
+                <div class="notification-avatar">
+                    ${avatar}
+                </div>
+
+                <div class="notification-body">
+
+                    <div class="notification-message">
+                        ${message}
+                    </div>
+
+                    <div class="notification-time">
+                        ${time}
+                    </div>
+
+                </div>
+
+                ${dot}
+
+            </button>
+        `;
+
+    }
+
+
+    async function loadNotifications() {
+
+        notificationList.innerHTML = `
+            <div class="notification-loading">
+                Inapakia notifications...
+            </div>
+        `;
+
+        try {
+
+            const response = await fetch(
+                "{{ url_for('user_feed.get_notifications') }}",
+                {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Notifications request failed"
+                );
+            }
+
+            const data = await response.json();
+
+            if (
+                !data.notifications ||
+                data.notifications.length === 0
+            ) {
+
+                notificationList.innerHTML = `
+                    <div class="notification-empty">
+                        Hakuna notifications kwa sasa.
+                    </div>
+                `;
+
+                return;
+            }
+
+            notificationList.innerHTML =
+                data.notifications
+                    .map(renderNotification)
+                    .join("");
+
+        } catch (error) {
+
+            notificationList.innerHTML = `
+                <div class="notification-error">
+                    Imeshindikana kupakia notifications.
+                </div>
+            `;
+
+            console.error(error);
+
+        }
+
+    }
+
+
+    async function markNotificationRead(
+        notificationId,
+        element
+    ) {
+
+        try {
+
+            const response = await fetch(
+                `/api/user/notifications/${encodeURIComponent(
+                    notificationId
+                )}/read`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Mark notification read failed"
+                );
+            }
+
+            element.classList.remove("unread");
+            element.dataset.read = "1";
+
+            const dot =
+                element.querySelector(".unread-dot");
+
+            if (dot) {
+                dot.remove();
+            }
+
+            await loadUnreadCount();
+
+        } catch (error) {
+
+            console.error(
+                "Mark notification read failed:",
+                error
+            );
+
+        }
+
+    }
+
+
+    async function markAllNotificationsRead() {
+
+        markAllButton.disabled = true;
+
+        try {
+
+            const response = await fetch(
+                "{{ url_for('user_feed.mark_all_notifications_read') }}",
+                {
+                    method: "POST",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Mark all notifications failed"
+                );
+            }
+
+            const items =
+                notificationList.querySelectorAll(
+                    ".notification-item"
+                );
+
+            items.forEach(function (item) {
+
+                item.classList.remove("unread");
+                item.dataset.read = "1";
+
+                const dot =
+                    item.querySelector(".unread-dot");
+
+                if (dot) {
+                    dot.remove();
+                }
+
+            });
+
+            updateBadge(0);
+
+        } catch (error) {
+
+            console.error(
+                "Mark all notifications failed:",
+                error
+            );
+
+        } finally {
+
+            markAllButton.disabled = false;
+
+        }
+
+    }
+
+
+    notificationButton.addEventListener(
+        "click",
+        async function (event) {
+
+            event.stopPropagation();
+
+            const isOpen =
+                notificationPanel.classList.contains("open");
+
+            if (isOpen) {
+
+                notificationPanel.classList.remove("open");
+
+                notificationButton.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+
+                return;
+            }
+
+            notificationPanel.classList.add("open");
+
+            notificationButton.setAttribute(
+                "aria-expanded",
+                "true"
+            );
+
+            await loadNotifications();
+
+        }
+    );
+
+
+    notificationClose.addEventListener(
+        "click",
+        function () {
+
+            notificationPanel.classList.remove("open");
+
+            notificationButton.setAttribute(
+                "aria-expanded",
+                "false"
+            );
+
+        }
+    );
+
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            if (
+                !notificationPanel.contains(event.target) &&
+                !notificationButton.contains(event.target)
+            ) {
+
+                notificationPanel.classList.remove(
+                    "open"
+                );
+
+                notificationButton.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+
+            }
+
+        }
+    );
+
+
+    notificationList.addEventListener(
+        "click",
+        async function (event) {
+
+            const item =
+                event.target.closest(
+                    ".notification-item"
+                );
+
+            if (!item) {
+                return;
+            }
+
+            const notificationId =
+                item.dataset.notificationId;
+
+            if (!notificationId) {
+                return;
+            }
+
+            if (item.dataset.read === "1") {
+                return;
+            }
+
+            await markNotificationRead(
+                notificationId,
+                item
+            );
+
+        }
+    );
+
+
+    markAllButton.addEventListener(
+        "click",
+        async function (event) {
+
+            event.stopPropagation();
+
+            await markAllNotificationsRead();
+
+        }
+    );
+
+
+    form.addEventListener(
+        "submit",
+        function () {
+
+            postButton.disabled = true;
+            postButton.textContent = "Inatuma...";
+
+        }
+    );
+
+
+    loadFeed();
+    loadUnreadCount();
+
+    setInterval(
+        loadUnreadCount,
+        30000
+    );
+
+})();
+</script>
+
+</body>
+</html>
+
+<style>
+.composer-box {
+    position: relative;
+}
+
+.composer-plus-wrap {
+    position: absolute !important;
+    left: 12px !important;
+    bottom: 10px !important;
+    right: auto !important;
+    z-index: 20;
+}
+
+.composer-box textarea,
+#content {
+    padding-left: 48px !important;
+    padding-bottom: 42px !important;
+}
+
+.composer-bottom {
+    padding-left: 0;
+}
+</style>
+<style>
+/* FINAL COMPOSER LAYOUT */
+.composer-box {
+    position: relative !important;
+    padding-bottom: 52px !important;
+}
+
+.composer-bottom-inside {
+    position: absolute !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    pointer-events: none !important;
+}
+
+.composer-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    pointer-events: auto !important;
+}
+
+.composer-action {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    color: #65676b !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+}
+
+.composer-action:hover {
+    background: #f0f2f5 !important;
+}
+
+.composer-send {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: #229ED9 !important;
+    color: #fff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+.composer-send:hover {
+    opacity: .9 !important;
+}
+
+.composer-bottom {
+    display: none !important;
+}
+</style>

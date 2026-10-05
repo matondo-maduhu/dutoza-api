@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user[1] }} — Mercfy</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f6f8;
+            color: #111827;
+        }
+
+        .topbar {
+            height: 64px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .brand {
+            color: #111827;
+            text-decoration: none;
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .back-link {
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            color: #111827;
+        }
+
+        .profile-wrap {
+            width: min(720px, calc(100% - 24px));
+            margin: 24px auto;
+        }
+
+        .profile-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .cover {
+            height: 190px;
+            background: #e5e7eb;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .profile-content {
+            padding: 0 24px 28px;
+        }
+
+        .avatar {
+            width: 104px;
+            height: 104px;
+            margin-top: -52px;
+            border-radius: 50%;
+            border: 5px solid #ffffff;
+            background: #d1d5db;
+            object-fit: cover;
+            display: block;
+        }
+
+        .avatar-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 40px;
+        }
+
+        .name-row {
+            margin-top: 12px;
+        }
+
+        .name {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .username {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 15px;
+        }
+
+        .bio {
+            margin: 18px 0;
+            line-height: 1.6;
+            color: #374151;
+            white-space: pre-wrap;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin: 18px 0 22px;
+        }
+
+        .subscribe-btn,
+        .subscribed-btn {
+            border: 0;
+            border-radius: 9px;
+            padding: 11px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .subscribe-btn {
+            background: #111827;
+            color: #ffffff;
+        }
+
+        .subscribed-btn {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .subscribe-btn:hover,
+        .subscribed-btn:hover {
+            opacity: 0.9;
+        }
+
+        .stats {
+            display: flex;
+            gap: 28px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .joined {
+            margin-top: 22px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            .topbar {
+                padding: 0 14px;
+            }
+
+            .profile-wrap {
+                width: calc(100% - 16px);
+                margin-top: 16px;
+            }
+
+            .cover {
+                height: 150px;
+            }
+
+            .profile-content {
+                padding: 0 18px 24px;
+            }
+
+            .avatar {
+                width: 88px;
+                height: 88px;
+                margin-top: -44px;
+            }
+
+            .name {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <a href="{{ url_for('user_feed.feed') }}" class="brand">
+        Mercfy
+    </a>
+
+    <a href="{{ url_for('user_feed.feed') }}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i>
+        Feed
+    </a>
+</header>
+
+<main class="profile-wrap">
+
+    <section class="profile-card">
+
+        {% if user[5] %}
+            <div
+                class="cover"
+                style="background-image: url('{{ user[5] }}');"
+            ></div>
+        {% else %}
+            <div class="cover"></div>
+        {% endif %}
+
+        <div class="profile-content">
+
+            {% if user[4] %}
+                <img
+                    class="avatar"
+                    src="{{ user[4] }}"
+                    alt="Picha ya {{ user[1] }}"
+                >
+            {% else %}
+                <div class="avatar avatar-placeholder">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            {% endif %}
+
+            <div class="name-row">
+                <h1 class="name">{{ user[1] }}</h1>
+                <p class="username">@{{ user[2] }}</p>
+            </div>
+
+            {% if user[6] %}
+                <p class="bio">{{ user[6] }}</p>
+            {% endif %}
+
+            <div class="actions">
+                {% if is_subscribed %}
+                    <form
+                        method="POST"
+                        action="{{ url_for('user_auth.unsubscribe_user', user_id=user[0]) }}"
+                    >
+                        <button class="subscribed-btn" type="submit">
+                            <i class="fa-solid fa-bell-slash"></i>
+                            Unsubscribe
+                        </button>
+                    </form>
+                {% else %}
+                    <form
+                        method="POST"
+                        action="{{ url_for('user_auth.subscribe_user', user_id=user[0]) }}"
+                    >
+                        <button class="subscribe-btn" type="submit">
+                            <i class="fa-solid fa-bell"></i>
+                            Subscribe
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+
+            <div class="stats">
+
+                <div class="stat">
+                    <span class="stat-number">
+                        {{ subscribers_count }}
+                    </span>
+                    <span class="stat-label">
+                        Subscribers
+                    </span>
+                </div>
+
+                <div class="stat">
+                    <span class="stat-number">
+                        {{ subscriptions_count }}
+                    </span>
+                    <span class="stat-label">
+                        Subscriptions
+                    </span>
+                </div>
+
+            </div>
+
+            <p class="joined">
+                <i class="fa-regular fa-calendar"></i>
+                Amejiunga Mercfy
+                {{ user[8].strftime('%d %B %Y') }}
+            </p>
+
+        </div>
+    </section>
+
+</main>
+
+</body>
+</html>

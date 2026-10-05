@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#111827">
+    <title>Post Music — Mercfy</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                         Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            color: #111827;
+        }
+
+        button,
+        input,
+        textarea,
+        select {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .mc-page {
+            min-height: 100vh;
+            padding: 24px 14px 50px;
+        }
+
+        .mc-container {
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .mc-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .mc-back {
+            width: 42px;
+            height: 42px;
+            border: 0;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #111827;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+            font-size: 20px;
+        }
+
+        .mc-header-text h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 750;
+        }
+
+        .mc-header-text p {
+            margin: 4px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .mc-card {
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.07);
+            overflow: hidden;
+        }
+
+        .mc-section {
+            padding: 20px;
+            border-bottom: 1px solid #edf0f3;
+        }
+
+        .mc-section:last-child {
+            border-bottom: 0;
+        }
+
+        .mc-section-title {
+            margin: 0 0 5px;
+            font-size: 17px;
+            font-weight: 750;
+        }
+
+        .mc-section-subtitle {
+            margin: 0 0 16px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .mc-audio-drop {
+            position: relative;
+            border: 2px dashed #d1d5db;
+            border-radius: 16px;
+            padding: 30px 18px;
+            text-align: center;
+            background: #fafafa;
+            transition: .2s ease;
+        }
+
+        .mc-audio-drop.active {
+            border-color: #111827;
+            background: #f3f4f6;
+        }
+
+        .mc-audio-icon {
+            width: 62px;
+            height: 62px;
+            margin: 0 auto 12px;
+            border-radius: 50%;
+            background: #111827;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 27px;
+        }
+
+        .mc-audio-drop h2 {
+            margin: 0 0 7px;
+            font-size: 18px;
+        }
+
+        .mc-audio-drop p {
+            margin: 0 0 16px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .mc-file-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 20px;
+            border: 0;
+            border-radius: 11px;
+            background: #111827;
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        #audioFile {
+            display: none;
+        }
+
+        .mc-audio-preview {
+            display: none;
+            margin-top: 18px;
+            border-radius: 15px;
+            padding: 16px;
+            background: #111827;
+            color: #ffffff;
+        }
+
+        .mc-audio-preview.show {
+            display: block;
+        }
+
+        .mc-audio-top {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            margin-bottom: 13px;
+        }
+
+        .mc-audio-art {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            background: #374151;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .mc-audio-name {
+            min-width: 0;
+        }
+
+        .mc-audio-name strong {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        .mc-audio-name span {
+            display: block;
+            margin-top: 3px;
+            color: #cbd5e1;
+            font-size: 12px;
+        }
+
+        .mc-audio-player {
+            width: 100%;
+            height: 42px;
+        }
+
+        .mc-remove-audio {
+            margin-top: 10px;
+            border: 0;
+            background: transparent;
+            color: #fecaca;
+            font-size: 13px;
+            padding: 5px 0;
+        }
+
+        .mc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .mc-field {
+            margin-bottom: 15px;
+        }
+
+        .mc-field.full {
+            grid-column: 1 / -1;
+        }
+
+        .mc-field label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .mc-required {
+            color: #dc2626;
+        }
+
+        .mc-field input,
+        .mc-field textarea,
+        .mc-field select {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 11px;
+            padding: 12px 13px;
+            outline: none;
+            background: #ffffff;
+            color: #111827;
+            transition: .15s ease;
+        }
+
+        .mc-field input,
+        .mc-field select {
+            min-height: 46px;
+        }
+
+        .mc-field textarea {
+            min-height: 105px;
+            resize: vertical;
+        }
+
+        .mc-field input:focus,
+        .mc-field textarea:focus,
+        .mc-field select:focus {
+            border-color: #111827;
+            box-shadow: 0 0 0 3px rgba(17,24,39,.08);
+        }
+
+        .mc-hint {
+            margin-top: 5px;
+            color: #6b7280;
+            font-size: 11px;
+        }
+
+        .mc-cover-layout {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .mc-cover-preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 15px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: #9ca3af;
+            font-size: 42px;
+        }
+
+        .mc-cover-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #coverFile {
+            display: none;
+        }
+
+        .mc-cover-btn {
+            display: inline-flex;
+            min-height: 44px;
+            align-items: center;
+            justify-content: center;
+            padding: 0 17px;
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .mc-preview-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        .mc-preview-header {
+            padding: 13px 15px;
+            border-bottom: 1px solid #edf0f3;
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .mc-post-preview {
+            padding: 16px;
+        }
+
+        .mc-profile-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mc-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #374151;
+        }
+
+        .mc-profile-name {
+            font-weight: 750;
+            font-size: 14px;
+        }
+
+        .mc-profile-time {
+            color: #9ca3af;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .mc-preview-title {
+            margin: 17px 0 5px;
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .mc-preview-artist {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .mc-preview-description {
+            margin: 13px 0;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .mc-preview-audio {
+            margin-top: 13px;
+            padding: 13px;
+            border-radius: 13px;
+            background: #f3f4f6;
+        }
+
+        .mc-preview-audio audio {
+            width: 100%;
+            height: 42px;
+        }
+
+        .mc-preview-cover {
+            display: none;
+            width: 100%;
+            max-height: 360px;
+            object-fit: cover;
+            border-radius: 13px;
+            margin-top: 13px;
+        }
+
+        .mc-preview-cover.show {
+            display: block;
+        }
+
+        .mc-preview-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 13px;
+        }
+
+        .mc-chip {
+            padding: 6px 9px;
+            border-radius: 999px;
+            background: #f3f4f6;
+            color: #4b5563;
+            font-size: 11px;
+        }
+
+        .mc-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .mc-cancel,
+        .mc-submit {
+            min-height: 46px;
+            padding: 0 20px;
+            border-radius: 11px;
+            font-weight: 750;
+        }
+
+        .mc-cancel {
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            color: #374151;
+        }
+
+        .mc-submit {
+            border: 0;
+            background: #111827;
+            color: #ffffff;
+        }
+
+        .mc-submit:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .mc-message {
+            display: none;
+            margin-bottom: 15px;
+            padding: 12px 14px;
+            border-radius: 11px;
+            font-size: 13px;
+        }
+
+        .mc-message.show {
+            display: block;
+        }
+
+        .mc-message.error {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .mc-message.success {
+            background: #f0fdf4;
+            color: #166534;
+        }
+
+        .mc-submit.loading {
+            pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
+            .mc-page {
+                padding: 12px 8px 35px;
+            }
+
+            .mc-header-text h1 {
+                font-size: 21px;
+            }
+
+            .mc-section {
+                padding: 16px;
+            }
+
+            .mc-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .mc-field.full {
+                grid-column: auto;
+            }
+
+            .mc-cover-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .mc-cover-preview {
+                width: 120px;
+                height: 120px;
+            }
+
+            .mc-actions {
+                flex-direction: column-reverse;
+            }
+
+            .mc-cancel,
+            .mc-submit {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="mc-page">
+    <div class="mc-container">
+
+        <div class="mc-header">
+            <button type="button" class="mc-back" id="backBtn" aria-label="Rudi">
+                ←
+            </button>
+
+            <div class="mc-header-text">
+                <h1>Post Music</h1>
+                <p>Shiriki wimbo wako kwenye Mercfy</p>
+            </div>
+        </div>
+
+        <div id="messageBox" class="mc-message"></div>
+
+        <form id="musicComposerForm" class="mc-card" enctype="multipart/form-data">
+
+            <!-- AUDIO -->
+            <section class="mc-section">
+                <h2 class="mc-section-title">Wimbo</h2>
+                <p class="mc-section-subtitle">
+                    Chagua audio ya wimbo unaotaka kupost.
+                </p>
+
+                <div class="mc-audio-drop" id="audioDrop">
+
+                    <div class="mc-audio-icon">♫</div>
+
+                    <h2>Ongeza audio ya wimbo</h2>
+
+                    <p>
+                        MP3, WAV, M4A, AAC, OGG na audio nyingine zinazokubalika.
+                    </p>
+
+                    <label for="audioFile" class="mc-file-btn">
+                        Chagua Audio
+                    </label>
+
+                    <input
+                        type="file"
+                        id="audioFile"
+                        name="audio"
+                        accept="audio/*"
+                    >
+
+                    <div class="mc-audio-preview" id="audioPreview">
+
+                        <div class="mc-audio-top">
+
+                            <div class="mc-audio-art">♫</div>
+
+                            <div class="mc-audio-name">
+                                <strong id="audioFileName">Audio</strong>
+                                <span id="audioFileInfo">0:00</span>
+                            </div>
+
+                        </div>
+
+                        <audio
+                            id="audioPlayer"
+                            class="mc-audio-player"
+                            controls
+                            preload="metadata"
+                        ></audio>
+
+                        <button
+                            type="button"
+                            class="mc-remove-audio"
+                            id="removeAudio"
+                        >
+                            Ondoa audio
+                        </button>
+
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- BASIC INFORMATION -->
+            <section class="mc-section">
+
+                <h2 class="mc-section-title">Taarifa za wimbo</h2>
+
+                <p class="mc-section-subtitle">
+                    Weka taarifa zitakazotumika kwenye wimbo wako.
+                </p>
+
+                <div class="mc-grid">
+
+                    <div class="mc-field">
+                        <label for="title">
+                            Jina la wimbo <span class="mc-required">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            maxlength="200"
+                            placeholder="Mfano: Safari Yangu"
+                            required
+                        >
+                    </div>
+
+
+                    <div class="mc-field">
+                        <label for="artist">
+                            Msanii
+                        </label>
+
+                        <input
+                            type="text"
+                            id="artist"
+                            name="artist"
+                            maxlength="150"
+                            placeholder="Jina la msanii"
+                        >
+                    </div>
+
+
+                    <div class="mc-field">
+                        <label for="album">
+                            Album
+                        </label>
+
+                        <input
+                            type="text"
+                            id="album"
+                            name="album"
+                            maxlength="150"
+                            placeholder="Jina la album"
+                        >
+                    </div>
+
+
+                    <div class="mc-field">
+                        <label for="genre">
+                            Category / Genre
+                        </label>
+
+                        <input
+                            type="text"
+                            id="genre"
+                            name="genre"
+                            maxlength="100"
+                            placeholder="Mfano: Bongo Flava"
+                        >
+
+                        <div class="mc-hint">
+                            Unaweza kuandika category mpya.
+                        </div>
+                    </div>
+
+
+                    <div class="mc-field">
+                        <label for="language">
+                            Lugha
+                        </label>
+
+                        <select id="language" name="language">
+                            <option value="sw">Swahili</option>
+                            <option value="en">English</option>
+                            <option value="mixed">Mixed</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+
+                    <div class="mc-field">
+                        <label for="releaseDate">
+                            Release date
+                        </label>
+
+                        <input
+                            type="date"
+                            id="releaseDate"
+                            name="release_date"
+                        >
+                    </div>
+
+
+                    <div class="mc-field full">
+                        <label for="description">
+                            Maelezo
+                        </label>
+
+                        <textarea
+                            id="description"
+                            name="description"
+                            maxlength="3000"
+                            placeholder="Andika maelezo kuhusu wimbo huu..."
+                        ></textarea>
+                    </div>
+
+
+                    <div class="mc-field full">
+                        <label for="lyrics">
+                            Lyrics
+                        </label>
+
+                        <textarea
+                            id="lyrics"
+                            name="lyrics"
+                            maxlength="20000"
+                            placeholder="Weka lyrics za wimbo kama unazo..."
+                        ></textarea>
+
+                        <div class="mc-hint">
+                            Hii ni optional.
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- COVER -->
+            <section class="mc-section">
+
+                <h2 class="mc-section-title">Cover ya wimbo</h2>
+
+                <p class="mc-section-subtitle">
+                    Ongeza picha itakayoonekana pamoja na wimbo.
+                </p>
+
+                <div class="mc-cover-layout">
+
+                    <div class="mc-cover-preview" id="coverPreview">
+                        ♪
+                    </div>
+
+                    <div>
+
+                        <label for="coverFile" class="mc-cover-btn">
+                            Chagua Cover
+                        </label>
+
+                        <input
+                            type="file"
+                            id="coverFile"
+                            name="cover"
+                            accept="image/*"
+                        >
+
+                        <div class="mc-hint">
+                            JPG, PNG au WebP. Cover itahakikiwa kabla ya kuchapishwa.
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- POST PREVIEW -->
+            <section class="mc-section">
+
+                <h2 class="mc-section-title">Preview ya post</h2>
+
+                <p class="mc-section-subtitle">
+                    Hivi ndivyo post yako itakavyoonekana.
+                </p>
+
+                <div class="mc-preview-box">
+
+                    <div class="mc-preview-header">
+                        POST PREVIEW
+                    </div>
+
+                    <div class="mc-post-preview">
+
+                        <div class="mc-profile-row">
+
+                            <div class="mc-avatar" id="previewAvatar">
+                                M
+                            </div>
+
+                            <div>
+                                <div class="mc-profile-name" id="previewUserName">
+                                    You
+                                </div>
+
+                                <div class="mc-profile-time">
+                                    Just now
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <div class="mc-preview-title" id="previewTitle">
+                            Jina la wimbo
+                        </div>
+
+                        <div class="mc-preview-artist" id="previewArtist">
+                            Msanii
+                        </div>
+
+
+                        <div
+                            class="mc-preview-description"
+                            id="previewDescription"
+                        >
+                            Maelezo ya wimbo yataonekana hapa.
+                        </div>
+
+
+                        <img
+                            id="previewCover"
+                            class="mc-preview-cover"
+                            alt="Song cover preview"
+                        >
+
+
+                        <div class="mc-preview-audio">
+
+                            <audio
+                                id="previewAudio"
+                                controls
+                                preload="metadata"
+                            ></audio>
+
+                        </div>
+
+
+                        <div class="mc-preview-meta">
+
+                            <span
+                                class="mc-chip"
+                                id="previewGenre"
+                            >
+                                Genre
+                            </span>
+
+                            <span
+                                class="mc-chip"
+                                id="previewLanguage"
+                            >
+                                Swahili
+                            </span>
+
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ACTIONS -->
+            <section class="mc-section">
+
+                <div class="mc-actions">
+
+                    <button
+                        type="button"
+                        class="mc-cancel"
+                        id="cancelBtn"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="mc-submit"
+                        id="submitBtn"
+                        disabled
+                    >
+                        Post Music
+                    </button>
+
+                </div>
+
+            </section>
+
+        </form>
+
+    </div>
+</div>
+
+
+<script>
+(function () {
+    "use strict";
+
+    const form = document.getElementById("musicComposerForm");
+
+    const audioFile = document.getElementById("audioFile");
+    const audioPlayer = document.getElementById("audioPlayer");
+    const audioPreview = document.getElementById("audioPreview");
+    const audioFileName = document.getElementById("audioFileName");
+    const audioFileInfo = document.getElementById("audioFileInfo");
+    const removeAudio = document.getElementById("removeAudio");
+    const audioDrop = document.getElementById("audioDrop");
+
+    const coverFile = document.getElementById("coverFile");
+    const coverPreview = document.getElementById("coverPreview");
+
+    const title = document.getElementById("title");
+    const artist = document.getElementById("artist");
+    const genre = document.getElementById("genre");
+    const language = document.getElementById("language");
+    const description = document.getElementById("description");
+
+    const previewTitle = document.getElementById("previewTitle");
+    const previewArtist = document.getElementById("previewArtist");
+    const previewGenre = document.getElementById("previewGenre");
+    const previewLanguage = document.getElementById("previewLanguage");
+    const previewDescription = document.getElementById("previewDescription");
+    const previewAudio = document.getElementById("previewAudio");
+    const previewCover = document.getElementById("previewCover");
+
+    const submitBtn = document.getElementById("submitBtn");
+    const messageBox = document.getElementById("messageBox");
+
+    let audioObjectUrl = null;
+    let coverObjectUrl = null;
+
+
+    function showMessage(message, type) {
+        messageBox.textContent = message;
+        messageBox.className = "mc-message show " + type;
+    }
+
+
+    function hideMessage() {
+        messageBox.textContent = "";
+        messageBox.className = "mc-message";
+    }
+
+
+    function formatTime(seconds) {
+        if (!Number.isFinite(seconds) || seconds < 0) {
+            return "0:00";
+        }
+
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+
+        return mins + ":" + String(secs).padStart(2, "0");
+    }
+
+
+    function formatFileSize(bytes) {
+        if (!Number.isFinite(bytes) || bytes <= 0) {
+            return "0 KB";
+        }
+
+        if (bytes < 1024 * 1024) {
+            return Math.round(bytes / 1024) + " KB";
+        }
+
+        return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    }
+
+
+    function validateAudio(file) {
+        if (!file) {
+            return false;
+        }
+
+        if (!file.type.startsWith("audio/")) {
+            showMessage(
+                "Tafadhali chagua file ya audio.",
+                "error"
+            );
+
+            return false;
+        }
+
+        return true;
+    }
+
+
+    function updateSubmitState() {
+        const hasAudio = audioFile.files && audioFile.files.length > 0;
+        const hasTitle = title.value.trim().length > 0;
+
+        submitBtn.disabled = !(hasAudio && hasTitle);
+    }
+
+
+    function updatePostPreview() {
+        previewTitle.textContent =
+            title.value.trim() || "Jina la wimbo";
+
+        previewArtist.textContent =
+            artist.value.trim() || "Msanii";
+
+        previewGenre.textContent =
+            genre.value.trim() || "Genre";
+
+        const languageText = {
+            sw: "Swahili",
+            en: "English",
+            mixed: "Mixed",
+            other: "Other"
+        };
+
+        previewLanguage.textContent =
+            languageText[language.value] || "Other";
+
+        previewDescription.textContent =
+            description.value.trim() ||
+            "Maelezo ya wimbo yataonekana hapa.";
+    }
+
+
+    audioFile.addEventListener("change", function () {
+
+        hideMessage();
+
+        const file = audioFile.files[0];
+
+        if (!validateAudio(file)) {
+            audioFile.value = "";
+            updateSubmitState();
+            return;
+        }
+
+        if (audioObjectUrl) {
+            URL.revokeObjectURL(audioObjectUrl);
+        }
+
+        audioObjectUrl = URL.createObjectURL(file);
+
+        audioPlayer.src = audioObjectUrl;
+        previewAudio.src = audioObjectUrl;
+
+        audioFileName.textContent = file.name;
+
+        audioFileInfo.textContent =
+            formatFileSize(file.size);
+
+        audioPreview.classList.add("show");
+
+        audioPlayer.onloadedmetadata = function () {
+            audioFileInfo.textContent =
+                formatTime(audioPlayer.duration) +
+                " • " +
+                formatFileSize(file.size);
+        };
+
+        updateSubmitState();
+    });
+
+
+    removeAudio.addEventListener("click", function () {
+
+        if (audioObjectUrl) {
+            URL.revokeObjectURL(audioObjectUrl);
+            audioObjectUrl = null;
+        }
+
+        audioPlayer.pause();
+        previewAudio.pause();
+
+        audioPlayer.removeAttribute("src");
+        previewAudio.removeAttribute("src");
+
+        audioPlayer.load();
+        previewAudio.load();
+
+        audioFile.value = "";
+
+        audioPreview.classList.remove("show");
+
+        updateSubmitState();
+    });
+
+
+    coverFile.addEventListener("change", function () {
+
+        const file = coverFile.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+            showMessage(
+                "Tafadhali chagua picha ya cover.",
+                "error"
+            );
+
+            coverFile.value = "";
+            return;
+        }
+
+        if (coverObjectUrl) {
+            URL.revokeObjectURL(coverObjectUrl);
+        }
+
+        coverObjectUrl = URL.createObjectURL(file);
+
+        coverPreview.innerHTML = "";
+
+        const img = document.createElement("img");
+        img.src = coverObjectUrl;
+        img.alt = "Cover preview";
+
+        coverPreview.appendChild(img);
+
+        previewCover.src = coverObjectUrl;
+        previewCover.classList.add("show");
+    });
+
+
+    [
+        title,
+        artist,
+        genre,
+        language,
+        description
+    ].forEach(function (element) {
+
+        element.addEventListener("input", function () {
+            updatePostPreview();
+            updateSubmitState();
+        });
+
+        element.addEventListener("change", function () {
+            updatePostPreview();
+            updateSubmitState();
+        });
+    });
+
+
+    audioDrop.addEventListener("dragover", function (event) {
+        event.preventDefault();
+        audioDrop.classList.add("active");
+    });
+
+
+    audioDrop.addEventListener("dragleave", function () {
+        audioDrop.classList.remove("active");
+    });
+
+
+    audioDrop.addEventListener("drop", function (event) {
+
+        event.preventDefault();
+        audioDrop.classList.remove("active");
+
+        const files = event.dataTransfer.files;
+
+        if (!files || !files.length) {
+            return;
+        }
+
+        const file = files[0];
+
+        if (!validateAudio(file)) {
+            return;
+        }
+
+        try {
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            audioFile.files = transfer.files;
+
+            audioFile.dispatchEvent(
+                new Event("change", { bubbles: true })
+            );
+        } catch (error) {
+            showMessage(
+                "Tafadhali tumia kitufe cha Chagua Audio.",
+                "error"
+            );
+        }
+    });
+
+
+    form.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+        hideMessage();
+
+        const file = audioFile.files[0];
+
+        if (!file) {
+            showMessage(
+                "Chagua audio ya wimbo kwanza.",
+                "error"
+            );
+            return;
+        }
+
+        if (!title.value.trim()) {
+            showMessage(
+                "Weka jina la wimbo.",
+                "error"
+            );
+            title.focus();
+            return;
+        }
+
+        const formData = new FormData(form);
+
+        submitBtn.disabled = true;
+        submitBtn.classList.add("loading");
+        submitBtn.textContent = "Inatuma...";
+
+        try {
+
+            /*
+             * Backend endpoint itaunganishwa hapa.
+             *
+             * Kwa sasa UI na preview vinafanya kazi bila
+             * kutuma data kwenye server.
+             *
+             * Baada ya kutengeneza user_music.py,
+             * endpoint itakuwa:
+             *
+             * POST /api/user/music
+             */
+
+            const response = await fetch(
+                "/api/user/music",
+                {
+                    method: "POST",
+                    body: formData,
+                    credentials: "same-origin"
+                }
+            );
+
+            let result = {};
+
+            try {
+                result = await response.json();
+            } catch (jsonError) {
+                result = {};
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                    "Imeshindikana kutuma wimbo."
+                );
+            }
+
+            showMessage(
+                result.message ||
+                "Wimbo umetumwa na unasubiri approval.",
+                "success"
+            );
+
+            submitBtn.textContent = "Posted";
+
+            setTimeout(function () {
+                window.location.href = "/feed";
+            }, 1200);
+
+        } catch (error) {
+
+            showMessage(
+                error.message ||
+                "Kuna tatizo limetokea wakati wa kutuma wimbo.",
+                "error"
+            );
+
+            submitBtn.disabled = false;
+            submitBtn.classList.remove("loading");
+            submitBtn.textContent = "Post Music";
+        }
+    });
+
+
+    document.getElementById("backBtn").addEventListener(
+        "click",
+        function () {
+            if (document.referrer) {
+                history.back();
+            } else {
+                window.location.href = "/feed";
+            }
+        }
+    );
+
+
+    document.getElementById("cancelBtn").addEventListener(
+        "click",
+        function () {
+            if (document.referrer) {
+                history.back();
+            } else {
+                window.location.href = "/feed";
+            }
+        }
+    );
+
+
+    window.addEventListener("beforeunload", function () {
+
+        if (audioObjectUrl) {
+            URL.revokeObjectURL(audioObjectUrl);
+        }
+
+        if (coverObjectUrl) {
+            URL.revokeObjectURL(coverObjectUrl);
+        }
+    });
+
+
+    updatePostPreview();
+    updateSubmitState();
+
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dutoza API - Music Manager</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f4f6f8;
+    color:#17202a;
+}
+
+header{
+    background:#111827;
+    color:white;
+    padding:18px 22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+}
+
+header h1{
+    margin:0;
+    font-size:22px;
+}
+
+header a{
+    color:white;
+    text-decoration:none;
+    background:#374151;
+    padding:10px 14px;
+    border-radius:8px;
+}
+
+.container{
+    width:min(1200px,94%);
+    margin:25px auto;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+    margin-bottom:25px;
+}
+
+.card{
+    background:white;
+    border-radius:14px;
+    padding:20px;
+    box-shadow:0 3px 12px rgba(0,0,0,.07);
+}
+
+.card h2{
+    margin-top:0;
+    font-size:19px;
+}
+
+input,
+textarea,
+select{
+    width:100%;
+    padding:12px;
+    margin:7px 0 12px;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+    font:inherit;
+}
+
+textarea{
+    min-height:100px;
+    resize:vertical;
+}
+
+button{
+    border:0;
+    border-radius:8px;
+    padding:12px 18px;
+    background:#111827;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.section{
+    background:white;
+    border-radius:14px;
+    padding:20px;
+    margin-bottom:25px;
+    box-shadow:0 3px 12px rgba(0,0,0,.07);
+    overflow:auto;
+}
+
+.section h2{
+    margin-top:0;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:700px;
+}
+
+th,
+td{
+    padding:11px;
+    border-bottom:1px solid #e5e7eb;
+    text-align:left;
+}
+
+th{
+    background:#f9fafb;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 9px;
+    border-radius:999px;
+    background:#dcfce7;
+    color:#166534;
+    font-size:12px;
+}
+
+.flash{
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:15px;
+}
+
+@media(max-width:800px){
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    header{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎵 Dutoza API — Music Manager</h1>
+
+    <div>
+        <a href="/admin">Dashboard</a>
+        <a href="/admin/logout">Logout</a>
+    </div>
+</header>
+
+<div class="container">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="grid">
+
+        <div class="card">
+            <h2>🎤 Add Artist</h2>
+
+            <form method="POST"
+                  action="/admin/music/artists/add">
+
+                <label>Artist name</label>
+                <input
+                    name="name"
+                    placeholder="Mfano: Dutoza Music"
+                    required
+                >
+
+                <label>Bio</label>
+                <textarea
+                    name="bio"
+                    placeholder="Maelezo kuhusu artist..."
+                ></textarea>
+
+                <label>Image URL</label>
+                <input
+                    name="image_url"
+                    placeholder="https://..."
+                >
+
+                <label>Country</label>
+                <input
+                    name="country"
+                    value="Tanzania"
+                >
+
+                <label>Language</label>
+                <select name="language">
+                    <option value="sw">Swahili</option>
+                    <option value="en">English</option>
+                </select>
+
+                <button type="submit">
+                    Add Artist
+                </button>
+
+            </form>
+        </div>
+
+
+        <div class="card">
+            <h2>💿 Add Album</h2>
+
+            <form method="POST"
+                  action="/admin/music/albums/add">
+
+                <label>Album title</label>
+                <input
+                    name="title"
+                    placeholder="Mfano: Safari"
+                    required
+                >
+
+                <label>Artist</label>
+                <select name="artist_id" required>
+
+                    <option value="">
+                        -- Chagua Artist --
+                    </option>
+
+                    {% for artist in artists %}
+                        <option value="{{ artist[0] }}">
+                            {{ artist[1] }}
+                        </option>
+                    {% endfor %}
+
+                </select>
+
+                <label>Description</label>
+                <textarea
+                    name="description"
+                    placeholder="Maelezo ya album..."
+                ></textarea>
+
+                <label>Cover URL</label>
+                <input
+                    name="cover_url"
+                    placeholder="https://..."
+                >
+
+                <label>Release date</label>
+                <input
+                    type="date"
+                    name="release_date"
+                >
+
+                <label>Language</label>
+                <select name="language">
+                    <option value="sw">Swahili</option>
+                    <option value="en">English</option>
+                </select>
+
+                <button type="submit">
+                    Add Album
+                </button>
+
+            </form>
+        </div>
+
+
+        <div class="card">
+            <h2>🎵 Add Song</h2>
+
+            <form method="POST" enctype="multipart/form-data"
+                  action="/admin/music/songs/add">
+
+                <label>Song title</label>
+                <input
+                    name="title"
+                    placeholder="Mfano: Safari Yangu"
+                    required
+                >
+
+                <label>Artist</label>
+                <select name="artist_id">
+
+                    <option value="">
+                        -- Hakuna / Chagua --
+                    </option>
+
+                    {% for artist in artists %}
+                        <option value="{{ artist[0] }}">
+                            {{ artist[1] }}
+                        </option>
+                    {% endfor %}
+
+                </select>
+
+                <label>Album</label>
+                <select name="album_id">
+
+                    <option value="">
+                        -- Hakuna / Chagua --
+                    </option>
+
+                    {% for album in albums %}
+                        <option value="{{ album[0] }}">
+                            {{ album[1] }}{% if album[3] %} — {{ album[3] }}{% endif %}
+                        </option>
+                    {% endfor %}
+
+                </select>
+
+                <label>Description</label>
+                <textarea
+                    name="description"
+                    placeholder="Maelezo ya song..."
+                ></textarea>
+
+                <label>Lyrics</label>
+                <textarea
+                    name="lyrics"
+                    placeholder="Lyrics za song..."
+                ></textarea>
+
+                <label>Audio File</label>
+                <input
+                    type="file"
+                    name="audio_file"
+                    accept="audio/*"
+                >
+                <small>
+                    Chagua audio ya aina yoyote inayokubalika na browser.
+                </small>
+
+                <label>Audio URL (optional)</label>
+                <input
+                    name="audio_url"
+                    placeholder="https://..."
+                >
+
+                <label>Cover Image</label>
+                <input
+                    type="file"
+                    name="cover_file"
+                    accept="image/*"
+                >
+                <small>
+                    Chagua picha ya cover ya song.
+                </small>
+
+                <label>Cover URL (optional)</label>
+                <input
+                    name="cover_url"
+                    placeholder="https://..."
+                >
+
+                <label>Duration (seconds)</label>
+                <input
+                    type="number"
+                    name="duration_seconds"
+                    min="0"
+                    placeholder="240"
+                >
+
+                <label>Track number</label>
+                <input
+                    type="number"
+                    name="track_number"
+                    min="1"
+                    placeholder="1"
+                >
+
+                <label>Genre</label>
+                <input
+                    name="genre"
+                    placeholder="Bongo Flava"
+                >
+
+                <label>Language</label>
+                <select name="language">
+                    <option value="sw">Swahili</option>
+                    <option value="en">English</option>
+                </select>
+
+                <label>Release date</label>
+                <input
+                    type="date"
+                    name="release_date"
+                >
+
+                <button type="submit">
+                    Add Song
+                </button>
+
+            </form>
+        </div>
+
+    </div>
+
+
+    <div class="section">
+        <h2>🎤 Artists</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Country</th>
+                    <th>Language</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for artist in artists %}
+                <tr>
+                    <td>{{ artist[0] }}</td>
+                    <td>{{ artist[1] }}</td>
+                    <td>{{ artist[3] or '-' }}</td>
+                    <td>{{ artist[4] }}</td>
+                    <td>
+                        <span class="badge">
+                            {{ artist[5] }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">
+                        Hakuna artists bado.
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="section">
+        <h2>💿 Albums</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Album</th>
+                    <th>Artist</th>
+                    <th>Release</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for album in albums %}
+                <tr>
+                    <td>{{ album[0] }}</td>
+                    <td>{{ album[1] }}</td>
+                    <td>{{ album[3] or '-' }}</td>
+                    <td>{{ album[4] or '-' }}</td>
+                    <td>
+                        <span class="badge">
+                            {{ album[5] }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">
+                        Hakuna albums bado.
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="section">
+        <h2>🎵 Songs</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Song</th>
+                    <th>Artist</th>
+                    <th>Album</th>
+                    <th>Genre</th>
+                    <th>Language</th>
+                    <th>Audio</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for song in songs %}
+                <tr>
+                    <td>{{ song[0] }}</td>
+                    <td>{{ song[1] }}</td>
+                    <td>{{ song[2] or '-' }}</td>
+                    <td>{{ song[3] or '-' }}</td>
+                    <td>{{ song[4] or '-' }}</td>
+                    <td>{{ song[5] }}</td>
+
+                    <td>
+                        {% if song[7] %}
+                            <span class="badge">
+                                Available
+                            </span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <span class="badge">
+                            {{ song[6] }}
+                        </span>
+                    </td>
+                </tr>
+
+                {% else %}
+
+                <tr>
+                    <td colspan="8">
+                        Hakuna songs bado.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>

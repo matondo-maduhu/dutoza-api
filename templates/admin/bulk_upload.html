@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Dutoza API - CSV Upload</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f5f7fa;
+            font-family: Arial, sans-serif;
+            color: #111827;
+        }
+
+        header {
+            background: #111827;
+            color: white;
+            padding: 18px;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            width: 94%;
+            max-width: 800px;
+            margin: 30px auto;
+        }
+
+        .box {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            box-shadow: 0 5px 20px rgba(0,0,0,.06);
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            background: #f8fafc;
+            margin: 15px 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: 0;
+            border-radius: 10px;
+            background: #166534;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: .6;
+            cursor: wait;
+        }
+
+        .format {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+
+        code {
+            white-space: nowrap;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 9px;
+            background: #dcfce7;
+            color: #166534;
+            margin-bottom: 10px;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+
+    <strong>Dutoza API Admin</strong>
+
+</header>
+
+<main>
+
+    <a
+        class="back"
+        href="{{ url_for('admin.admin_dashboard') }}"
+    >
+        ← Rudi Dashboard
+    </a>
+
+    <div class="box">
+
+        <h1>Upload Quotes CSV</h1>
+
+        <p>
+            Tumia CSV kuongeza quotes nyingi kwa wakati mmoja.
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% for category, message in messages %}
+
+                <div class="message
+                    {% if category == 'error' %}
+                        error
+                    {% endif %}
+                ">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+        {% endwith %}
+
+        <h3>Format ya CSV</h3>
+
+        <div class="format">
+
+            <code>
+                text,author,category,language
+                <br>
+                "Mafanikio huanza kwa hatua","Dutoza","Motivation","sw"
+                <br>
+                "Usikate tamaa","Dutoza","Life","sw"
+            </code>
+
+        </div>
+
+        <form
+            id="uploadForm"
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+            <input
+                id="csvFile"
+                type="file"
+                name="csv_file"
+                accept=".csv,text/csv"
+                required
+            >
+
+            <button
+                id="uploadButton"
+                type="submit"
+            >
+                📥 Upload CSV
+            </button>
+
+        </form>
+
+    </div>
+
+</main>
+
+<script>
+    const form =
+        document.getElementById("uploadForm");
+
+    const fileInput =
+        document.getElementById("csvFile");
+
+    const button =
+        document.getElementById("uploadButton");
+
+    fileInput.addEventListener(
+        "change",
+        function () {
+
+            if (!this.files.length) {
+                button.textContent =
+                    "📥 Upload CSV";
+
+                return;
+            }
+
+            const file = this.files[0];
+
+            button.textContent =
+                "📥 Upload " + file.name;
+        }
+    );
+
+    form.addEventListener(
+        "submit",
+        function () {
+
+            if (!fileInput.files.length) {
+                return;
+            }
+
+            button.disabled = true;
+
+            button.textContent =
+                "⏳ Inaingiza quotes...";
+        }
+    );
+</script>
+
+</body>
+</html>

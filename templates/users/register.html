@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jisajili — Dutoza</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7f9;
+            color: #17212b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 460px;
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .brand-name {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .brand-text {
+            margin-top: 6px;
+            color: #68737d;
+            font-size: 14px;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e6ea;
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        .intro {
+            margin: 8px 0 24px;
+            color: #68737d;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message {
+            background: #fff3f3;
+            border: 1px solid #f2caca;
+            color: #b42318;
+            border-radius: 10px;
+            padding: 11px 12px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid #d5dbe0;
+            border-radius: 10px;
+            padding: 13px 14px;
+            font-size: 16px;
+            outline: none;
+            background: #fff;
+            color: #17212b;
+        }
+
+        input:focus {
+            border-color: #17212b;
+            box-shadow: 0 0 0 3px rgba(23, 33, 43, 0.08);
+        }
+
+        .submit {
+            width: 100%;
+            border: 0;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 4px;
+            background: #17212b;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .submit:hover {
+            opacity: 0.92;
+        }
+
+        .login {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #68737d;
+        }
+
+        .login a {
+            color: #17212b;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .login a:hover {
+            text-decoration: underline;
+        }
+
+        .terms {
+            margin-top: 16px;
+            text-align: center;
+            color: #8a949d;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+
+            .card {
+                padding: 22px 18px;
+                border-radius: 14px;
+            }
+
+            .brand-name {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+
+        <div class="brand">
+            <div class="brand-name">Dutoza</div>
+            <div class="brand-text">
+                Karibu kwenye jamii ya Dutoza
+            </div>
+        </div>
+
+        <section class="card">
+
+            <h1>Fungua akaunti</h1>
+
+            <p class="intro">
+                Jisajili ili uweze kushiriki maudhui,
+                kufuatilia watumiaji na kujenga profile yako.
+            </p>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="message">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST"
+                  action="{{ url_for('user_auth.register_post') }}">
+
+                <div class="field">
+                    <label for="full_name">Jina kamili</label>
+                    <input
+                        id="full_name"
+                        type="text"
+                        name="full_name"
+                        maxlength="150"
+                        autocomplete="name"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input
+                        id="username"
+                        type="text"
+                        name="username"
+                        maxlength="50"
+                        autocomplete="username"
+                        placeholder="mfano: matondo"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input
+                        id="email"
+                        type="email"
+                        name="email"
+                        maxlength="255"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input
+                        id="password"
+                        type="password"
+                        name="password"
+                        minlength="8"
+                        autocomplete="new-password"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="confirm_password">Rudia password</label>
+                    <input
+                        id="confirm_password"
+                        type="password"
+                        name="confirm_password"
+                        minlength="8"
+                        autocomplete="new-password"
+                        required
+                    >
+                </div>
+
+                <button class="submit" type="submit">
+                    Jisajili
+                </button>
+
+            </form>
+
+            <div class="login">
+                Tayari una akaunti?
+                <a href="{{ url_for('user_auth.login') }}">
+                    Ingia
+                </a>
+            </div>
+
+            <div class="terms">
+                Kwa kujisajili, unakubali kutumia Dutoza
+                kwa kufuata masharti na sera zake.
+            </div>
+
+        </section>
+
+    </main>
+</body>
+</html>

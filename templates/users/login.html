@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingia — Dutoza</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7f9;
+            color: #17212b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 460px;
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .brand-name {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .brand-text {
+            margin-top: 6px;
+            color: #68737d;
+            font-size: 14px;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e6ea;
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        .intro {
+            margin: 8px 0 24px;
+            color: #68737d;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message {
+            background: #fff3f3;
+            border: 1px solid #f2caca;
+            color: #b42318;
+            border-radius: 10px;
+            padding: 11px 12px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .field {
+            margin-bottom: 17px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid #d5dbe0;
+            border-radius: 10px;
+            padding: 13px 14px;
+            font-size: 16px;
+            outline: none;
+            background: #fff;
+            color: #17212b;
+        }
+
+        input:focus {
+            border-color: #17212b;
+            box-shadow: 0 0 0 3px rgba(23, 33, 43, 0.08);
+        }
+
+        .submit {
+            width: 100%;
+            border: 0;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 2px;
+            background: #17212b;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .submit:hover {
+            opacity: 0.92;
+        }
+
+        .register {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #68737d;
+        }
+
+        .register a {
+            color: #17212b;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .register a:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 18px;
+            color: #8a949d;
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+
+            .card {
+                padding: 22px 18px;
+                border-radius: 14px;
+            }
+
+            .brand-name {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+
+        <div class="brand">
+            <div class="brand-name">Dutoza</div>
+            <div class="brand-text">
+                Karibu tena
+            </div>
+        </div>
+
+        <section class="card">
+
+            <h1>Ingia kwenye akaunti</h1>
+
+            <p class="intro">
+                Ingia ili uendelee kutumia huduma za Dutoza.
+            </p>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="message">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST"
+                  action="{{ url_for('user_auth.login_post') }}">
+
+                <div class="field">
+                    <label for="email_or_username">
+                        Email au Username
+                    </label>
+
+                    <input
+                        id="email_or_username"
+                        type="text"
+                        name="email_or_username"
+                        autocomplete="username"
+                        placeholder="Email au username"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="password">Password</label>
+
+                    <input
+                        id="password"
+                        type="password"
+                        name="password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <button class="submit" type="submit">
+                    Ingia
+                </button>
+
+            </form>
+
+            <div class="register">
+                Huna akaunti?
+                <a href="{{ url_for('user_auth.register') }}">
+                    Jisajili
+                </a>
+            </div>
+
+        </section>
+
+        <div class="footer">
+            Dutoza — Social platform
+        </div>
+
+    </main>
+</body>
+</html>
