@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mercfy</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7f8;
+            color: #111827;
+        }
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 25px 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 76px;
+            height: 76px;
+            margin: 0 auto 16px;
+            border-radius: 24px;
+            background: #111827;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            font-weight: 900;
+        }
+
+        .brand {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .tagline {
+            margin: 8px 0 36px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .welcome {
+            margin-bottom: 6px;
+            font-size: 21px;
+            font-weight: 750;
+        }
+
+        .subtitle {
+            margin: 0 0 22px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 18px;
+            margin-bottom: 14px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            text-decoration: none;
+            color: #111827;
+            text-align: left;
+            transition: transform .15s ease,
+                        box-shadow .15s ease,
+                        border-color .15s ease;
+        }
+
+        .option:hover {
+            transform: translateY(-2px);
+            border-color: #d1d5db;
+            box-shadow: 0 8px 25px rgba(0,0,0,.06);
+        }
+
+        .option:active {
+            transform: scale(.99);
+        }
+
+        .icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 23px;
+            font-weight: 800;
+            margin-right: 14px;
+        }
+
+        .user-icon {
+            background: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .developer-icon {
+            background: #ecfdf5;
+            color: #059669;
+        }
+
+        .text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .title {
+            font-size: 17px;
+            font-weight: 750;
+            margin-bottom: 5px;
+        }
+
+        .description {
+            color: #6b7280;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .arrow {
+            color: #9ca3af;
+            font-size: 25px;
+            margin-left: 10px;
+        }
+
+        .register {
+            margin-top: 26px;
+            color: #6b7280;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .register a {
+            color: #111827;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .register a:hover {
+            text-decoration: underline;
+        }
+
+        .separator {
+            margin: 0 6px;
+            color: #d1d5db;
+        }
+
+        .admin {
+            display: inline-block;
+            margin-top: 24px;
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .admin:hover {
+            color: #4b5563;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #b0b5bd;
+            font-size: 11px;
+        }
+
+        @media (max-width: 360px) {
+            .brand {
+                font-size: 28px;
+            }
+
+            .option {
+                padding: 15px;
+            }
+
+            .icon {
+                width: 46px;
+                height: 46px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <main class="container">
+
+        <div class="logo">M</div>
+
+        <h1 class="brand">Mercfy</h1>
+
+        <p class="tagline">
+            Quotes • Music • Community
+        </p>
+
+        <div class="welcome">
+            Karibu Mercfy
+        </div>
+
+        <p class="subtitle">
+            Chagua aina ya akaunti unayotaka kutumia.
+        </p>
+
+
+        <!-- USER LOGIN -->
+
+        <a href="/login" class="option">
+
+            <div class="icon user-icon">
+                👤
+            </div>
+
+            <div class="text">
+
+                <div class="title">
+                    Login as User
+                </div>
+
+                <div class="description">
+                    Ingia kwenye Mercfy kwa Feed,
+                    Music, Quotes, Profile na Community.
+                </div>
+
+            </div>
+
+            <div class="arrow">
+                ›
+            </div>
+
+        </a>
+
+
+        <!-- DEVELOPER LOGIN -->
+
+        <a href="/developers/login" class="option">
+
+            <div class="icon developer-icon">
+                &lt;/&gt;
+            </div>
+
+            <div class="text">
+
+                <div class="title">
+                    Login as Developer
+                </div>
+
+                <div class="description">
+                    Ingia kwenye Developer Portal,
+                    API Keys na Dutoza API.
+                </div>
+
+            </div>
+
+            <div class="arrow">
+                ›
+            </div>
+
+        </a>
+
+
+        <!-- REGISTRATION -->
+
+        <div class="register">
+
+            Huna akaunti?
+
+            <br>
+
+            <a href="/register">
+                Register as User
+            </a>
+
+            <span class="separator">|</span>
+
+            <a href="/developers/register">
+                Register as Developer
+            </a>
+
+        </div>
+
+
+        <!-- ADMIN -->
+
+        <a href="/admin/login" class="admin">
+            Admin Login
+        </a>
+
+
+        <div class="footer">
+            © Mercfy
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>

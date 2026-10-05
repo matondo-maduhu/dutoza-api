@@ -47,16 +47,7 @@ def developers():
 
 @app.get("/")
 def home():
-    return jsonify({
-        "name": "Dutoza API",
-        "version": "1.0.0",
-        "status": "online",
-        "endpoints": {
-            "music": "/api/music",
-            "quotes": "/api/quotes",
-            "admin": "/admin/login"
-        }
-    })
+    return render_template("home.html")
 
 
 @app.get("/api")
