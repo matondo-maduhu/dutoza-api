@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Feed — Mercfy</title>
+    <title>Feed — Incredibles</title>
 
     <link
         rel="stylesheet"
@@ -24,61 +24,45 @@
         }
 
         .topbar {
-            height: 64px;
+            height: 56px;
             background: #ffffff;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
+            padding: 0 14px 0 16px;
             position: sticky;
             top: 0;
             z-index: 100;
         }
 
         .brand {
-            font-size: 24px;
-            font-weight: 800;
-            color: #111827;
+            font-size: 19px;
+            font-weight: 900;
             text-decoration: none;
+            letter-spacing: -0.4px;
+            background: linear-gradient(120deg, #1EB53A 0%, #00A3DD 55%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            position: relative;
         }
+        .brand::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; bottom: -2px; height: 2px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #1EB53A, #00A3DD, #7c3aed);
+            opacity: 0.35;
+        }
+        .brand:active { opacity: 0.75; }
 
-        .main-nav {
+        .topbar-right {
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-
-        .nav-link,
-        .logout-btn,
-        .notification-btn {
-            border: 0;
-            border-radius: 10px;
-            padding: 9px 13px;
-            font-size: 14px;
-            font-weight: 700;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .nav-link {
-            color: #4b5563;
-            background: transparent;
-        }
-
-        .nav-link:hover {
-            background: #f0f2f5;
-            color: #111827;
-        }
-
-        .nav-link.active {
-            background: #111827;
-            color: #ffffff;
-        }
-
-        .logout-btn {
-            background: #111827;
-            color: #ffffff;
+            gap: 4px;
         }
 
         .notification-wrap {
@@ -86,34 +70,107 @@
         }
 
         .notification-btn {
+            border: 0;
             background: transparent;
-            color: #4b5563;
+            color: #334155;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
             display: inline-flex;
             align-items: center;
-            gap: 7px;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            padding: 0;
         }
 
         .notification-btn:hover {
-            background: #f0f2f5;
-            color: #111827;
+            background: #f1f5f9;
+            color: #0f172a;
         }
 
         .notification-icon {
-            font-size: 17px;
+            font-size: 20px;
         }
 
+        .top-profile-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e2e8f0;
+            color: #475569;
+            text-decoration: none;
+            margin-left: 2px;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #e2e8f0;
+        }
+        .top-profile-btn img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .top-profile-btn i { font-size: 15px; }
+
+        /* Bottom nav */
+        .bottom-nav {
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            z-index: 90;
+            height: 60px;
+            background: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            align-items: stretch;
+            justify-content: space-around;
+            padding: 0 8px;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+            box-shadow: 0 -4px 20px rgba(15,23,42,.06);
+        }
+        .bn-item {
+            flex: 1;
+            max-width: 120px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 12px;
+            margin: 4px 0;
+        }
+        .bn-item i { font-size: 20px; }
+        .bn-item.active, .bn-item:hover { color: #1EB53A; }
+        .bn-item.active i { color: #1EB53A; }
+
+        body { padding-bottom: 72px; }
+        main.page { padding-bottom: 24px; }
+
         .notification-badge {
-            min-width: 19px;
-            height: 19px;
-            padding: 0 5px;
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 4px;
             border-radius: 999px;
             background: #dc2626;
             color: #ffffff;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 800;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            border: 2px solid #fff;
+            line-height: 1;
         }
 
         .notification-badge.hidden {
@@ -1205,108 +1262,64 @@
 <body>
 
 <header class="topbar">
-
-    <a href="{{ url_for('user_feed.feed') }}" class="brand">
-        Mercfy
+    <a href="{{ url_for('user_feed.feed') }}" class="brand" id="brandHome" title="Incredibles — Home">
+        Incredibles
     </a>
 
-    <nav class="main-nav" aria-label="Navigation">
-
-        <a
-            href="{{ url_for('user_feed.feed') }}"
-            class="nav-link active"
-        >
-            Feed
-        </a>
-
+    <div class="topbar-right">
         <div class="notification-wrap">
-
             <button
                 type="button"
                 class="notification-btn"
                 id="notificationButton"
                 aria-label="Notifications"
                 aria-expanded="false"
+                title="Notifications"
             >
                 <i class="fa-solid fa-bell notification-icon" aria-hidden="true"></i>
-                <span>Notifications</span>
-                <span
-                    class="notification-badge hidden"
-                    id="notificationBadge"
-                >
-                    0
-                </span>
+                <span class="notification-badge hidden" id="notificationBadge">0</span>
             </button>
 
-            <div
-                class="notification-panel"
-                id="notificationPanel"
-            >
-
+            <div class="notification-panel" id="notificationPanel">
                 <div class="notification-header">
-
                     <div class="notification-header-left">
-
-                        <button
-                            type="button"
-                            class="notification-close"
-                            id="notificationClose"
-                            aria-label="Close notifications"
-                        >
+                        <button type="button" class="notification-close" id="notificationClose" aria-label="Close">
                             <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
                         </button>
-
-                        <div class="notification-title">
-                            Notifications
-                        </div>
-
+                        <div class="notification-title">Notifications</div>
                     </div>
-
-                    <button
-                        type="button"
-                        class="mark-all"
-                        id="markAllButton"
-                    >
-                        Mark all as read
-                    </button>
-
+                    <button type="button" class="mark-all" id="markAllButton">Mark all as read</button>
                 </div>
-
-                <div
-                    class="notification-list"
-                    id="notificationList"
-                >
-                    <div class="notification-loading">
-                        Inapakia notifications...
-                    </div>
+                <div class="notification-list" id="notificationList">
+                    <div class="notification-loading">Inapakia notifications...</div>
                 </div>
-
             </div>
-
         </div>
 
-        <a
-            href="{{ url_for('user_auth.profile') }}"
-            class="nav-link"
-        >
-            Profile
+        <a href="{{ url_for('user_auth.profile') }}" class="top-profile-btn" aria-label="Profile" title="Profile">
+            {% if session.get("profile_image_url") %}
+                <img src="{{ session.get('profile_image_url') }}" alt="Profile">
+            {% else %}
+                <i class="fa-solid fa-user" aria-hidden="true"></i>
+            {% endif %}
         </a>
-
-        <form
-            method="POST"
-            action="{{ url_for('user_auth.logout') }}"
-        >
-            <button
-                class="logout-btn"
-                type="submit"
-            >
-                Toka
-            </button>
-        </form>
-
-    </nav>
-
+    </div>
 </header>
+
+<nav class="bottom-nav" aria-label="Bottom navigation">
+    <a href="{{ url_for('user_feed.feed') }}" class="bn-item active" aria-label="Home" title="Home">
+        <i class="fa-solid fa-house" aria-hidden="true"></i>
+        <span>Home</span>
+    </a>
+    <button type="button" class="bn-item" id="bnCompose" aria-label="Post" title="Post quote">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        <span>Post</span>
+    </button>
+    <a href="{{ url_for('user_auth.profile') }}" class="bn-item" aria-label="Profile" title="Profile">
+        <i class="fa-solid fa-user" aria-hidden="true"></i>
+        <span>Profile</span>
+    </a>
+</nav>
 
 <main class="page">
 
@@ -1802,6 +1815,21 @@
     }
     if (openQuoteModalBtn) {
         openQuoteModalBtn.addEventListener("click", openQuoteModal);
+    }
+    var bnCompose = document.getElementById("bnCompose");
+    if (bnCompose) {
+        bnCompose.addEventListener("click", openQuoteModal);
+    }
+    var brandHome = document.getElementById("brandHome");
+    if (brandHome) {
+        brandHome.addEventListener("click", function (e) {
+            // Refresh home feed
+            if (window.location.pathname.indexOf("/feed") !== -1) {
+                e.preventDefault();
+                window.location.href = brandHome.getAttribute("href") || "/feed";
+                window.location.reload();
+            }
+        });
     }
     if (closeQuoteModalBtn) {
         closeQuoteModalBtn.addEventListener("click", closeQuoteModal);
