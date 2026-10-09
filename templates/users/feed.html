@@ -1356,6 +1356,31 @@
                 required
             ></textarea>
 
+            <div class="composer-meta" style="display:flex;gap:8px;flex-wrap:wrap;padding:0 4px 6px;">
+                <input
+                    type="text"
+                    name="category"
+                    id="quoteCategory"
+                    list="quoteCategoryList"
+                    maxlength="100"
+                    placeholder="Andika category (mfano: Motivation, Love…)"
+                    autocomplete="off"
+                    aria-label="Category"
+                    style="flex:1;min-width:140px;border:1px solid #e3e8ec;border-radius:10px;padding:8px 10px;font-size:13px;background:#fff;"
+                >
+                <datalist id="quoteCategoryList">
+                    {% for cat in categories or [] %}
+                    <option value="{{ cat.name }}"></option>
+                    {% endfor %}
+                </datalist>
+                <select name="language" id="quoteLanguage" aria-label="Language"
+                    style="width:90px;border:1px solid #e3e8ec;border-radius:10px;padding:8px 10px;font-size:13px;background:#fff;">
+                    <option value="sw" selected>SW</option>
+                    <option value="en">EN</option>
+                    <option value="mixed">Mixed</option>
+                </select>
+            </div>
+
             <div class="composer-bottom-inside">
 
                 <div class="composer-actions">
