@@ -36,7 +36,29 @@ def feed():
     if not session.get("user_id"):
         return redirect(url_for("user_auth.login"))
 
-    return render_template("users/feed.html")
+    categories = []
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute("""
+            SELECT name, slug
+            FROM categories
+            ORDER BY name ASC
+        """)
+        categories = [
+            {"name": row[0], "slug": row[1]}
+            for row in cursor.fetchall()
+        ]
+    except Exception:
+        categories = []
+    finally:
+        close_connection(connection)
+
+    return render_template(
+        "users/feed.html",
+        categories=categories
+    )
 
 
 @user_feed_bp.get("/api/user/posts")
@@ -725,6 +747,10 @@ def create_post():
         return redirect(url_for("user_auth.login"))
 
     content = request.form.get("content", "").strip()
+    # Category: user anaweza kuandika jina moja kwa moja (si select tu)
+    category_raw = request.form.get("category", "").strip()[:100]
+    language = (request.form.get("language") or "sw").strip()[:10] or "sw"
+    author_override = request.form.get("author", "").strip()[:150]
 
     if not content:
         flash("Andika quote kabla ya kutuma.")
@@ -742,7 +768,7 @@ def create_post():
             cursor = connection.cursor()
 
             cursor.execute("""
-                SELECT full_name, status
+                SELECT full_name, username, status
                 FROM users
                 WHERE id = %s
                 LIMIT 1
@@ -750,14 +776,50 @@ def create_post():
 
             user = cursor.fetchone()
 
-            if not user or user[1] != "active":
+            if not user or user[2] != "active":
                 session.clear()
                 return redirect(url_for("user_auth.login"))
+
+            full_name = user[0] or ""
+            username = user[1] or ""
+            author = author_override or full_name or username or "User"
+
+            # Category: tafuta kwa jina/slug, au unda mpya kama user ameandika
+            category_id = None
+            if category_raw:
+                import re as _re
+                slug = _re.sub(
+                    r"[^a-z0-9]+",
+                    "-",
+                    category_raw.lower()
+                ).strip("-")[:80] or "general"
+
+                cursor.execute("""
+                    SELECT id
+                    FROM categories
+                    WHERE LOWER(slug) = LOWER(%s)
+                       OR LOWER(name) = LOWER(%s)
+                    LIMIT 1
+                """, (slug, category_raw))
+                cat = cursor.fetchone()
+
+                if cat:
+                    category_id = cat[0]
+                else:
+                    cursor.execute("""
+                        INSERT INTO categories (name, slug)
+                        VALUES (%s, %s)
+                        RETURNING id
+                    """, (category_raw, slug))
+                    new_cat = cursor.fetchone()
+                    if new_cat:
+                        category_id = new_cat[0]
 
             cursor.execute("""
                 INSERT INTO quotes (
                     text,
                     author,
+                    category_id,
                     language,
                     status,
                     user_id
@@ -765,21 +827,24 @@ def create_post():
                 VALUES (
                     %s,
                     %s,
-                    'sw',
+                    %s,
+                    %s,
                     'published',
                     %s
                 )
                 RETURNING id
             """, (
                 content,
-                user[0],
+                author,
+                category_id,
+                language,
                 user_id
             ))
 
-            cursor.fetchone()
+            quote_id = cursor.fetchone()[0]
             connection.commit()
 
-            flash("Quote imechapishwa na imeongezwa kwenye Feed.")
+            flash("Quote imechapishwa na inaonekana kwenye API kwa developers.")
             return redirect(url_for("user_feed.feed"))
 
         except Exception as exc:

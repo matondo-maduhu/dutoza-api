@@ -8,7 +8,15 @@ music_bp = Blueprint("music", __name__)
 
 
 def serialize_song(row):
-    return {
+    """
+    row indices 0-23 as before, then:
+      24 s.user_id
+      25 u.full_name
+      26 u.username
+      27 u.profile_image_url
+    """
+    user_id = row[24] if len(row) > 24 else None
+    data = {
         "id": row[0],
         "title": row[1],
         "slug": row[2],
@@ -44,8 +52,20 @@ def serialize_song(row):
             row[23].isoformat()
             if row[23]
             else None
-        )
+        ),
+        "user_id": user_id,
+        "source": "user" if user_id else "admin",
     }
+    if user_id and len(row) > 26:
+        data["user"] = {
+            "id": user_id,
+            "full_name": row[25],
+            "username": row[26],
+            "profile_image_url": row[27] if len(row) > 27 else None,
+        }
+    else:
+        data["user"] = None
+    return data
 
 
 SONG_SELECT = """
@@ -76,7 +96,11 @@ SONG_SELECT = """
         al.slug,
         al.cover_url,
 
-        s.created_at
+        s.created_at,
+        s.user_id,
+        u.full_name,
+        u.username,
+        u.profile_image_url
 
     FROM songs s
 
@@ -85,6 +109,9 @@ SONG_SELECT = """
 
     LEFT JOIN albums al
         ON al.id = s.album_id
+
+    LEFT JOIN users u
+        ON u.id = s.user_id
 """
 
 
@@ -139,6 +166,15 @@ def get_music():
             ""
         ).strip()
 
+        user_id_filter = request.args.get(
+            "user_id",
+            type=int
+        )
+        source = request.args.get(
+            "source",
+            ""
+        ).strip().lower()
+
         offset = (
             page - 1
         ) * per_page
@@ -156,6 +192,8 @@ def get_music():
                     OR s.description ILIKE %s
                     OR s.genre ILIKE %s
                     OR ar.name ILIKE %s
+                    OR u.username ILIKE %s
+                    OR u.full_name ILIKE %s
                 )
             """)
 
@@ -165,7 +203,9 @@ def get_music():
                 search_value,
                 search_value,
                 search_value,
-                search_value
+                search_value,
+                search_value,
+                search_value,
             ])
 
         if artist:
@@ -208,6 +248,15 @@ def get_music():
 
             params.append(language)
 
+        if user_id_filter:
+            conditions.append("s.user_id = %s")
+            params.append(user_id_filter)
+
+        if source == "user":
+            conditions.append("s.user_id IS NOT NULL")
+        elif source == "admin":
+            conditions.append("s.user_id IS NULL")
+
         where_sql = " AND ".join(
             conditions
         )
@@ -224,6 +273,9 @@ def get_music():
 
             LEFT JOIN albums al
                 ON al.id = s.album_id
+
+            LEFT JOIN users u
+                ON u.id = s.user_id
 
             WHERE {where_sql}
         """
