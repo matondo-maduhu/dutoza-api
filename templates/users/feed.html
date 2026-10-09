@@ -1399,6 +1399,11 @@
     .fca-btn:hover { background: #f1f5f9; }
     .fca-btn.liked, .fca-btn.liked i { color: #e11d48; }
 
+.fca-btn.saved, .fca-btn.saved i { color: #1EB53A; }
+.feed-meta-line { font-size: 12px; color: #64748b; display: block; margin-top: 1px; }
+.fca-btn .like-count, .fca-btn .save-count, .fca-btn .share-count { font-variant-numeric: tabular-nums; }
+
+
     /* Music modal form fields */
     .mm-file-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
     .mm-file-btn {
@@ -2495,6 +2500,85 @@
 
     }
 
+    function formatRelativeTime(dateString) {
+        if (!dateString) return "";
+        var d = new Date(dateString);
+        if (isNaN(d.getTime())) return "";
+        var sec = Math.floor((Date.now() - d.getTime()) / 1000);
+        if (sec < 60) return "sasa hivi";
+        if (sec < 3600) return Math.floor(sec / 60) + " dk";
+        if (sec < 86400) return Math.floor(sec / 3600) + " saa";
+        if (sec < 604800) return Math.floor(sec / 86400) + " siku";
+        if (sec < 2592000) return Math.floor(sec / 604800) + " wiki";
+        try {
+            return d.toLocaleDateString("sw-TZ", { day: "numeric", month: "short", year: "numeric" });
+        } catch (e) {
+            return d.toLocaleDateString();
+        }
+    }
+
+    document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-engage]");
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var act = btn.getAttribute("data-engage");
+        var ctype = btn.getAttribute("data-type");
+        var id = btn.getAttribute("data-id");
+        if (!act || !ctype || !id) return;
+
+        if (act === "share") {
+            var text = btn.getAttribute("data-share-text") || "";
+            var doCount = function () {
+                fetch("/api/user/content/share", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ content_type: ctype, content_id: Number(id) })
+                }).then(function (r) { return r.json(); })
+                  .then(function (d) {
+                      if (d && d.success) {
+                          var c = btn.querySelector(".share-count");
+                          if (c) c.textContent = d.shares_count;
+                      }
+                  });
+            };
+            if (navigator.share) {
+                navigator.share({ text: text }).then(doCount).catch(function () { doCount(); });
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(doCount).catch(doCount);
+            } else {
+                doCount();
+            }
+            return;
+        }
+
+        var endpoint = act === "like" ? "/api/user/content/like" : "/api/user/content/save";
+        btn.disabled = true;
+        fetch(endpoint, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content_type: ctype, content_id: Number(id) })
+        }).then(function (r) { return r.json(); })
+          .then(function (d) {
+              if (!d || !d.success) return;
+              if (act === "like") {
+                  btn.classList.toggle("liked", !!d.liked);
+                  var icon = btn.querySelector("i");
+                  if (icon) icon.className = d.liked ? "fa-solid fa-heart" : "fa-regular fa-heart";
+                  var c = btn.querySelector(".like-count");
+                  if (c) c.textContent = d.likes_count;
+              } else {
+                  btn.classList.toggle("saved", !!d.saved);
+                  var icon = btn.querySelector("i");
+                  if (icon) icon.className = d.saved ? "fa-solid fa-bookmark" : "fa-regular fa-bookmark";
+                  var c = btn.querySelector(".save-count");
+                  if (c) c.textContent = d.saves_count;
+              }
+          })
+          .finally(function () { btn.disabled = false; });
+    });
 
     function renderPost(post) {
         const user = post.user || {};
@@ -2549,7 +2633,7 @@
                             <div class="feed-card-avatar">${avatarHtml}</div>
                             <div class="feed-card-user-meta">
                                 <strong>${displayName}</strong>
-                                ${uname ? `<span>@${uname}</span>` : ""}
+                                <span class="feed-meta-line">${uname ? `@${uname} · ` : ""}${formatRelativeTime(post.created_at)}</span>
                             </div>
                         </div>
                         <button type="button" class="feed-card-menu" aria-label="Menu" data-toggle-menu>
@@ -2577,14 +2661,17 @@
                     </div>
 
                     <div class="feed-card-actions">
-                        <button type="button" class="fca-btn" title="Save"><i class="fa-regular fa-bookmark"></i> Save</button>
-                        <button type="button" class="fca-btn" title="Share"
-                            onclick="navigator.share?navigator.share({text:${JSON.stringify((post.content||'')+' — '+(post.quote_author||''))}):navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(post.content||'')})">
-                            <i class="fa-solid fa-share-nodes"></i> Share
+                        <button type="button" class="fca-btn save-btn ${post.is_saved ? 'saved' : ''}" data-engage="save" data-type="quote" data-id="${post.id}" title="Save">
+                            <i class="fa-${post.is_saved ? 'solid' : 'regular'} fa-bookmark"></i>
+                            <span class="save-count">${post.saves_count || 0}</span>
                         </button>
-                        <button type="button" class="fca-btn like-btn ${post.is_liked ? 'liked' : ''}" title="Like">
+                        <button type="button" class="fca-btn share-btn" data-engage="share" data-type="quote" data-id="${post.id}" data-share-text="${escapeHtml((post.content||'') + ' — ' + (post.quote_author||''))}" title="Share">
+                            <i class="fa-solid fa-share-nodes"></i>
+                            <span class="share-count">${post.shares_count || 0}</span>
+                        </button>
+                        <button type="button" class="fca-btn like-btn ${post.is_liked ? 'liked' : ''}" data-engage="like" data-type="quote" data-id="${post.id}" title="Like">
                             <i class="fa-${post.is_liked ? 'solid' : 'regular'} fa-heart"></i>
-                            <span>${post.likes_count || 0}</span>
+                            <span class="like-count">${post.likes_count || 0}</span>
                         </button>
                     </div>
                 </article>
@@ -2631,7 +2718,7 @@
                             <div class="feed-card-avatar">${avatarHtml}</div>
                             <div class="feed-card-user-meta">
                                 <strong>${name}</strong>
-                                ${username ? `<span>@${username}</span>` : ""}
+                                <span class="feed-meta-line">${username ? `@${username} · ` : ""}${formatRelativeTime(post.created_at)}</span>
                             </div>
                         </div>
                         <button type="button" class="feed-card-menu" aria-label="Menu" data-toggle-menu>
@@ -2682,14 +2769,17 @@
                     </div>
 
                     <div class="feed-card-actions">
-                        <button type="button" class="fca-btn" title="Save"><i class="fa-regular fa-bookmark"></i> Save</button>
-                        <button type="button" class="fca-btn" title="Share"
-                            onclick="navigator.share?navigator.share({title:${JSON.stringify(post.title||'')},text:${JSON.stringify((post.title||'')+' — '+(post.artist?.name||''))}):null">
-                            <i class="fa-solid fa-share-nodes"></i> Share
+                        <button type="button" class="fca-btn save-btn ${post.is_saved ? 'saved' : ''}" data-engage="save" data-type="music" data-id="${post.id}" title="Save">
+                            <i class="fa-${post.is_saved ? 'solid' : 'regular'} fa-bookmark"></i>
+                            <span class="save-count">${post.saves_count || 0}</span>
                         </button>
-                        <button type="button" class="fca-btn like-btn ${post.is_liked ? 'liked' : ''}" title="Like">
+                        <button type="button" class="fca-btn share-btn" data-engage="share" data-type="music" data-id="${post.id}" data-share-text="${escapeHtml((post.title||'') + ' — ' + (post.artist && post.artist.name ? post.artist.name : ''))}" title="Share">
+                            <i class="fa-solid fa-share-nodes"></i>
+                            <span class="share-count">${post.shares_count || 0}</span>
+                        </button>
+                        <button type="button" class="fca-btn like-btn ${post.is_liked ? 'liked' : ''}" data-engage="like" data-type="music" data-id="${post.id}" title="Like">
                             <i class="fa-${post.is_liked ? 'solid' : 'regular'} fa-heart"></i>
-                            <span>${post.likes_count || 0}</span>
+                            <span class="like-count">${post.likes_count || 0}</span>
                         </button>
                     </div>
                 </article>
