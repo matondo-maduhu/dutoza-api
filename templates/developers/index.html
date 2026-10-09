@@ -2,343 +2,784 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Incredibles API — Developer Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incredibles API — Developer Docs</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f8fc;color:#172033}
-.top{height:64px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:20}
-.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:20px}
-.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1EB53A,#00A3DD 50%,#7c3aed);display:grid;place-items:center;font-weight:900;color:#fff}
-.online{font-size:13px;color:#cbd5e1;display:flex;gap:8px;align-items:center}
-.dot{width:8px;height:8px;background:#22c55e;border-radius:50%}
-.layout{display:flex}
-.side{position:fixed;top:64px;bottom:0;width:245px;background:#fff;border-right:1px solid #e5e7eb;padding:25px 14px;overflow:auto}
-.side h5{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin:12px}
-.side a{display:block;text-decoration:none;color:#475569;padding:10px 12px;border-radius:8px;font-size:14px;margin:3px 0}
-.side a:hover{background:#e8f8ec;color:#0d7a28}
-.main{margin-left:245px;width:calc(100% - 245px);max-width:1250px;padding:42px 50px 70px}
-.hero{background:linear-gradient(135deg,#0f172a,#134e4a 40%,#1EB53A);color:white;border-radius:18px;padding:45px;margin-bottom:40px}
-.hero small{color:#bfdbfe;font-weight:700}
-.hero h1{font-size:43px;line-height:1.12;margin:14px 0}
-.hero p{max-width:760px;color:#dbeafe;font-size:17px}
-.base{margin-top:25px;background:#0b1220;border:1px solid #334155;border-radius:9px;padding:14px 16px;font-family:monospace;color:#93c5fd;display:flex;justify-content:space-between;gap:15px;align-items:center}
-button{cursor:pointer}
-.copy,.try{border:0;border-radius:7px;padding:8px 13px;background:#1EB53A;color:#fff;font-weight:700}
-.copy:hover,.try:hover{background:#16a34a}
-section{scroll-margin-top:85px;margin-bottom:55px}
-h2{font-size:29px;margin-bottom:7px}
-.desc{color:#64748b;margin-bottom:22px}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.card{background:#fff;border:1px solid #e5e7eb;border-radius:13px;padding:22px}
-.card h3{margin:8px 0}
-.card p{font-size:14px;color:#64748b}
-.num{width:32px;height:32px;border-radius:8px;background:#e8f8ec;color:#0d7a28;display:grid;place-items:center;font-weight:900}
-.auth{background:#111827;color:#fff;padding:24px;border-radius:13px}
-.code{background:#0b1220;color:#dbeafe;padding:17px;border-radius:9px;overflow:auto;font-family:monospace;font-size:13px;margin-top:14px;white-space:pre}
-.warn{margin-top:15px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:16px;border-radius:9px;font-size:14px}
-.endpoint{background:#fff;border:1px solid #e5e7eb;border-radius:13px;margin-bottom:18px;overflow:hidden}
-.head{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #e5e7eb}
-.method{font-size:11px;font-weight:900;padding:5px 8px;border-radius:5px}
-.get{background:#dcfce7;color:#166534}
-.post{background:#dbeafe;color:#1e40af}
-.path{font-family:monospace;font-weight:700}
-.body{padding:20px}
-.body p{color:#64748b;font-size:14px}
-.trybox{background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:15px;margin-top:16px}
-.row{display:flex;gap:9px;margin-top:10px}
-input{flex:1;min-width:0;border:1px solid #cbd5e1;border-radius:7px;padding:10px 12px;background:#fff}
-.result{display:none;margin-top:14px}
-.result label{font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase}
-.result pre{background:#0f172a;color:#dbeafe;padding:15px;border-radius:8px;overflow:auto;max-height:350px;font-size:12px}
-.limit{background:#fff;border:1px solid #e5e7eb;border-radius:13px;padding:25px}
-.big{font-size:38px;color:#1EB53A;font-weight:900}
-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e5e7eb}
-th,td{text-align:left;padding:14px;border-bottom:1px solid #e5e7eb}
-th{background:#f8fafc;font-size:13px}
-td{font-size:14px;color:#475569}
-.footer{text-align:center;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:25px}
-.menu{display:none;background:#1f2937;color:white;border:0;border-radius:7px;padding:8px 11px}
-@media(max-width:950px){.cards{grid-template-columns:1fr}.main{padding:30px 25px}}
-@media(max-width:700px){
-.side{display:none;width:245px;z-index:15;box-shadow:8px 0 25px #0002}
-.side.open{display:block}
-.main{margin-left:0;width:100%;padding:25px 15px}
-.menu{display:block}
-.online{display:none}
-.hero{padding:28px 22px}
-.hero h1{font-size:32px}
-.base,.row{flex-direction:column;align-items:stretch}
+:root {
+  --green: #1EB53A;
+  --green-dark: #16a34a;
+  --blue: #00A3DD;
+  --purple: #7c3aed;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e5e7eb;
+  --bg: #f5f6f7;
+  --card: #ffffff;
+  --side-w: 240px;
+  --top-h: 60px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+/* ===== Top bar ===== */
+.top {
+  height: var(--top-h);
+  background: #0f172a;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  gap: 12px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  text-decoration: none;
+  color: #fff;
+}
+.logo {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--green), var(--blue) 50%, var(--purple));
+  display: grid; place-items: center; font-weight: 900; font-size: 14px; flex-shrink: 0;
+}
+.brand-name {
+  font-weight: 900; font-size: 17px;
+  background: linear-gradient(120deg, #4ade80, #38bdf8 55%, #c4b5fd);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.brand-sub { font-size: 12px; color: #94a3b8; font-weight: 700; margin-left: 2px; }
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.top-actions a {
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.btn-ghost { color: #e2e8f0; background: #1e293b; }
+.btn-green { color: #fff; background: var(--green); }
+.btn-green:hover { background: var(--green-dark); }
+.online {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: #cbd5e1; margin-left: 4px;
+}
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.25);
+}
+.menu-btn {
+  display: none;
+  border: 0; background: #1e293b; color: #fff;
+  width: 40px; height: 40px; border-radius: 10px;
+  font-size: 18px; cursor: pointer;
+}
+
+/* ===== Layout ===== */
+.layout {
+  display: flex;
+  min-height: calc(100vh - var(--top-h));
+}
+.side {
+  position: sticky;
+  top: var(--top-h);
+  align-self: flex-start;
+  width: var(--side-w);
+  height: calc(100vh - var(--top-h));
+  background: #fff;
+  border-right: 1px solid var(--line);
+  padding: 20px 14px 32px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.side h5 {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin: 18px 10px 8px;
+  font-weight: 800;
+}
+.side h5:first-child { margin-top: 4px; }
+.side a {
+  display: block;
+  text-decoration: none;
+  color: #475569;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 2px 0;
+}
+.side a:hover { background: #e8f8ec; color: #0d7a28; }
+
+.main {
+  flex: 1;
+  min-width: 0;
+  max-width: 920px;
+  padding: 28px 28px 80px;
+}
+
+/* ===== Content blocks ===== */
+.hero {
+  background: linear-gradient(145deg, #0f172a 0%, #134e4a 45%, #166534 100%);
+  color: #fff;
+  border-radius: 20px;
+  padding: 32px 28px;
+  margin-bottom: 36px;
+}
+.hero small {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  color: #86efac;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-size: clamp(24px, 4vw, 34px);
+  line-height: 1.2;
+  margin: 12px 0 10px;
+  font-weight: 900;
+}
+.hero p {
+  margin: 0 0 18px;
+  color: #d1fae5;
+  font-size: 15px;
+  max-width: 560px;
+}
+.base-url {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+  flex-wrap: wrap;
+}
+.base-url code {
+  flex: 1;
+  min-width: 180px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: #a7f3d0;
+  word-break: break-all;
+}
+.btn-copy {
+  border: 0;
+  background: var(--green);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-copy:hover { background: var(--green-dark); }
+
+section {
+  scroll-margin-top: calc(var(--top-h) + 16px);
+  margin-bottom: 40px;
+}
+section > h2 {
+  font-size: 22px;
+  font-weight: 900;
+  margin: 0 0 8px;
+}
+.desc {
+  color: var(--muted);
+  margin: 0 0 18px;
+  font-size: 15px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 2px 10px rgba(15,23,42,.04);
+}
+.num {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: #e8f8ec; color: #0d7a28;
+  display: grid; place-items: center; font-weight: 900; font-size: 14px;
+}
+.card h3 { margin: 12px 0 6px; font-size: 16px; }
+.card p { margin: 0; font-size: 14px; color: var(--muted); }
+
+.auth-box {
+  background: #0f172a;
+  color: #fff;
+  padding: 20px;
+  border-radius: 16px;
+}
+.auth-box strong { font-size: 13px; color: #94a3b8; }
+.code {
+  background: #020617;
+  color: #dbeafe;
+  padding: 14px 16px;
+  border-radius: 12px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  margin-top: 12px;
+  white-space: pre;
+  line-height: 1.45;
+}
+.warn {
+  margin-top: 14px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.endpoint {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(15,23,42,.04);
+}
+.ep-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #fafbfc;
+}
+.method {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 5px 9px;
+  border-radius: 6px;
+  letter-spacing: .03em;
+}
+.get { background: #dcfce7; color: #166534; }
+.post { background: #dbeafe; color: #1e40af; }
+.path {
+  font-family: ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 14px;
+}
+.ep-body { padding: 16px 18px 18px; }
+.ep-body > p { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+
+.trybox {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 14px;
+}
+.trybox strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+.row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.row input {
+  flex: 1;
+  min-width: 140px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+  outline: none;
+}
+.row input:focus { border-color: var(--green); }
+.btn-try {
+  border: 0;
+  background: var(--green);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.btn-try:hover { background: var(--green-dark); }
+.result { display: none; margin-top: 12px; }
+.result label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.result pre {
+  margin: 0;
+  background: #0f172a;
+  color: #dbeafe;
+  padding: 14px;
+  border-radius: 12px;
+  overflow: auto;
+  max-height: 320px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.limit-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 2px 10px rgba(15,23,42,.04);
+}
+.limit-card .big {
+  font-size: 36px;
+  color: var(--green);
+  font-weight: 900;
+  margin: 4px 0 8px;
+}
+
+table.ref {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+table.ref th, table.ref td {
+  text-align: left;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+table.ref th {
+  background: #f8fafc;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+table.ref tr:last-child td { border-bottom: 0; }
+table.ref td { color: #475569; }
+
+.footer {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.side-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.4);
+  z-index: 30;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 900px) {
+  .cards { grid-template-columns: 1fr; }
+  .main { padding: 22px 16px 72px; }
+}
+@media (max-width: 768px) {
+  .menu-btn { display: grid; place-items: center; }
+  .online { display: none; }
+  .side {
+    position: fixed;
+    left: 0;
+    top: var(--top-h);
+    z-index: 35;
+    transform: translateX(-105%);
+    transition: transform .22s ease;
+    box-shadow: 8px 0 30px rgba(0,0,0,.12);
+  }
+  .side.open { transform: translateX(0); }
+  .side-backdrop.open { display: block; }
+  .main { max-width: 100%; }
+  .hero { padding: 24px 18px; }
+  .row { flex-direction: column; }
+  .row input, .btn-try { width: 100%; }
+  .top-actions a { padding: 7px 10px; font-size: 12px; }
 }
 </style>
 </head>
-
 <body>
 
 <header class="top">
-<div class="brand"><div class="logo">I</div><span style="background:linear-gradient(120deg,#1EB53A,#00A3DD 55%,#7c3aed);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:900">Incredibles</span> <span style="opacity:.85;font-weight:700;font-size:14px">API</span></div>
-<button class="menu" onclick="menu()">☰</button>
-<div style="display:flex;align-items:center;gap:10px">
-<a href="/developers/login" style="color:#e2e8f0;text-decoration:none;font-weight:700;font-size:13px;padding:8px 12px;border-radius:8px;background:#1e293b">Login</a>
-<a href="/developers/register" style="color:#fff;text-decoration:none;font-weight:800;font-size:13px;padding:8px 12px;border-radius:8px;background:#1EB53A">Get API Key</a>
-<div class="online"><span class="dot"></span>API Online</div>
-</div>
+  <a class="brand" href="/developers">
+    <div class="logo">I</div>
+    <span class="brand-name">Incredibles</span>
+    <span class="brand-sub">API</span>
+  </a>
+  <div class="top-actions">
+    <button type="button" class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <a class="btn-ghost" href="/developers/login">Login</a>
+    <a class="btn-green" href="/developers/register">Get API Key</a>
+    <div class="online"><span class="dot"></span> Online</div>
+  </div>
 </header>
 
-<aside class="side" id="side">
-<h5>Documentation</h5>
-<a href="#overview">Overview</a>
-<a href="#start">Getting Started</a>
-<a href="#auth">Authentication</a>
-<h5>API Reference</h5>
-<a href="#music">Music</a>
-<a href="#quotes">Quotes</a>
-<h5>Reference</h5>
-<a href="#limits">Rate Limits</a>
-<a href="#errors">Errors</a>
-<a href="#security">Security</a>
-</aside>
+<div class="side-backdrop" id="sideBackdrop"></div>
 
-<main class="main">
+<div class="layout">
+  <aside class="side" id="side">
+    <h5>Documentation</h5>
+    <a href="#overview">Overview</a>
+    <a href="#start">Getting Started</a>
+    <a href="#auth">Authentication</a>
 
-<section id="overview" class="hero">
-<small>DUTOZA API · VERSION 1.0.0</small>
-<h1>Build powerful apps with Incredibles API.</h1>
-<p>Access music, quotes and other Dutoza services through a simple REST API built for developers.</p>
-<div class="base">
-<span>https://dutoza.com/api</span>
-<button class="copy" onclick="copy('https://dutoza.com/api')">Copy</button>
-</div>
-</section>
+    <h5>API Reference</h5>
+    <a href="#music">Music</a>
+    <a href="#quotes">Quotes</a>
 
-<section id="start">
-<h2>Getting Started</h2>
-<p class="desc">Start using Incredibles API in three simple steps.</p>
-<div class="cards">
-<div class="card"><div class="num">1</div><h3>Get an API key</h3><p>Create or receive an API key from the Dutoza developer system.</p></div>
-<div class="card"><div class="num">2</div><h3>Authenticate</h3><p>Send the API key using the Authorization Bearer header.</p></div>
-<div class="card"><div class="num">3</div><h3>Make requests</h3><p>Call the API endpoints and process the JSON responses.</p></div>
-</div>
-</section>
+    <h5>Reference</h5>
+    <a href="#limits">Rate Limits</a>
+    <a href="#errors">Errors</a>
+    <a href="#security">Security</a>
 
-<section id="auth">
-<h2>Authentication</h2>
-<p class="desc">Protected endpoints require a valid Incredibles API key.</p>
-<div class="auth">
-<strong>Authorization</strong>
-<div class="code">Authorization: Bearer YOUR_API_KEY</div>
-</div>
-<div class="warn">Keep your API key private. Never place a private key in public GitHub repositories or client-side code.</div>
-</section>
+    <h5>Account</h5>
+    <a href="/developers/dashboard">Dashboard</a>
+    <a href="/developers/register">Create account</a>
+  </aside>
 
-<section id="music">
-<h2>Music API</h2>
-<p class="desc">Access published music and music statistics.</p>
+  <main class="main">
 
-<div class="endpoint">
-<div class="head"><span class="method get">GET</span><span class="path">/api/music</span></div>
-<div class="body">
-<p>Returns the published music library.</p>
-<div class="code">curl https://dutoza.com/api/music \
--H "Authorization: Bearer YOUR_API_KEY"</div>
-<div class="trybox">
-<strong>Try API</strong>
-<div class="row">
-<input id="musicKey" type="password" placeholder="Enter API key">
-<button class="try" onclick="request('/api/music','musicKey','musicResult')">Send Request</button>
-</div>
-<div class="result" id="musicResult"><label>Response</label><pre></pre></div>
-</div>
-</div>
-</div>
+    <section id="overview" class="hero">
+      <small>Incredibles API · v1.0</small>
+      <h1>Build apps with music &amp; quotes.</h1>
+      <p>
+        REST API for developers. Fetch published music and quotes from Incredibles
+        using a simple Bearer token.
+      </p>
+      <div class="base-url">
+        <code id="baseUrl">https://dutoza-api.onrender.com</code>
+        <button type="button" class="btn-copy" onclick="copyBase()">Copy base URL</button>
+      </div>
+    </section>
 
-<div class="endpoint">
-<div class="head"><span class="method get">GET</span><span class="path">/api/music/{id}</span></div>
-<div class="body">
-<p>Returns one published song.</p>
-<div class="code">GET /api/music/1</div>
-<div class="trybox">
-<strong>Try API</strong>
-<div class="row">
-<input id="songId" type="number" value="1" min="1" placeholder="Music ID">
-<input id="songKey" type="password" placeholder="Enter API key">
-<button class="try" onclick="song()">Send Request</button>
-</div>
-<div class="result" id="songResult"><label>Response</label><pre></pre></div>
-</div>
-</div>
-</div>
+    <section id="start">
+      <h2>Getting Started</h2>
+      <p class="desc">Three steps to start calling the API.</p>
+      <div class="cards">
+        <div class="card">
+          <div class="num">1</div>
+          <h3>Get an API key</h3>
+          <p>Register as a developer and create a key from the dashboard.</p>
+        </div>
+        <div class="card">
+          <div class="num">2</div>
+          <h3>Authenticate</h3>
+          <p>Send the key in the <code>Authorization: Bearer</code> header.</p>
+        </div>
+        <div class="card">
+          <div class="num">3</div>
+          <h3>Call endpoints</h3>
+          <p>Request <code>/api/music</code> or <code>/api/quotes</code> and use the JSON response.</p>
+        </div>
+      </div>
+    </section>
 
-<div class="endpoint">
-<div class="head"><span class="method post">POST</span><span class="path">/api/music/{id}/play</span></div>
-<div class="body">
-<p>Registers a play for a published song.</p>
-<div class="code">POST /api/music/1/play</div>
-</div>
-</div>
+    <section id="auth">
+      <h2>Authentication</h2>
+      <p class="desc">Protected endpoints need a valid API key.</p>
+      <div class="auth-box">
+        <strong>Header</strong>
+        <div class="code">Authorization: Bearer dutoza_your_api_key_here</div>
+      </div>
+      <div class="warn">
+        <strong>Important:</strong> Keep your API key private. Do not put it in public GitHub repos or client-side browser code.
+      </div>
+    </section>
 
-<div class="endpoint">
-<div class="head"><span class="method post">POST</span><span class="path">/api/music/{id}/download</span></div>
-<div class="body">
-<p>Registers a download and returns the available audio URL.</p>
-<div class="code">POST /api/music/1/download</div>
-</div>
-</div>
+    <section id="music">
+      <h2>Music API</h2>
+      <p class="desc">List and fetch published songs (title, artist, audio, cover, genre…).</p>
 
-</section>
+      <div class="endpoint">
+        <div class="ep-head">
+          <span class="method get">GET</span>
+          <span class="path">/api/music</span>
+        </div>
+        <div class="ep-body">
+          <p>Returns the published music library (paginated / searchable depending on query params).</p>
+          <div class="code">curl https://dutoza-api.onrender.com/api/music \
+  -H "Authorization: Bearer YOUR_API_KEY"</div>
+          <div class="trybox">
+            <strong>Try it</strong>
+            <div class="row">
+              <input id="musicKey" type="password" placeholder="Paste API key">
+              <button type="button" class="btn-try" onclick="request('/api/music','musicKey','musicResult')">Send</button>
+            </div>
+            <div class="result" id="musicResult"><label>Response</label><pre></pre></div>
+          </div>
+        </div>
+      </div>
 
-<section id="quotes">
-<h2>Quotes API</h2>
-<p class="desc">Retrieve quotes from the Dutoza quotes service.</p>
+      <div class="endpoint">
+        <div class="ep-head">
+          <span class="method get">GET</span>
+          <span class="path">/api/music/{id}</span>
+        </div>
+        <div class="ep-body">
+          <p>Returns one published song by ID.</p>
+          <div class="code">GET /api/music/1</div>
+          <div class="trybox">
+            <strong>Try it</strong>
+            <div class="row">
+              <input id="songId" type="number" value="1" min="1" placeholder="Song ID">
+              <input id="songKey" type="password" placeholder="Paste API key">
+              <button type="button" class="btn-try" onclick="song()">Send</button>
+            </div>
+            <div class="result" id="songResult"><label>Response</label><pre></pre></div>
+          </div>
+        </div>
+      </div>
 
-<div class="endpoint">
-<div class="head"><span class="method get">GET</span><span class="path">/api/quotes</span></div>
-<div class="body">
-<p>Returns available quotes.</p>
-<div class="code">curl https://dutoza.com/api/quotes \
--H "Authorization: Bearer YOUR_API_KEY"</div>
-<div class="trybox">
-<strong>Try API</strong>
-<div class="row">
-<input id="quoteKey" type="password" placeholder="Enter API key">
-<button class="try" onclick="request('/api/quotes','quoteKey','quoteResult')">Send Request</button>
+      <div class="endpoint">
+        <div class="ep-head">
+          <span class="method post">POST</span>
+          <span class="path">/api/music/{id}/play</span>
+        </div>
+        <div class="ep-body">
+          <p>Registers a play for a song (increments play count).</p>
+          <div class="code">POST /api/music/1/play</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-head">
+          <span class="method post">POST</span>
+          <span class="path">/api/music/{id}/download</span>
+        </div>
+        <div class="ep-body">
+          <p>Registers a download and returns the audio URL when available.</p>
+          <div class="code">POST /api/music/1/download</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="quotes">
+      <h2>Quotes API</h2>
+      <p class="desc">Fetch published quotes (text, author, category, language, user).</p>
+
+      <div class="endpoint">
+        <div class="ep-head">
+          <span class="method get">GET</span>
+          <span class="path">/api/quotes</span>
+        </div>
+        <div class="ep-body">
+          <p>Returns available quotes. Supports filters such as category / search where enabled.</p>
+          <div class="code">curl https://dutoza-api.onrender.com/api/quotes \
+  -H "Authorization: Bearer YOUR_API_KEY"</div>
+          <div class="trybox">
+            <strong>Try it</strong>
+            <div class="row">
+              <input id="quoteKey" type="password" placeholder="Paste API key">
+              <button type="button" class="btn-try" onclick="request('/api/quotes','quoteKey','quoteResult')">Send</button>
+            </div>
+            <div class="result" id="quoteResult"><label>Response</label><pre></pre></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-head">
+          <span class="method get">GET</span>
+          <span class="path">/api/quotes/{id}</span>
+        </div>
+        <div class="ep-body">
+          <p>Returns one quote by ID.</p>
+          <div class="code">GET /api/quotes/1</div>
+          <div class="trybox">
+            <strong>Try it</strong>
+            <div class="row">
+              <input id="quoteId" type="number" value="1" min="1" placeholder="Quote ID">
+              <input id="quoteOneKey" type="password" placeholder="Paste API key">
+              <button type="button" class="btn-try" onclick="oneQuote()">Send</button>
+            </div>
+            <div class="result" id="quoteOneResult"><label>Response</label><pre></pre></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="limits">
+      <h2>Rate Limits</h2>
+      <p class="desc">Default limits protect the API for everyone.</p>
+      <div class="limit-card">
+        <div style="font-size:13px;color:var(--muted);font-weight:700;">Default per API key</div>
+        <div class="big">60 / min</div>
+        <p style="margin:0;color:var(--muted);font-size:14px;">
+          If you exceed the limit you receive <strong>429 Too Many Requests</strong>.
+          Contact support if you need a higher limit.
+        </p>
+      </div>
+    </section>
+
+    <section id="errors">
+      <h2>Errors</h2>
+      <p class="desc">Common HTTP status codes returned by the API.</p>
+      <table class="ref">
+        <thead>
+          <tr><th>Code</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>200</strong></td><td>Success</td></tr>
+          <tr><td><strong>401</strong></td><td>Missing or invalid API key</td></tr>
+          <tr><td><strong>404</strong></td><td>Resource not found</td></tr>
+          <tr><td><strong>429</strong></td><td>Rate limit exceeded</td></tr>
+          <tr><td><strong>500</strong></td><td>Server error</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="security">
+      <h2>Security</h2>
+      <p class="desc">Best practices when integrating the API.</p>
+      <div class="cards" style="grid-template-columns:1fr 1fr;">
+        <div class="card">
+          <h3 style="margin-top:0;">Do</h3>
+          <p>Store keys in server env vars. Use HTTPS only. Rotate keys if leaked.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0;">Don’t</h3>
+          <p>Hardcode keys in mobile apps or public frontend JS. Don’t share keys between teams without tracking.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      Incredibles API · Developer documentation<br>
+      <span style="font-size:12px;">Questions? Use Help in the app or contact support.</span>
+    </footer>
+  </main>
 </div>
-<div class="result" id="quoteResult"><label>Response</label><pre></pre></div>
-</div>
-</div>
-</div>
-</section>
-
-<section id="limits">
-<h2>Rate Limits</h2>
-<p class="desc">Rate limiting protects the API from excessive traffic.</p>
-<div class="limit">
-<div class="big">100</div>
-<strong>requests per 60 seconds</strong>
-<p style="color:#64748b">The default API key limit is 100 requests within a 60-second window.</p>
-</div>
-</section>
-
-<section id="errors">
-<h2>Errors</h2>
-<p class="desc">Common HTTP responses.</p>
-<table>
-<tr><th>Status</th><th>Meaning</th></tr>
-<tr><td>200</td><td>Request successful</td></tr>
-<tr><td>400</td><td>Invalid request</td></tr>
-<tr><td>401</td><td>Missing or invalid API key</td></tr>
-<tr><td>404</td><td>Resource not found</td></tr>
-<tr><td>429</td><td>Rate limit exceeded</td></tr>
-<tr><td>500</td><td>Internal server error</td></tr>
-</table>
-</section>
-
-<section id="security">
-<h2>Security</h2>
-<p class="desc">Follow these practices when integrating Incredibles API.</p>
-<div class="cards">
-<div class="card"><h3>Protect API keys</h3><p>Store private keys on your backend or secure environment variables.</p></div>
-<div class="card"><h3>Use HTTPS</h3><p>Production API communication should use encrypted HTTPS connections.</p></div>
-<div class="card"><h3>Rotate exposed keys</h3><p>Disable a key immediately if it becomes publicly exposed.</p></div>
-</div>
-</section>
-
-<div class="footer">Incredibles API · Developer Portal · Version 1.0.0</div>
-
-</main>
 
 <script>
-const BASE=window.location.origin;
+(function () {
+  var side = document.getElementById("side");
+  var backdrop = document.getElementById("sideBackdrop");
+  var menuBtn = document.getElementById("menuBtn");
 
-function menu(){
-document.getElementById("side").classList.toggle("open");
+  function closeSide() {
+    side.classList.remove("open");
+    backdrop.classList.remove("open");
+  }
+  function toggleSide() {
+    side.classList.toggle("open");
+    backdrop.classList.toggle("open");
+  }
+  if (menuBtn) menuBtn.addEventListener("click", toggleSide);
+  if (backdrop) backdrop.addEventListener("click", closeSide);
+  side.querySelectorAll("a").forEach(function (a) {
+    a.addEventListener("click", function () {
+      if (window.innerWidth <= 768) closeSide();
+    });
+  });
+})();
+
+function copyBase() {
+  var t = document.getElementById("baseUrl").textContent.trim();
+  navigator.clipboard.writeText(t).then(function () {
+    alert("Base URL copied");
+  }).catch(function () {
+    prompt("Copy base URL:", t);
+  });
 }
 
-function copy(text){
-navigator.clipboard.writeText(text).then(()=>alert("Copied!")).catch(()=>prompt("Copy:",text));
+function showResult(id, data) {
+  var box = document.getElementById(id);
+  if (!box) return;
+  box.style.display = "block";
+  var pre = box.querySelector("pre");
+  if (pre) pre.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
 }
 
-function show(id,data){
-const box=document.getElementById(id);
-box.style.display="block";
-box.querySelector("pre").textContent=typeof data==="string"?data:JSON.stringify(data,null,2);
+function request(path, keyInputId, resultId) {
+  var key = document.getElementById(keyInputId).value.trim();
+  if (!key) {
+    alert("Paste your API key first.");
+    return;
+  }
+  fetch(path, {
+    headers: { "Authorization": "Bearer " + key }
+  })
+  .then(function (r) {
+    return r.json().then(function (d) {
+      return { status: r.status, body: d };
+    });
+  })
+  .then(function (res) {
+    showResult(resultId, res);
+  })
+  .catch(function (err) {
+    showResult(resultId, { error: String(err) });
+  });
 }
 
-async function request(path,keyId,resultId){
-const key=document.getElementById(keyId).value.trim();
-
-if(!key){
-show(resultId,{success:false,error:"Please enter your API key."});
-return;
+function song() {
+  var id = document.getElementById("songId").value || "1";
+  var key = document.getElementById("songKey").value.trim();
+  if (!key) { alert("Paste your API key first."); return; }
+  fetch("/api/music/" + encodeURIComponent(id), {
+    headers: { "Authorization": "Bearer " + key }
+  })
+  .then(function (r) { return r.json().then(function (d) { return { status: r.status, body: d }; }); })
+  .then(function (res) { showResult("songResult", res); })
+  .catch(function (err) { showResult("songResult", { error: String(err) }); });
 }
 
-show(resultId,"Sending request...");
-
-try{
-const r=await fetch(BASE+path,{
-headers:{
-"Authorization":"Bearer "+key,
-"Accept":"application/json"
-}
-});
-
-const text=await r.text();
-let data;
-
-try{data=JSON.parse(text)}
-catch{data={response:text}}
-
-show(resultId,{
-http_status:r.status,
-data:data
-});
-
-}catch(e){
-show(resultId,{success:false,error:e.message});
-}
-}
-
-async function song(){
-const id=document.getElementById("songId").value.trim();
-const key=document.getElementById("songKey").value.trim();
-
-if(!id){
-show("songResult",{success:false,error:"Please enter Music ID."});
-return;
-}
-
-if(!key){
-show("songResult",{success:false,error:"Please enter your API key."});
-return;
-}
-
-show("songResult","Sending request...");
-
-try{
-const r=await fetch(BASE+"/api/music/"+encodeURIComponent(id),{
-headers:{
-"Authorization":"Bearer "+key,
-"Accept":"application/json"
-}
-});
-
-const text=await r.text();
-let data;
-
-try{data=JSON.parse(text)}
-catch{data={response:text}}
-
-show("songResult",{
-http_status:r.status,
-data:data
-});
-
-}catch(e){
-show("songResult",{success:false,error:e.message});
-}
+function oneQuote() {
+  var id = document.getElementById("quoteId").value || "1";
+  var key = document.getElementById("quoteOneKey").value.trim();
+  if (!key) { alert("Paste your API key first."); return; }
+  fetch("/api/quotes/" + encodeURIComponent(id), {
+    headers: { "Authorization": "Bearer " + key }
+  })
+  .then(function (r) { return r.json().then(function (d) { return { status: r.status, body: d }; }); })
+  .then(function (res) { showResult("quoteOneResult", res); })
+  .catch(function (err) { showResult("quoteOneResult", { error: String(err) }); });
 }
 </script>
-
 </body>
 </html>
