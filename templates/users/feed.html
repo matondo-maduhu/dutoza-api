@@ -1568,41 +1568,131 @@
     .music-frame {
         position: relative; margin: 4px 12px 8px; border-radius: 16px;
         background: linear-gradient(145deg, #eff6ff 0%, #f5f3ff 50%, #ecfdf5 100%);
-        border: 1.5px solid #c7d2fe; padding: 14px; overflow: hidden;
+        border: 1.5px solid #c7d2fe; padding: 16px 14px 14px; overflow: hidden;
     }
     .music-frame .flower {
-        position: absolute; font-size: 16px; opacity: 0.8; pointer-events: none;
+        position: absolute; font-size: 16px; opacity: 0.75; pointer-events: none;
     }
     .music-frame .f1 { top: 8px; left: 10px; }
     .music-frame .f2 { top: 8px; right: 12px; }
     .music-frame .f3 { bottom: 10px; left: 12px; }
     .music-frame .f4 { bottom: 10px; right: 14px; }
-    .music-frame-inner {
-        position: relative; z-index: 1; display: flex; gap: 14px; align-items: flex-start;
+    .mf-center {
+        position: relative; z-index: 1; display: flex; flex-direction: column;
+        align-items: center; gap: 10px;
     }
     .mf-cover {
         width: 96px; height: 96px; border-radius: 14px; overflow: hidden; flex-shrink: 0;
         background: #e0e7ff; box-shadow: 0 4px 14px rgba(79,70,229,.15);
     }
+    .mf-cover-lg {
+        width: 160px; height: 160px; border-radius: 18px;
+        box-shadow: 0 10px 28px rgba(79,70,229,.22);
+    }
     .mf-cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .mf-cover-ph {
         width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-        font-size: 28px; color: #6366f1;
+        font-size: 36px; color: #6366f1;
+        background: linear-gradient(145deg, #e0e7ff, #c7d2fe);
     }
-    .mf-body { flex: 1; min-width: 0; }
-    .mf-label {
-        font-size: 11px; font-weight: 800; color: #4f46e5; letter-spacing: 0.6px;
-        margin-bottom: 4px;
+    .mf-progress-wrap { width: 100%; max-width: 280px; }
+    .mf-progress-bar {
+        height: 6px; border-radius: 99px; background: rgba(99,102,241,.18); overflow: hidden;
     }
-    .mf-title {
-        margin: 0 0 4px; font-size: 16px; font-weight: 800; color: #0f172a;
-        line-height: 1.25; word-break: break-word;
+    .mf-progress-fill {
+        height: 100%; width: 0%; border-radius: 99px;
+        background: linear-gradient(90deg, #4f46e5, #06b6d4);
+        transition: width 0.15s linear;
     }
-    .mf-artist { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 4px; }
-    .mf-meta { font-size: 12px; color: #64748b; margin-bottom: 6px; }
-    .mf-desc { margin: 0 0 8px; font-size: 13px; color: #64748b; line-height: 1.4; }
-    .mf-audio { width: 100%; margin-top: 6px; height: 36px; }
-    .mf-no-audio { font-size: 12px; color: #94a3b8; margin-top: 6px; }
+    .mf-time-row {
+        display: flex; justify-content: space-between; margin-top: 4px;
+        font-size: 11px; font-weight: 700; color: #64748b;
+    }
+    .mf-info-row {
+        position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 6px;
+        justify-content: center; margin-top: 12px;
+    }
+    .mf-chip {
+        display: inline-flex; align-items: center; gap: 5px;
+        border: none; background: rgba(255,255,255,.85); color: #334155;
+        border-radius: 99px; padding: 6px 11px; font-size: 12px; font-weight: 700;
+        font-family: inherit; box-shadow: 0 1px 4px rgba(0,0,0,.06); max-width: 100%;
+    }
+    .mf-chip i { font-size: 11px; color: #6366f1; }
+    .mf-chip-title { color: #0f172a; font-weight: 800; }
+    .mf-lyric-btn { cursor: pointer; background: #eef2ff; color: #4338ca; }
+    .mf-lyric-btn:hover, .mf-lyric-btn.open { background: #4f46e5; color: #fff; }
+    .mf-lyric-btn.open i { color: #fff; }
+    .mf-artist-line {
+        position: relative; z-index: 1; text-align: center; margin-top: 8px;
+        font-size: 13px; font-weight: 600; color: #475569;
+    }
+    .mf-desc {
+        position: relative; z-index: 1; margin: 8px 0 0; font-size: 13px;
+        color: #64748b; line-height: 1.4; text-align: center;
+    }
+    .mf-lyrics {
+        position: relative; z-index: 1; margin-top: 10px; padding: 12px;
+        background: rgba(255,255,255,.9); border-radius: 12px; border: 1px solid #e0e7ff;
+        max-height: 180px; overflow-y: auto; text-align: left;
+    }
+    .mf-lyrics pre {
+        margin: 0; white-space: pre-wrap; word-break: break-word;
+        font-family: inherit; font-size: 13px; line-height: 1.5; color: #1e293b;
+    }
+    .mf-player-row {
+        position: relative; z-index: 1; display: flex; justify-content: center; margin-top: 12px;
+    }
+    .mf-play-btn {
+        width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer;
+        background: linear-gradient(145deg, #4f46e5, #6366f1); color: #fff; font-size: 18px;
+        box-shadow: 0 6px 18px rgba(79,70,229,.35);
+        display: inline-flex; align-items: center; justify-content: center;
+    }
+    .mf-play-btn:active { transform: scale(0.96); }
+    .mf-audio-el { display: none; }
+    .mf-no-audio { font-size: 12px; color: #94a3b8; margin-top: 8px; text-align: center; }
+
+    /* Music modal form */
+    .music-modal-card { max-width: 440px; }
+    .mm-hero {
+        display: flex; gap: 14px; align-items: stretch; margin-bottom: 12px;
+    }
+    .mm-cover-pick {
+        width: 100px; height: 100px; border-radius: 16px; overflow: hidden;
+        border: 1.5px dashed #c7d2fe; background: #eef2ff; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        position: relative;
+    }
+    .mm-cover-pick input { display: none; }
+    .mm-cover-pick img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+    .mm-cover-placeholder {
+        display: flex; flex-direction: column; align-items: center; gap: 4px;
+        color: #6366f1; font-size: 22px;
+    }
+    .mm-cover-placeholder small { font-size: 11px; font-weight: 700; }
+    .mm-hero-fields { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+    .mm-audio-pick {
+        display: flex; align-items: center; gap: 8px; border: 1.5px solid #e2e8f0;
+        border-radius: 12px; padding: 10px 12px; cursor: pointer; background: #f8fafc;
+        font-size: 13px; font-weight: 600; color: #475569;
+    }
+    .mm-audio-pick input { display: none; }
+    .mm-audio-pick i { color: #4f46e5; }
+    .mm-hero-fields input[type=text] {
+        width: 100%; box-sizing: border-box; border: 1.5px solid #e2e8f0;
+        border-radius: 12px; padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none;
+    }
+    .mm-hero-fields input:focus { border-color: #4f46e5; }
+    .mm-row {
+        display: flex; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;
+    }
+    .mm-row input, .mm-row select {
+        flex: 1; min-width: 80px; box-sizing: border-box; border: 1.5px solid #e2e8f0;
+        border-radius: 12px; padding: 10px 12px; font-size: 13px; font-family: inherit;
+        background: #fff; outline: none;
+    }
+    .mm-row input:focus, .mm-row select:focus { border-color: #4f46e5; }
 
     .feed-card-actions {
         display: flex; gap: 6px; padding: 4px 10px 12px; border-top: none;
@@ -1630,45 +1720,46 @@
 
     <!-- Music form modal -->
     <div class="quote-modal-overlay" id="musicModal" hidden>
-        <div class="quote-modal" role="dialog" aria-modal="true" aria-labelledby="musicModalTitle">
+        <div class="quote-modal music-modal-card" role="dialog" aria-modal="true" aria-labelledby="musicModalTitle">
             <div class="quote-modal-header">
-                <h2 id="musicModalTitle">Chapisha Music</h2>
+                <h2 id="musicModalTitle"><i class="fa-solid fa-music" style="color:#4f46e5;margin-right:8px;"></i>Chapisha Music</h2>
                 <button type="button" class="quote-modal-close" id="closeMusicModal" aria-label="Funga">&times;</button>
             </div>
             <form id="musicModalForm" enctype="multipart/form-data">
-                <label class="qm-label">Audio *</label>
-                <div class="mm-file-row">
-                    <label class="mm-file-btn">
-                        <i class="fa-solid fa-file-audio"></i> Chagua audio
-                        <input type="file" name="audio" id="mmAudio" accept="audio/*" required>
-                    </label>
-                    <label class="mm-file-btn">
-                        <i class="fa-solid fa-image"></i> Cover
+                <div class="mm-hero">
+                    <label class="mm-cover-pick" id="mmCoverPick">
                         <input type="file" name="cover" id="mmCover" accept="image/*">
+                        <img id="mmCoverPreview" alt="" hidden>
+                        <span class="mm-cover-placeholder" id="mmCoverPh">
+                            <i class="fa-solid fa-image"></i>
+                            <small>Cover</small>
+                        </span>
                     </label>
+                    <div class="mm-hero-fields">
+                        <label class="mm-audio-pick">
+                            <input type="file" name="audio" id="mmAudio" accept="audio/*" required>
+                            <i class="fa-solid fa-file-audio"></i>
+                            <span id="mmAudioName">Chagua audio *</span>
+                        </label>
+                        <input type="text" name="title" id="mmTitle" maxlength="200" required placeholder="Jina la wimbo *">
+                        <input type="text" name="artist" id="mmArtist" maxlength="150" placeholder="Msanii">
+                    </div>
                 </div>
-                <div class="mm-preview" id="mmAudioName"></div>
 
-                <label class="qm-label" for="mmTitle">Jina la wimbo *</label>
-                <input type="text" name="title" id="mmTitle" maxlength="200" required placeholder="Mfano: Kiswahili">
+                <div class="mm-row">
+                    <input type="text" name="genre" id="mmGenre" maxlength="80" placeholder="Genre">
+                    <input type="text" name="album" id="mmAlbum" maxlength="150" placeholder="Album">
+                    <select name="language" id="mmLanguage">
+                        <option value="sw" selected>SW</option>
+                        <option value="en">EN</option>
+                        <option value="mixed">Mixed</option>
+                    </select>
+                </div>
 
-                <label class="qm-label" for="mmArtist">Msanii</label>
-                <input type="text" name="artist" id="mmArtist" maxlength="150" placeholder="Jina la msanii">
+                <label class="qm-label" for="mmLyrics">Lyrics (si lazima)</label>
+                <textarea name="lyrics" id="mmLyrics" rows="3" maxlength="8000" placeholder="Andika lyrics hapa..."></textarea>
 
-                <label class="qm-label" for="mmAlbum">Album (si lazima)</label>
-                <input type="text" name="album" id="mmAlbum" maxlength="150" placeholder="Album">
-
-                <label class="qm-label" for="mmGenre">Genre</label>
-                <input type="text" name="genre" id="mmGenre" maxlength="80" placeholder="Mfano: Bongo">
-
-                <label class="qm-label" for="mmLanguage">Lugha</label>
-                <select name="language" id="mmLanguage">
-                    <option value="sw" selected>Kiswahili (SW)</option>
-                    <option value="en">English (EN)</option>
-                    <option value="mixed">Mixed</option>
-                </select>
-
-                <label class="qm-label" for="mmDesc">Maelezo (si lazima)</label>
+                <label class="qm-label" for="mmDesc">Maelezo</label>
                 <textarea name="description" id="mmDesc" rows="2" maxlength="1000" placeholder="Maelezo mafupi..."></textarea>
 
                 <div id="mmError" style="display:none;color:#dc2626;font-size:13px;font-weight:600;margin-top:10px;"></div>
@@ -1882,10 +1973,85 @@
     if (mmAudio && mmAudioName) {
         mmAudio.addEventListener("change", function () {
             mmAudioName.textContent = (mmAudio.files && mmAudio.files[0])
-                ? ("Audio: " + mmAudio.files[0].name)
-                : "";
+                ? mmAudio.files[0].name
+                : "Chagua audio *";
         });
     }
+    var mmCover = document.getElementById("mmCover");
+    var mmCoverPreview = document.getElementById("mmCoverPreview");
+    var mmCoverPh = document.getElementById("mmCoverPh");
+    if (mmCover && mmCoverPreview) {
+        mmCover.addEventListener("change", function () {
+            if (mmCover.files && mmCover.files[0]) {
+                var url = URL.createObjectURL(mmCover.files[0]);
+                mmCoverPreview.src = url;
+                mmCoverPreview.hidden = false;
+                if (mmCoverPh) mmCoverPh.style.display = "none";
+            }
+        });
+    }
+
+    /* Music player + lyrics on feed */
+    document.addEventListener("click", function (e) {
+        var lyrBtn = e.target.closest(".mf-lyric-btn");
+        if (lyrBtn) {
+            var tid = lyrBtn.getAttribute("data-lyrics-target");
+            var box = tid ? document.getElementById(tid) : null;
+            if (box) {
+                var open = box.hidden;
+                box.hidden = !open;
+                lyrBtn.classList.toggle("open", open);
+            }
+            return;
+        }
+        var playBtn = e.target.closest(".mf-play-btn");
+        if (playBtn) {
+            var aid = playBtn.getAttribute("data-audio-id");
+            var audio = aid ? document.getElementById(aid) : null;
+            if (!audio) return;
+            document.querySelectorAll(".mf-audio-el").forEach(function (a) {
+                if (a !== audio) {
+                    a.pause();
+                    var otherBtn = document.querySelector('.mf-play-btn[data-audio-id="' + a.id + '"]');
+                    if (otherBtn) otherBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+                }
+            });
+            if (audio.paused) {
+                audio.play().catch(function () {});
+                playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            } else {
+                audio.pause();
+                playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+            }
+        }
+    });
+
+    function fmtTime(s) {
+        s = Math.floor(s || 0);
+        return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    }
+
+    document.addEventListener("timeupdate", function (e) {
+        var audio = e.target;
+        if (!audio || !audio.classList || !audio.classList.contains("mf-audio-el")) return;
+        var prog = document.getElementById(audio.getAttribute("data-prog") || "");
+        var cur = document.getElementById(audio.getAttribute("data-cur") || "");
+        var durEl = document.getElementById(audio.getAttribute("data-dur") || "");
+        var d = audio.duration || 0;
+        var t = audio.currentTime || 0;
+        if (prog && d) prog.style.width = ((t / d) * 100) + "%";
+        if (cur) cur.textContent = fmtTime(t);
+        if (durEl && d && isFinite(d)) durEl.textContent = fmtTime(d);
+    }, true);
+
+    document.addEventListener("ended", function (e) {
+        var audio = e.target;
+        if (!audio || !audio.classList || !audio.classList.contains("mf-audio-el")) return;
+        var btn = document.querySelector('.mf-play-btn[data-audio-id="' + audio.id + '"]');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        var prog = document.getElementById(audio.getAttribute("data-prog") || "");
+        if (prog) prog.style.width = "0%";
+    }, true);
     if (musicModalForm) {
         musicModalForm.addEventListener("submit", function (e) {
             e.preventDefault();
@@ -2098,17 +2264,24 @@
         if (post.type === "music") {
             const title = escapeHtml(post.title || "Untitled Song");
             const description = escapeHtml(post.description || "");
+            const lyrics = escapeHtml(post.lyrics || "");
+            const hasLyrics = !!(post.lyrics && String(post.lyrics).trim());
             const audioUrl = escapeHtml(post.audio_url || "");
             const coverUrl = post.cover_url ? escapeHtml(post.cover_url) : "";
             const artistName = escapeHtml(post.artist?.name || "Unknown Artist");
             const albumTitle = escapeHtml(post.album?.title || "");
             const genre = escapeHtml(post.genre || "");
+            const dur = Number(post.duration_seconds || 0);
+            const durLabel = dur > 0
+                ? (Math.floor(dur / 60) + ":" + String(dur % 60).padStart(2, "0"))
+                : "";
             const avatarHtml = user.profile_image_url
                 ? `<img src="${escapeHtml(user.profile_image_url)}" alt="">`
                 : `<span class="qf-avatar-letter">${escapeHtml((user.full_name || "M").trim().charAt(0).toUpperCase())}</span>`;
             const cover = coverUrl
                 ? `<img src="${coverUrl}" alt="${title}" class="mf-cover-img">`
                 : `<div class="mf-cover-ph"><i class="fa-solid fa-music"></i></div>`;
+            const pid = "m" + post.id;
 
             return `
                 <article class="feed-card music-card-v2" data-type="music" data-id="${post.id}">
@@ -2129,22 +2302,41 @@
                         </div>
                     </div>
 
-                    <div class="music-frame">
+                    <div class="music-frame music-frame-v3">
                         <span class="flower f1">🎵</span>
                         <span class="flower f2">🌸</span>
                         <span class="flower f3">🎧</span>
                         <span class="flower f4">🌺</span>
-                        <div class="music-frame-inner">
-                            <div class="mf-cover">${cover}</div>
-                            <div class="mf-body">
-                                <div class="mf-label"><i class="fa-solid fa-music"></i> MUSIC</div>
-                                <h3 class="mf-title">${title}</h3>
-                                <div class="mf-artist">${artistName}</div>
-                                ${(albumTitle || genre) ? `<div class="mf-meta">${albumTitle ? albumTitle : ""}${albumTitle && genre ? " · " : ""}${genre || ""}</div>` : ""}
-                                ${description ? `<p class="mf-desc">${description}</p>` : ""}
-                                ${audioUrl ? `<audio class="mf-audio" controls preload="metadata" src="${audioUrl}"></audio>` : `<div class="mf-no-audio">Audio haipatikani</div>`}
+
+                        <div class="mf-center">
+                            <div class="mf-cover mf-cover-lg">${cover}</div>
+                            <div class="mf-progress-wrap">
+                                <div class="mf-progress-bar"><div class="mf-progress-fill" id="prog-${pid}"></div></div>
+                                <div class="mf-time-row">
+                                    <span id="cur-${pid}">0:00</span>
+                                    <span id="dur-${pid}">${durLabel || "0:00"}</span>
+                                </div>
                             </div>
                         </div>
+
+                        <div class="mf-info-row">
+                            ${genre ? `<span class="mf-chip"><i class="fa-solid fa-tag"></i> ${genre}</span>` : ""}
+                            <span class="mf-chip mf-chip-title"><i class="fa-solid fa-music"></i> ${title}</span>
+                            ${hasLyrics ? `<button type="button" class="mf-chip mf-lyric-btn" data-lyrics-target="lyr-${pid}"><i class="fa-solid fa-align-left"></i> Lyrics</button>` : ""}
+                        </div>
+                        <div class="mf-artist-line">${artistName}${albumTitle ? " · " + albumTitle : ""}</div>
+                        ${description ? `<p class="mf-desc">${description}</p>` : ""}
+                        ${hasLyrics ? `<div class="mf-lyrics" id="lyr-${pid}" hidden><pre>${lyrics}</pre></div>` : ""}
+
+                        ${audioUrl ? `
+                            <div class="mf-player-row">
+                                <button type="button" class="mf-play-btn" data-audio-id="aud-${pid}" aria-label="Play">
+                                    <i class="fa-solid fa-play"></i>
+                                </button>
+                                <audio id="aud-${pid}" class="mf-audio-el" preload="metadata" src="${audioUrl}"
+                                    data-prog="prog-${pid}" data-cur="cur-${pid}" data-dur="dur-${pid}"></audio>
+                            </div>
+                        ` : `<div class="mf-no-audio">Audio haipatikani</div>`}
                     </div>
 
                     <div class="feed-card-actions">
