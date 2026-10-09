@@ -113,11 +113,11 @@
                 <div class="stat-label">Posts</div>
             </div>
             <div class="stat">
-                <div class="stat-number">0</div>
+                <div class="stat-number">{{ followers_count|default(0) }}</div>
                 <div class="stat-label">Followers</div>
             </div>
             <div class="stat">
-                <div class="stat-number">0</div>
+                <div class="stat-number">{{ following_count|default(0) }}</div>
                 <div class="stat-label">Following</div>
             </div>
         </div>

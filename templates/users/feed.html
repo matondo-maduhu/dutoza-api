@@ -1400,6 +1400,17 @@
     .fca-btn.liked, .fca-btn.liked i { color: #e11d48; }
 
 .fca-btn.saved, .fca-btn.saved i { color: #1EB53A; }
+
+    .report-reasons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .report-reason {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 12px;
+        font-size: 14px; font-weight: 600; cursor: pointer; background: #fff;
+    }
+    .report-reason:has(input:checked) {
+        border-color: #dc2626; background: #fef2f2; color: #991b1b;
+    }
+
 .feed-meta-line { font-size: 12px; color: #64748b; display: block; margin-top: 1px; }
 .fca-btn .like-count, .fca-btn .save-count, .fca-btn .share-count { font-variant-numeric: tabular-nums; }
 
@@ -1981,6 +1992,74 @@
         </div>
     </div>
 
+    
+    <!-- Report modal -->
+    <div class="quote-modal-overlay" id="reportModal" hidden>
+        <div class="quote-modal" role="dialog" aria-modal="true">
+            <div class="quote-modal-header">
+                <h2>Report</h2>
+                <button type="button" class="quote-modal-close" id="closeReportModal" aria-label="Funga">&times;</button>
+            </div>
+            <form id="reportForm">
+                <input type="hidden" id="reportContentType" name="content_type">
+                <input type="hidden" id="reportContentId" name="content_id">
+                <p class="qm-hint" style="margin-bottom:10px;">Chagua sababu ya report:</p>
+                <div class="report-reasons">
+                    <label class="report-reason"><input type="radio" name="reason" value="Spam" required> Spam</label>
+                    <label class="report-reason"><input type="radio" name="reason" value="Harassment"> Harassment / Chuki</label>
+                    <label class="report-reason"><input type="radio" name="reason" value="Copyright"> Copyright / Wizi wa content</label>
+                    <label class="report-reason"><input type="radio" name="reason" value="Inappropriate"> Inappropriate / NSFW</label>
+                    <label class="report-reason"><input type="radio" name="reason" value="Misinformation"> Misinformation</label>
+                    <label class="report-reason"><input type="radio" name="reason" value="Other"> Nyingine</label>
+                </div>
+                <label class="qm-label" for="reportDetails">Maelezo (si lazima)</label>
+                <textarea id="reportDetails" name="details" rows="3" maxlength="500" placeholder="Eleza kidogo..."></textarea>
+                <div id="reportError" style="display:none;color:#dc2626;font-size:13px;font-weight:600;margin-top:8px;"></div>
+                <div class="quote-modal-actions">
+                    <button type="button" class="qm-btn qm-cancel" id="cancelReportModal">Ghairi</button>
+                    <button type="submit" class="qm-btn qm-submit" style="background:#dc2626;">Tuma Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit music modal -->
+    <div class="quote-modal-overlay" id="editMusicModal" hidden>
+        <div class="quote-modal music-modal-card" role="dialog" aria-modal="true">
+            <div class="quote-modal-header">
+                <h2><i class="fa-solid fa-pen" style="color:#4f46e5;margin-right:8px;"></i>Hariri Music</h2>
+                <button type="button" class="quote-modal-close" id="closeEditMusicModal" aria-label="Funga">&times;</button>
+            </div>
+            <form id="editMusicForm">
+                <input type="hidden" id="emSongId">
+                <label class="qm-label" for="emTitle">Jina la wimbo *</label>
+                <input type="text" id="emTitle" name="title" maxlength="200" required>
+
+                <label class="qm-label" for="emGenre">Genre</label>
+                <input type="text" id="emGenre" name="genre" maxlength="80" placeholder="Mfano: Bongo">
+
+                <label class="qm-label" for="emLanguage">Lugha</label>
+                <select id="emLanguage" name="language">
+                    <option value="sw">Kiswahili (SW)</option>
+                    <option value="en">English (EN)</option>
+                    <option value="mixed">Mixed</option>
+                </select>
+
+                <label class="qm-label" for="emLyrics">Lyrics</label>
+                <textarea id="emLyrics" name="lyrics" rows="4" maxlength="8000" placeholder="Lyrics..."></textarea>
+
+                <label class="qm-label" for="emDesc">Maelezo</label>
+                <textarea id="emDesc" name="description" rows="2" maxlength="1000" placeholder="Maelezo..."></textarea>
+
+                <div id="emError" style="display:none;color:#dc2626;font-size:13px;font-weight:600;margin-top:8px;"></div>
+                <div class="quote-modal-actions">
+                    <button type="button" class="qm-btn qm-cancel" id="cancelEditMusicModal">Ghairi</button>
+                    <button type="submit" class="qm-btn qm-submit" id="emSubmit">Hifadhi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <section id="feed">
 
         <div
@@ -2273,30 +2352,11 @@
                 return;
             }
             if (act === "edit-music" && id) {
-                var nt = prompt("Jina jipya la wimbo:", actBtn.getAttribute("data-title") || "");
-                if (nt === null || !nt.trim()) return;
-                var ng = prompt("Genre:", actBtn.getAttribute("data-genre") || "") || "";
-                fetch("/api/user/music/" + id + "/edit", {
-                    method: "POST",
-                    credentials: "same-origin",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ title: nt.trim(), genre: ng.trim() })
-                }).then(function (r) { return r.json(); })
-                  .then(function (d) {
-                      if (d && d.success) window.location.reload();
-                      else alert((d && d.message) || "Imeshindikana");
-                  });
+                openEditMusicModal(actBtn);
                 return;
             }
             if (act === "report" && id && ctype) {
-                var reason = prompt("Sababu ya report (si lazima):", "") || "";
-                fetch("/api/user/content/report", {
-                    method: "POST",
-                    credentials: "same-origin",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ content_type: ctype, content_id: Number(id), reason: reason })
-                }).then(function (r) { return r.json(); })
-                  .then(function (d) { alert((d && d.message) || "Asante"); });
+                openReportModal(ctype, id);
                 return;
             }
             if (act === "interest" && id && ctype) {
@@ -2580,6 +2640,161 @@
           .finally(function () { btn.disabled = false; });
     });
 
+    
+    /* Report + Edit Music modals */
+    var reportModal = document.getElementById("reportModal");
+    var editMusicModal = document.getElementById("editMusicModal");
+
+    function openReportModal(ctype, id) {
+        if (!reportModal) return;
+        document.getElementById("reportContentType").value = ctype;
+        document.getElementById("reportContentId").value = id;
+        var err = document.getElementById("reportError");
+        if (err) { err.style.display = "none"; err.textContent = ""; }
+        var form = document.getElementById("reportForm");
+        if (form) form.reset();
+        document.getElementById("reportContentType").value = ctype;
+        document.getElementById("reportContentId").value = id;
+        reportModal.hidden = false;
+        document.body.style.overflow = "hidden";
+    }
+    function closeReportModal() {
+        if (!reportModal) return;
+        reportModal.hidden = true;
+        document.body.style.overflow = "";
+    }
+    function openEditMusicModal(btn) {
+        if (!editMusicModal) return;
+        document.getElementById("emSongId").value = btn.getAttribute("data-id") || "";
+        document.getElementById("emTitle").value = btn.getAttribute("data-title") || "";
+        document.getElementById("emGenre").value = btn.getAttribute("data-genre") || "";
+        document.getElementById("emDesc").value = btn.getAttribute("data-desc") || "";
+        document.getElementById("emLyrics").value = btn.getAttribute("data-lyrics") || "";
+        var lang = btn.getAttribute("data-language") || "sw";
+        var sel = document.getElementById("emLanguage");
+        if (sel) sel.value = lang;
+        var err = document.getElementById("emError");
+        if (err) { err.style.display = "none"; err.textContent = ""; }
+        editMusicModal.hidden = false;
+        document.body.style.overflow = "hidden";
+    }
+    function closeEditMusicModal() {
+        if (!editMusicModal) return;
+        editMusicModal.hidden = true;
+        document.body.style.overflow = "";
+    }
+
+    ["closeReportModal", "cancelReportModal"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener("click", closeReportModal);
+    });
+    if (reportModal) {
+        reportModal.addEventListener("click", function (e) {
+            if (e.target === reportModal) closeReportModal();
+        });
+    }
+    ["closeEditMusicModal", "cancelEditMusicModal"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener("click", closeEditMusicModal);
+    });
+    if (editMusicModal) {
+        editMusicModal.addEventListener("click", function (e) {
+            if (e.target === editMusicModal) closeEditMusicModal();
+        });
+    }
+
+    var reportForm = document.getElementById("reportForm");
+    if (reportForm) {
+        reportForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var ctype = document.getElementById("reportContentType").value;
+            var id = document.getElementById("reportContentId").value;
+            var reasonEl = reportForm.querySelector('input[name="reason"]:checked');
+            var reason = reasonEl ? reasonEl.value : "";
+            var details = (document.getElementById("reportDetails").value || "").trim();
+            var fullReason = details ? (reason + ": " + details) : reason;
+            var err = document.getElementById("reportError");
+            fetch("/api/user/content/report", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    content_type: ctype,
+                    content_id: Number(id),
+                    reason: fullReason
+                })
+            }).then(function (r) { return r.json(); })
+              .then(function (d) {
+                  if (d && d.success) {
+                      closeReportModal();
+                      alert(d.message || "Report imetumwa. Asante.");
+                  } else {
+                      if (err) {
+                          err.textContent = (d && d.message) || "Imeshindikana";
+                          err.style.display = "block";
+                      }
+                  }
+              })
+              .catch(function () {
+                  if (err) {
+                      err.textContent = "Tatizo la mtandao";
+                      err.style.display = "block";
+                  }
+              });
+        });
+    }
+
+    var editMusicForm = document.getElementById("editMusicForm");
+    if (editMusicForm) {
+        editMusicForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var id = document.getElementById("emSongId").value;
+            var payload = {
+                title: (document.getElementById("emTitle").value || "").trim(),
+                genre: (document.getElementById("emGenre").value || "").trim(),
+                language: document.getElementById("emLanguage").value || "sw",
+                lyrics: (document.getElementById("emLyrics").value || "").trim(),
+                description: (document.getElementById("emDesc").value || "").trim()
+            };
+            if (!payload.title) return;
+            var err = document.getElementById("emError");
+            var submitBtn = document.getElementById("emSubmit");
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Inahifadhi…";
+            }
+            fetch("/api/user/music/" + id + "/edit", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }).then(function (r) { return r.json(); })
+              .then(function (d) {
+                  if (d && d.success) {
+                      closeEditMusicModal();
+                      window.location.reload();
+                  } else {
+                      if (err) {
+                          err.textContent = (d && d.message) || "Imeshindikana";
+                          err.style.display = "block";
+                      }
+                  }
+              })
+              .catch(function () {
+                  if (err) {
+                      err.textContent = "Tatizo la mtandao";
+                      err.style.display = "block";
+                  }
+              })
+              .finally(function () {
+                  if (submitBtn) {
+                      submitBtn.disabled = false;
+                      submitBtn.textContent = "Hifadhi";
+                  }
+              });
+        });
+    }
+
     function renderPost(post) {
         const user = post.user || {};
 
@@ -2706,7 +2921,7 @@
             const ownerId = user.id || post.user_id || null;
             const isOwner = ownerId && Number(ownerId) === Number(CURRENT_USER_ID);
             const menuItems = isOwner
-                ? `<button type="button" class="menu-act" data-act="edit-music" data-id="${post.id}" data-title="${escapeHtml(post.title||'')}" data-genre="${escapeHtml(post.genre||'')}" data-desc="${escapeHtml(post.description||'')}" data-lyrics="${escapeHtml(post.lyrics||'')}">Edit</button>
+                ? `<button type="button" class="menu-act" data-act="edit-music" data-id="${post.id}" data-title="${escapeHtml(post.title||'')}" data-genre="${escapeHtml(post.genre||'')}" data-desc="${escapeHtml(post.description||'')}" data-lyrics="${escapeHtml(post.lyrics||'')}" data-language="${escapeHtml(post.language||'sw')}">Edit</button>
                    <button type="button" class="menu-act danger" data-act="delete-music" data-id="${post.id}">Delete</button>`
                 : `<button type="button" class="menu-act" data-act="interest" data-type="music" data-id="${post.id}">Interested</button>
                    <button type="button" class="menu-act" data-act="report" data-type="music" data-id="${post.id}">Report</button>`;
