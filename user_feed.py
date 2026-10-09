@@ -154,10 +154,14 @@ def get_posts():
                     q.user_id,
                     u.full_name,
                     u.username,
-                    u.profile_image_url
+                    u.profile_image_url,
+                    c.name AS category_name,
+                    c.slug AS category_slug
                 FROM quotes q
                 LEFT JOIN users u
                     ON u.id = q.user_id
+                LEFT JOIN categories c
+                    ON c.id = q.category_id
                 WHERE q.status = 'published'
                 ORDER BY q.created_at DESC
                 LIMIT 50
@@ -179,6 +183,8 @@ def get_posts():
                         "username": row[7] or "",
                         "profile_image_url": row[8]
                     },
+                    "category": row[9],
+                    "category_slug": row[10],
                     "likes_count": 0,
                     "is_liked": False
                 })
