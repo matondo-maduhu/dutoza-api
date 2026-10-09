@@ -584,3 +584,112 @@ def create_music_post():
                 connection.close()
             except Exception:
                 pass
+
+
+@user_music_bp.delete("/api/user/music/<int:song_id>")
+@user_music_bp.post("/api/user/music/<int:song_id>/delete")
+def delete_music(song_id):
+    user_id = get_current_user_id()
+    if not user_id:
+        return jsonify({"success": False, "message": "Login required"}), 401
+
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT user_id FROM songs WHERE id = %s LIMIT 1",
+            (song_id,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({"success": False, "message": "Song not found"}), 404
+        if int(row[0] or 0) != int(user_id):
+            return jsonify({"success": False, "message": "Forbidden"}), 403
+
+        cursor.execute("DELETE FROM songs WHERE id = %s", (song_id,))
+        connection.commit()
+        return jsonify({"success": True, "message": "Wimbo umefutwa"})
+    except Exception as e:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        if connection:
+            try:
+                connection.close()
+            except Exception:
+                pass
+
+
+@user_music_bp.post("/api/user/music/<int:song_id>/edit")
+def edit_music(song_id):
+    user_id = get_current_user_id()
+    if not user_id:
+        return jsonify({"success": False, "message": "Login required"}), 401
+
+    data = request.get_json(silent=True) or {}
+    title = (data.get("title") or request.form.get("title") or "").strip()[:200]
+    genre = (data.get("genre") or request.form.get("genre") or "").strip()[:80]
+    description = (data.get("description") or request.form.get("description") or "").strip()[:1000]
+    lyrics = (data.get("lyrics") or request.form.get("lyrics") or "").strip()[:8000]
+    language = (data.get("language") or request.form.get("language") or "").strip()[:10]
+
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT user_id FROM songs WHERE id = %s LIMIT 1",
+            (song_id,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({"success": False, "message": "Song not found"}), 404
+        if int(row[0] or 0) != int(user_id):
+            return jsonify({"success": False, "message": "Forbidden"}), 403
+
+        sets = []
+        params = []
+        if title:
+            sets.append("title = %s")
+            params.append(title)
+        if genre or genre == "":
+            sets.append("genre = %s")
+            params.append(genre or None)
+        if description or description == "":
+            sets.append("description = %s")
+            params.append(description or None)
+        if lyrics or lyrics == "":
+            sets.append("lyrics = %s")
+            params.append(lyrics or None)
+        if language:
+            sets.append("language = %s")
+            params.append(language)
+        sets.append("updated_at = NOW()")
+        if not title and len(sets) == 1:
+            return jsonify({"success": False, "message": "Hakuna mabadiliko"}), 400
+
+        params.append(song_id)
+        cursor.execute(
+            f"UPDATE songs SET {', '.join(sets)} WHERE id = %s",
+            params,
+        )
+        connection.commit()
+        return jsonify({"success": True, "message": "Wimbo umesasishwa"})
+    except Exception as e:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        if connection:
+            try:
+                connection.close()
+            except Exception:
+                pass

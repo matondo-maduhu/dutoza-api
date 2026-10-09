@@ -1543,3 +1543,243 @@ def unlike_comment(comment_id):
     finally:
         if conn:
             close_connection(conn)
+
+
+# ============================================================
+# QUOTE / MUSIC OWNER ACTIONS + REPORT / INTEREST
+# ============================================================
+
+def ensure_report_tables(connection):
+    cursor = connection.cursor()
+    try:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS content_reports (
+                id SERIAL PRIMARY KEY,
+                reporter_id INTEGER NOT NULL,
+                content_type VARCHAR(20) NOT NULL,
+                content_id INTEGER NOT NULL,
+                reason TEXT,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS content_interests (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                content_type VARCHAR(20) NOT NULL,
+                content_id INTEGER NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                UNIQUE (user_id, content_type, content_id)
+            )
+        """)
+        connection.commit()
+    finally:
+        cursor.close()
+
+
+@user_feed_bp.delete("/api/user/quotes/<int:quote_id>")
+@user_feed_bp.post("/api/user/quotes/<int:quote_id>/delete")
+def delete_quote(quote_id):
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"success": False, "message": "Login required"}), 401
+
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT user_id FROM quotes WHERE id = %s LIMIT 1",
+            (quote_id,)
+        )
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({"success": False, "message": "Quote not found"}), 404
+        if int(row[0] or 0) != int(user_id):
+            return jsonify({"success": False, "message": "Forbidden"}), 403
+
+        cursor.execute("DELETE FROM quotes WHERE id = %s", (quote_id,))
+        connection.commit()
+        return jsonify({"success": True, "message": "Quote imefutwa"})
+    except Exception as e:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        close_connection(connection)
+
+
+@user_feed_bp.post("/api/user/quotes/<int:quote_id>/edit")
+def edit_quote(quote_id):
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"success": False, "message": "Login required"}), 401
+
+    data = request.get_json(silent=True) or {}
+    content = (data.get("content") or request.form.get("content") or "").strip()
+    category_raw = (data.get("category") or request.form.get("category") or "").strip()[:100]
+    author = (data.get("author") or request.form.get("author") or "").strip()[:150]
+    language = (data.get("language") or request.form.get("language") or "").strip()[:10]
+
+    if not content:
+        return jsonify({"success": False, "message": "Quote text required"}), 400
+    if len(content) > 5000:
+        return jsonify({"success": False, "message": "Quote ni ndefu sana"}), 400
+
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT user_id FROM quotes WHERE id = %s LIMIT 1",
+            (quote_id,)
+        )
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({"success": False, "message": "Quote not found"}), 404
+        if int(row[0] or 0) != int(user_id):
+            return jsonify({"success": False, "message": "Forbidden"}), 403
+
+        category_id = None
+        if category_raw:
+            import re as _re
+            slug = _re.sub(r"[^a-z0-9]+", "-", category_raw.lower()).strip("-")[:80] or "general"
+            cursor.execute(
+                """
+                SELECT id FROM categories
+                WHERE LOWER(slug) = LOWER(%s) OR LOWER(name) = LOWER(%s)
+                LIMIT 1
+                """,
+                (slug, category_raw),
+            )
+            cat = cursor.fetchone()
+            if cat:
+                category_id = cat[0]
+            else:
+                cursor.execute(
+                    "INSERT INTO categories (name, slug) VALUES (%s, %s) RETURNING id",
+                    (category_raw, slug),
+                )
+                category_id = cursor.fetchone()[0]
+
+        sets = ["text = %s"]
+        params = [content]
+        if author:
+            sets.append("author = %s")
+            params.append(author)
+        if language:
+            sets.append("language = %s")
+            params.append(language)
+        if category_raw:
+            sets.append("category_id = %s")
+            params.append(category_id)
+        params.append(quote_id)
+
+        cursor.execute(
+            f"UPDATE quotes SET {', '.join(sets)} WHERE id = %s",
+            params,
+        )
+        connection.commit()
+        return jsonify({"success": True, "message": "Quote imesasishwa"})
+    except Exception as e:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        close_connection(connection)
+
+
+@user_feed_bp.post("/api/user/content/report")
+def report_content():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"success": False, "message": "Login required"}), 401
+
+    data = request.get_json(silent=True) or {}
+    content_type = (data.get("content_type") or "").strip().lower()
+    content_id = data.get("content_id")
+    reason = (data.get("reason") or "").strip()[:500]
+
+    if content_type not in ("quote", "music", "post") or not content_id:
+        return jsonify({"success": False, "message": "Invalid content"}), 400
+
+    connection = None
+    try:
+        connection = get_connection()
+        ensure_report_tables(connection)
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO content_reports (reporter_id, content_type, content_id, reason)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (user_id, content_type, int(content_id), reason or None),
+        )
+        connection.commit()
+        return jsonify({"success": True, "message": "Report imetumwa. Asante."})
+    except Exception as e:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        close_connection(connection)
+
+
+@user_feed_bp.post("/api/user/content/interest")
+def toggle_interest():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"success": False, "message": "Login required"}), 401
+
+    data = request.get_json(silent=True) or {}
+    content_type = (data.get("content_type") or "").strip().lower()
+    content_id = data.get("content_id")
+
+    if content_type not in ("quote", "music", "post") or not content_id:
+        return jsonify({"success": False, "message": "Invalid content"}), 400
+
+    connection = None
+    try:
+        connection = get_connection()
+        ensure_report_tables(connection)
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            SELECT id FROM content_interests
+            WHERE user_id = %s AND content_type = %s AND content_id = %s
+            LIMIT 1
+            """,
+            (user_id, content_type, int(content_id)),
+        )
+        existing = cursor.fetchone()
+        if existing:
+            cursor.execute("DELETE FROM content_interests WHERE id = %s", (existing[0],))
+            connection.commit()
+            return jsonify({"success": True, "interested": False, "message": "Imeondolewa kwenye interested"})
+        cursor.execute(
+            """
+            INSERT INTO content_interests (user_id, content_type, content_id)
+            VALUES (%s, %s, %s)
+            """,
+            (user_id, content_type, int(content_id)),
+        )
+        connection.commit()
+        return jsonify({"success": True, "interested": True, "message": "Imeongezwa kwenye interested"})
+    except Exception as e:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        close_connection(connection)
