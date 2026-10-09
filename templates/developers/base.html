@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Incredibles API — Developers{% endblock %}</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+:root {
+  --brand-green: #1EB53A;
+  --brand-blue: #00A3DD;
+  --brand-purple: #7c3aed;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e5e7eb;
+  --bg: #f5f6f7;
+  --card: #ffffff;
+  --radius: 14px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+a { color: var(--brand-green); text-decoration: none; font-weight: 700; }
+a:hover { opacity: 0.9; }
+
+.brand-text {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  background: linear-gradient(120deg, var(--brand-green) 0%, var(--brand-blue) 55%, var(--brand-purple) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--brand-green), var(--brand-blue) 50%, var(--brand-purple));
+  color: #fff; display: grid; place-items: center; font-weight: 900; font-size: 15px;
+  flex-shrink: 0;
+}
+
+/* Topbar (portal pages) */
+.dev-top {
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.dev-top-left { display: flex; align-items: center; gap: 10px; }
+.dev-top-right { display: flex; align-items: center; gap: 10px; }
+.dev-top a.nav-link {
+  color: #475569; font-size: 13px; font-weight: 700;
+  padding: 8px 12px; border-radius: 10px;
+}
+.dev-top a.nav-link:hover { background: #f1f5f9; color: var(--ink); }
+.dev-top a.nav-link.active {
+  background: #e8f8ec; color: #0d7a28;
+}
+.btn {
+  border: 0; border-radius: 11px; padding: 10px 14px;
+  font-weight: 800; font-size: 13px; font-family: inherit; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--brand-green), #16a34a);
+  color: #fff;
+}
+.btn-primary:hover { opacity: 0.92; }
+.btn-secondary {
+  background: #f1f5f9; color: #334155; border: 1px solid var(--line);
+}
+.btn-danger {
+  background: #fff; color: #b91c1c; border: 1px solid #fecaca;
+}
+.btn-danger:hover { background: #fef2f2; }
+
+.flash {
+  margin: 14px 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  font-size: 14px;
+  font-weight: 600;
+}
+.flash.error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.page {
+  width: min(1100px, 94%);
+  margin: 24px auto 40px;
+}
+
+{% block extra_css %}{% endblock %}
+</style>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+{% block body %}{% endblock %}
+{% block extra_js %}{% endblock %}
+</body>
+</html>

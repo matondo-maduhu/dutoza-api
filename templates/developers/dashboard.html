@@ -1,779 +1,265 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dutoza API — Developer Dashboard</title>
+{% extends "developers/base.html" %}
+{% block title %}Developer Dashboard — Incredibles API{% endblock %}
 
-<style>
-*{box-sizing:border-box}
-
-body{
-margin:0;
-background:#f5f7fb;
-color:#172033;
-font-family:system-ui,-apple-system,"Segoe UI",sans-serif
+{% block extra_css %}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
 }
-
-header{
-height:64px;
-background:#fff;
-border-bottom:1px solid #e5e7eb;
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:0 24px
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(15,23,42,.04);
 }
-
-.logo{
-display:flex;
-align-items:center;
-gap:10px;
-font-weight:900;
-font-size:19px
+.card h3 { margin: 0 0 6px; font-size: 12px; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: .3px; }
+.big { font-size: 22px; font-weight: 900; color: var(--ink); }
+.page-title { margin: 0; font-size: 24px; font-weight: 900; }
+.subtitle { color: var(--muted); margin: 6px 0 20px; font-size: 14px; }
+.section {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(15,23,42,.04);
 }
-
-.logo-mark{
-width:38px;
-height:38px;
-border-radius:10px;
-background:#2563eb;
-color:#fff;
-display:grid;
-place-items:center
+.section-head { padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.section-head h2 { margin: 0; font-size: 16px; font-weight: 800; }
+.section-head p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.section-body { padding: 16px 18px; }
+.key-box {
+  background: #0f172a; color: #fff; border-radius: 12px; padding: 14px;
 }
-
-.user{
-display:flex;
-align-items:center;
-gap:14px;
-color:#475569;
-font-size:14px
+.key-label { font-size: 11px; color: #94a3b8; margin-bottom: 8px; font-weight: 700; letter-spacing: .4px; }
+.key-value { display: flex; gap: 10px; align-items: center; }
+.key-value code { flex: 1; word-break: break-all; font-family: ui-monospace, monospace; font-size: 13px; }
+.warning {
+  margin-top: 12px; color: #92400e; background: #fffbeb;
+  border: 1px solid #fde68a; padding: 11px; border-radius: 10px; font-size: 13px;
 }
-
-.logout{
-border:1px solid #dbe1e8;
-background:#fff;
-color:#334155;
-padding:8px 13px;
-border-radius:7px;
-font-weight:700;
-cursor:pointer
+table { width: 100%; border-collapse: collapse; }
+th, td {
+  text-align: left; padding: 12px 10px; border-bottom: 1px solid #eef2f7; font-size: 13px;
 }
-
-.logout:hover{
-background:#f8fafc
+th { color: var(--muted); font-weight: 700; background: #f8fafc; }
+.status {
+  display: inline-block; padding: 4px 8px; border-radius: 999px;
+  background: #dcfce7; color: #166534; font-size: 11px; font-weight: 800;
 }
-
-main{
-width:min(1100px,92%);
-margin:32px auto
+.status.revoked { background: #fee2e2; color: #991b1b; }
+.create-key { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.create-key input {
+  flex: 1; min-width: 200px; padding: 11px 13px;
+  border: 1.5px solid #e2e8f0; border-radius: 11px; font-size: 14px; font-family: inherit; outline: none;
 }
-
-h1{
-margin:0;
-font-size:30px
+.create-key input:focus { border-color: var(--brand-green); }
+.create-help { margin-top: 10px; color: var(--muted); font-size: 13px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.empty { color: var(--muted); font-size: 14px; }
+.user-chip {
+  font-size: 13px; color: #475569; font-weight: 600;
+  max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-
-.subtitle{
-color:#64748b;
-margin:7px 0 28px
+@media (max-width: 750px) {
+  .user-chip { display: none; }
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+  .create-key input, .create-key .btn { width: 100%; }
 }
+{% endblock %}
 
-.grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:18px;
-margin-bottom:22px
-}
-
-.card{
-background:#fff;
-border:1px solid #e5e7eb;
-border-radius:14px;
-padding:20px
-}
-
-.card h3{
-margin:0 0 8px;
-font-size:14px;
-color:#64748b
-}
-
-.big{
-font-size:25px;
-font-weight:900
-}
-
-.section{
-background:#fff;
-border:1px solid #e5e7eb;
-border-radius:14px;
-margin-bottom:22px;
-overflow:hidden
-}
-
-.section-head{
-padding:20px;
-border-bottom:1px solid #e5e7eb
-}
-
-.section-head h2{
-margin:0;
-font-size:19px
-}
-
-.section-head p{
-margin:6px 0 0;
-color:#64748b;
-font-size:14px
-}
-
-.section-body{
-padding:20px
-}
-
-.key-box{
-background:#0f172a;
-color:#fff;
-border-radius:10px;
-padding:16px
-}
-
-.key-label{
-font-size:12px;
-color:#94a3b8;
-margin-bottom:8px
-}
-
-.key-value{
-display:flex;
-gap:10px;
-align-items:center
-}
-
-.key-value code{
-flex:1;
-word-break:break-all;
-font-family:ui-monospace,monospace;
-font-size:13px
-}
-
-.copy{
-border:0;
-background:#2563eb;
-color:#fff;
-padding:9px 12px;
-border-radius:7px;
-font-weight:700;
-cursor:pointer
-}
-
-.copy:hover{
-background:#1d4ed8
-}
-
-.warning{
-margin-top:12px;
-color:#92400e;
-background:#fffbeb;
-border:1px solid #fde68a;
-padding:11px;
-border-radius:8px;
-font-size:13px
-}
-
-table{
-width:100%;
-border-collapse:collapse
-}
-
-th,td{
-text-align:left;
-padding:13px 10px;
-border-bottom:1px solid #eef2f7;
-font-size:13px
-}
-
-th{
-color:#64748b;
-font-weight:700;
-background:#f8fafc
-}
-
-.status{
-display:inline-block;
-padding:4px 8px;
-border-radius:999px;
-background:#dcfce7;
-color:#166534;
-font-size:11px;
-font-weight:800
-}
-
-.status.revoked{
-background:#fee2e2;
-color:#991b1b
-}
-
-.revoke{
-border:1px solid #fecaca;
-background:#fff;
-color:#b91c1c;
-padding:7px 10px;
-border-radius:7px;
-font-weight:700;
-cursor:pointer;
-font-size:12px
-}
-
-.revoke:hover{
-background:#fef2f2
-}
-
-.disabled{
-color:#94a3b8;
-font-size:12px;
-font-weight:700
-}
-
-.actions{
-display:flex;
-gap:10px;
-flex-wrap:wrap
-}
-
-.action{
-display:inline-block;
-padding:10px 14px;
-border-radius:8px;
-background:#2563eb;
-color:#fff;
-text-decoration:none;
-font-weight:700;
-font-size:13px
-}
-
-.action:hover{
-background:#1d4ed8
-}
-
-.action.secondary{
-background:#eef2ff;
-color:#3730a3
-}
-
-.action.secondary:hover{
-background:#e0e7ff
-}
-
-.empty{
-color:#64748b;
-font-size:14px
-}
-
-.flash{
-margin-bottom:20px;
-padding:12px 14px;
-border-radius:9px;
-background:#ecfdf5;
-border:1px solid #a7f3d0;
-color:#166534;
-font-size:14px;
-font-weight:600
-}
-
-/* CREATE API KEY */
-
-.create-key{
-display:flex;
-gap:10px;
-align-items:center;
-flex-wrap:wrap
-}
-
-.create-key input{
-flex:1;
-min-width:220px;
-padding:11px 13px;
-border:1px solid #dbe1e8;
-border-radius:8px;
-font-size:14px;
-outline:none
-}
-
-.create-key input:focus{
-border-color:#2563eb;
-box-shadow:0 0 0 3px rgba(37,99,235,.10)
-}
-
-.create-button{
-border:0;
-background:#2563eb;
-color:#fff;
-padding:11px 16px;
-border-radius:8px;
-font-weight:800;
-font-size:13px;
-cursor:pointer
-}
-
-.create-button:hover{
-background:#1d4ed8
-}
-
-.create-help{
-margin-top:10px;
-color:#64748b;
-font-size:13px
-}
-
-@media(max-width:750px){
-
-.grid{
-grid-template-columns:1fr
-}
-
-header{
-padding:0 14px
-}
-
-.user span{
-display:none
-}
-
-main{
-width:94%;
-margin:22px auto
-}
-
-table{
-display:block;
-overflow-x:auto;
-white-space:nowrap
-}
-
-.create-key{
-align-items:stretch
-}
-
-.create-key input,
-.create-button{
-width:100%
-}
-
-}
-</style>
-</head>
-
-<body>
-
-<header>
-
-<div class="logo">
-<div class="logo-mark">D</div>
-<span>Dutoza API</span>
-</div>
-
-<div class="user">
-
-<span>{{ developer[1] }} · {{ developer[2] }}</span>
-
-<form method="POST" action="/developers/logout">
-<button class="logout" type="submit">Log out</button>
-</form>
-
-</div>
-
+{% block body %}
+<header class="dev-top">
+  <div class="dev-top-left">
+    <div class="brand-mark">I</div>
+    <a href="/developers" class="brand-text">Incredibles</a>
+  </div>
+  <div class="dev-top-right">
+    <a class="nav-link" href="/developers">Docs</a>
+    <a class="nav-link active" href="/developers/dashboard">Dashboard</a>
+    <span class="user-chip">{{ developer[1] }}</span>
+    <form method="POST" action="/developers/logout" style="margin:0;">
+      <button class="btn btn-secondary" type="submit">Log out</button>
+    </form>
+  </div>
 </header>
 
-<main>
-
-<h1>Developer Dashboard</h1>
-
-<div class="subtitle">
-Manage your Dutoza API access and monitor your usage.
-</div>
-
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-
-{% for message in messages %}
-
-<div class="flash">
-{{ message }}
-</div>
-
-{% endfor %}
-
-{% endif %}
-{% endwith %}
-
-
-<div class="grid">
-
-<div class="card">
-<h3>Developer</h3>
-<div class="big">{{ developer[1] }}</div>
-</div>
-
-<div class="card">
-<h3>API Keys</h3>
-<div class="big">{{ api_keys|length }}</div>
-</div>
-
-<div class="card">
-
-<h3>Total Requests</h3>
-
-<div class="big">
-
-{% set total_requests = namespace(value=0) %}
-
-{% for key in api_keys %}
-
-{% set total_requests.value = total_requests.value + (key[6] or 0) %}
-
-{% endfor %}
-
-{{ total_requests.value }}
-
-</div>
-
-</div>
-
-
-<div class="card">
-<h3>Active Keys</h3>
-<div class="big">
-{% set active_keys = namespace(value=0) %}
-{% for key in api_keys %}
-{% if key[3] == "active" %}
-{% set active_keys.value = active_keys.value + 1 %}
-{% endif %}
-{% endfor %}
-{{ active_keys.value }}
-</div>
-</div>
-
-<div class="card">
-<h3>Revoked Keys</h3>
-<div class="big">
-{% set revoked_keys = namespace(value=0) %}
-{% for key in api_keys %}
-{% if key[3] == "revoked" %}
-{% set revoked_keys.value = revoked_keys.value + 1 %}
-{% endif %}
-{% endfor %}
-{{ revoked_keys.value }}
-</div>
-</div>
-</div>
-
-
-{% if new_api_key %}
-
-<div class="section">
-
-<div class="section-head">
-
-<h2>Your new API key</h2>
-
-<p>This key is displayed only once.</p>
-
-</div>
-
-<div class="section-body">
-
-<div class="key-box">
-
-<div class="key-label">
-API KEY
-</div>
-
-<div class="key-value">
-
-<code id="newKey">{{ new_api_key }}</code>
-
-<button
-class="copy"
-onclick="copyKey()"
-type="button">
-Copy
-</button>
-
-</div>
-
-</div>
-
-<div class="warning">
-
-<strong>Important:</strong>
-Save this API key somewhere secure.
-You will not be able to view the full key again after leaving this page.
-
-</div>
-
-</div>
-
-</div>
-
-{% endif %}
-
-
-<!-- CREATE NEW API KEY -->
-
-<div class="section">
-
-<div class="section-head">
-
-<h2>Create New API Key</h2>
-
-<p>
-Generate another API key for your Dutoza API projects.
-</p>
-
-</div>
-
-<div class="section-body">
-
-<form
-method="POST"
-action="{{ url_for('developers.create_api_key') }}"
-class="create-key">
-
-<input
-type="text"
-name="name"
-maxlength="150"
-placeholder="API key name e.g. My Website"
-autocomplete="off">
-
-<button
-class="create-button"
-type="submit">
-+ Create New API Key
-</button>
-
-</form>
-
-<div class="create-help">
-Leave the name empty to use "Developer API Key".
-</div>
-
-</div>
-
-</div>
-
-
-<!-- API KEYS -->
-
-<div class="section">
-
-<div class="section-head">
-
-<h2>API Keys</h2>
-
-<p>
-Keys associated with your developer account.
-</p>
-
-</div>
-
-<div class="section-body">
-
-{% if api_keys %}
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Name</th>
-<th>Key</th>
-<th>Status</th>
-<th>Requests</th>
-<th>Rate limit</th>
-<th>Last used</th>
-<th>Created</th>
-<th>Action</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-{% for key in api_keys %}
-
-<tr>
-
-<td>
-{{ key[1] }}
-</td>
-
-<td>
-<code>{{ key[2] }}••••••••</code>
-</td>
-
-<td>
-
-{% if key[3] == "active" %}
-
-<span class="status">
-ACTIVE
-</span>
-
-{% else %}
-
-<span class="status revoked">
-REVOKED
-</span>
-
-{% endif %}
-
-</td>
-
-<td>
-{{ key[6] or 0 }}
-</td>
-
-<td>
-{{ key[7] }} / min
-</td>
-
-<td>
-{{ key[4] or "Never" }}
-</td>
-
-<td>
-{{ key[5] }}
-</td>
-
-<td>
-
-{% if key[3] == "active" %}
-
-<form
-method="POST"
-action="{{ url_for('developers.revoke_api_key', key_id=key[0]) }}"
-onsubmit="return confirm('Revoke this API key?');">
-
-<button
-class="revoke"
-type="submit">
-Revoke
-</button>
-
-</form>
-
-{% else %}
-
-<span class="disabled">
-Disabled
-</span>
-
-{% endif %}
-
-</td>
-
-</tr>
-
-{% endfor %}
-
-</tbody>
-
-</table>
-
-{% else %}
-
-<div class="empty">
-No API keys found.
-</div>
-
-{% endif %}
-
-</div>
-
-</div>
-
-
-<!-- RESOURCES -->
-
-<div class="section">
-
-<div class="section-head">
-
-<h2>Developer Resources</h2>
-
-<p>
-Continue building with the Dutoza API.
-</p>
-
-</div>
-
-<div class="section-body">
-
-<div class="actions">
-
-<a
-class="action"
-href="/developers">
-API Documentation
-</a>
-
-<a
-class="action secondary"
-href="/developers#try">
-Try the API
-</a>
-
-</div>
-
-</div>
-
-</div>
-
+<main class="page">
+  <h1 class="page-title">Developer Dashboard</h1>
+  <div class="subtitle">Manage your API keys and monitor usage.</div>
+
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  {% for message in messages %}
+  <div class="flash">{{ message }}</div>
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <div class="grid">
+    <div class="card">
+      <h3>Developer</h3>
+      <div class="big">{{ developer[1] }}</div>
+    </div>
+    <div class="card">
+      <h3>API Keys</h3>
+      <div class="big">{{ api_keys|length }}</div>
+    </div>
+    <div class="card">
+      <h3>Total Requests</h3>
+      <div class="big">
+        {% set total_requests = namespace(value=0) %}
+        {% for key in api_keys %}
+        {% set total_requests.value = total_requests.value + (key[6] or 0) %}
+        {% endfor %}
+        {{ total_requests.value }}
+      </div>
+    </div>
+    <div class="card">
+      <h3>Active Keys</h3>
+      <div class="big">
+        {% set active_keys = namespace(value=0) %}
+        {% for key in api_keys %}
+        {% if key[3] == "active" %}
+        {% set active_keys.value = active_keys.value + 1 %}
+        {% endif %}
+        {% endfor %}
+        {{ active_keys.value }}
+      </div>
+    </div>
+    <div class="card">
+      <h3>Revoked Keys</h3>
+      <div class="big">
+        {% set revoked_keys = namespace(value=0) %}
+        {% for key in api_keys %}
+        {% if key[3] == "revoked" %}
+        {% set revoked_keys.value = revoked_keys.value + 1 %}
+        {% endif %}
+        {% endfor %}
+        {{ revoked_keys.value }}
+      </div>
+    </div>
+  </div>
+
+  {% if new_api_key %}
+  <div class="section">
+    <div class="section-head">
+      <h2>Your new API key</h2>
+      <p>This key is displayed only once.</p>
+    </div>
+    <div class="section-body">
+      <div class="key-box">
+        <div class="key-label">API KEY</div>
+        <div class="key-value">
+          <code id="newKey">{{ new_api_key }}</code>
+          <button class="btn btn-primary" onclick="copyKey()" type="button">Copy</button>
+        </div>
+      </div>
+      <div class="warning">
+        <strong>Important:</strong>
+        Save this API key somewhere secure. You will not be able to view the full key again after leaving this page.
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="section">
+    <div class="section-head">
+      <h2>Create New API Key</h2>
+      <p>Generate another API key for your projects.</p>
+    </div>
+    <div class="section-body">
+      <form method="POST" action="{{ url_for('developers.create_api_key') }}" class="create-key">
+        <input type="text" name="name" maxlength="150" placeholder="API key name e.g. My Website" autocomplete="off">
+        <button class="btn btn-primary" type="submit">+ Create New API Key</button>
+      </form>
+      <div class="create-help">Leave the name empty to use "Developer API Key".</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>API Keys</h2>
+      <p>Keys associated with your developer account.</p>
+    </div>
+    <div class="section-body">
+      {% if api_keys %}
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Key</th>
+            <th>Status</th>
+            <th>Requests</th>
+            <th>Rate limit</th>
+            <th>Last used</th>
+            <th>Created</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for key in api_keys %}
+          <tr>
+            <td>{{ key[1] }}</td>
+            <td><code>{{ key[2] }}••••••••</code></td>
+            <td>
+              {% if key[3] == "active" %}
+              <span class="status">ACTIVE</span>
+              {% else %}
+              <span class="status revoked">REVOKED</span>
+              {% endif %}
+            </td>
+            <td>{{ key[6] or 0 }}</td>
+            <td>{{ key[7] }} / min</td>
+            <td>{{ key[4] or "Never" }}</td>
+            <td>{{ key[5] }}</td>
+            <td>
+              {% if key[3] == "active" %}
+              <form method="POST" action="{{ url_for('developers.revoke_api_key', key_id=key[0]) }}" onsubmit="return confirm('Revoke this API key?');" style="margin:0;">
+                <button class="btn btn-danger" type="submit">Revoke</button>
+              </form>
+              {% else %}
+              <span style="color:#94a3b8;font-size:12px;font-weight:700;">Disabled</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty">No API keys found.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>Developer Resources</h2>
+      <p>Continue building with the Incredibles API.</p>
+    </div>
+    <div class="section-body">
+      <div class="actions">
+        <a class="btn btn-primary" href="/developers">API Documentation</a>
+        <a class="btn btn-secondary" href="/api">API Status</a>
+      </div>
+    </div>
+  </div>
 </main>
+{% endblock %}
 
-
+{% block extra_js %}
 <script>
-
-function copyKey(){
-
-const element = document.getElementById("newKey");
-
-if(!element){
-return;
+function copyKey() {
+  var key = document.getElementById("newKey");
+  if (!key) return;
+  navigator.clipboard.writeText(key.textContent).then(function () {
+    alert("API key copied.");
+  }).catch(function () {
+    alert(key.textContent);
+  });
 }
-
-const key = element.textContent.trim();
-
-if(!navigator.clipboard){
-
-alert("Copy is not available in this browser.");
-
-return;
-}
-
-navigator.clipboard.writeText(key)
-
-.then(function(){
-
-alert("API key copied.");
-
-})
-
-.catch(function(){
-
-alert("Could not copy the API key.");
-
-});
-
-}
-
 </script>
-
-</body>
-</html>
+{% endblock %}
