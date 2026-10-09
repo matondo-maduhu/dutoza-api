@@ -1609,15 +1609,31 @@
         font-size: 11px; font-weight: 700; color: #64748b;
     }
     .mf-info-row {
-        position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 6px;
-        justify-content: center; margin-top: 12px;
+        position: relative; z-index: 1; display: flex; flex-wrap: nowrap; gap: 6px;
+        justify-content: center; align-items: center; margin-top: 12px;
+        overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 2px 4px;
+        scrollbar-width: none;
     }
+    .mf-info-row::-webkit-scrollbar { display: none; }
     .mf-chip {
-        display: inline-flex; align-items: center; gap: 5px;
-        border: none; background: rgba(255,255,255,.85); color: #334155;
-        border-radius: 99px; padding: 6px 11px; font-size: 12px; font-weight: 700;
-        font-family: inherit; box-shadow: 0 1px 4px rgba(0,0,0,.06); max-width: 100%;
+        display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+        border: none; background: rgba(255,255,255,.92); color: #334155;
+        border-radius: 99px; padding: 7px 12px; font-size: 12px; font-weight: 700;
+        font-family: inherit; box-shadow: 0 1px 4px rgba(0,0,0,.06); white-space: nowrap;
+        max-width: 180px; overflow: hidden; text-overflow: ellipsis;
     }
+    .mf-desc-btn { cursor: pointer; background: #ecfdf5; color: #047857; }
+    .mf-desc-btn:hover, .mf-desc-btn.open { background: #10b981; color: #fff; }
+    .mf-desc-btn.open i { color: #fff; }
+    .mf-desc-box { position: relative; z-index: 1; margin-top: 8px; text-align: center; }
+    .feed-card-menu-drop .menu-act.danger { color: #dc2626; }
+    .feed-card-menu-drop .menu-act {
+        display: block; width: 100%; text-align: left; border: none; background: none;
+        padding: 10px 12px; font-size: 13px; font-weight: 600; color: #0f172a;
+        border-radius: 8px; cursor: pointer; text-decoration: none; box-sizing: border-box;
+        font-family: inherit;
+    }
+    .feed-card-menu-drop .menu-act:hover { background: #f8fafc; }
     .mf-chip i { font-size: 11px; color: #6366f1; }
     .mf-chip-title { color: #0f172a; font-weight: 800; }
     .mf-lyric-btn { cursor: pointer; background: #eef2ff; color: #4338ca; }
@@ -1792,6 +1808,7 @@
 
     const feed = document.getElementById("feed");
     const loading = document.getElementById("loading");
+    const CURRENT_USER_ID = {{ session.get("user_id") or 0 }};
 
     /* ================================
        MERCFY COMPOSER INTERACTION
@@ -1991,8 +2008,128 @@
         });
     }
 
-    /* Music player + lyrics on feed */
+    /* Music player + lyrics + menus on feed */
     document.addEventListener("click", function (e) {
+        /* close menus when clicking outside */
+        if (!e.target.closest(".feed-card-menu") && !e.target.closest(".feed-card-menu-drop")) {
+            document.querySelectorAll(".feed-card-menu-drop").forEach(function (d) { d.hidden = true; });
+        }
+
+        var menuToggle = e.target.closest("[data-toggle-menu]");
+        if (menuToggle) {
+            e.stopPropagation();
+            var drop = menuToggle.nextElementSibling;
+            document.querySelectorAll(".feed-card-menu-drop").forEach(function (d) {
+                if (d !== drop) d.hidden = true;
+            });
+            if (drop) drop.hidden = !drop.hidden;
+            return;
+        }
+
+        var actBtn = e.target.closest(".menu-act, .quote-copy-btn");
+        if (actBtn) {
+            var act = actBtn.getAttribute("data-act");
+            var id = actBtn.getAttribute("data-id");
+            var ctype = actBtn.getAttribute("data-type");
+            document.querySelectorAll(".feed-card-menu-drop").forEach(function (d) { d.hidden = true; });
+
+            if (act === "copy") {
+                var t = actBtn.getAttribute("data-text") || "";
+                if (navigator.clipboard) navigator.clipboard.writeText(t);
+                return;
+            }
+            if (act === "delete-quote" && id) {
+                if (!confirm("Futa quote hii?")) return;
+                fetch("/api/user/quotes/" + id + "/delete", { method: "POST", credentials: "same-origin" })
+                    .then(function (r) { return r.json(); })
+                    .then(function (d) {
+                        if (d && d.success) {
+                            var el = document.querySelector('.feed-card[data-type="quote"][data-id="' + id + '"]');
+                            if (el) el.remove();
+                        } else alert((d && d.message) || "Imeshindikana");
+                    });
+                return;
+            }
+            if (act === "edit-quote" && id) {
+                var card = document.querySelector('.feed-card[data-type="quote"][data-id="' + id + '"]');
+                var oldText = card ? (card.querySelector(".qf-text") || {}).textContent || "" : "";
+                var neu = prompt("Hariri quote:", oldText.trim());
+                if (neu === null || !neu.trim()) return;
+                fetch("/api/user/quotes/" + id + "/edit", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ content: neu.trim() })
+                }).then(function (r) { return r.json(); })
+                  .then(function (d) {
+                      if (d && d.success) window.location.reload();
+                      else alert((d && d.message) || "Imeshindikana");
+                  });
+                return;
+            }
+            if (act === "delete-music" && id) {
+                if (!confirm("Futa wimbo huu?")) return;
+                fetch("/api/user/music/" + id + "/delete", { method: "POST", credentials: "same-origin" })
+                    .then(function (r) { return r.json(); })
+                    .then(function (d) {
+                        if (d && d.success) {
+                            var el = document.querySelector('.feed-card[data-type="music"][data-id="' + id + '"]');
+                            if (el) el.remove();
+                        } else alert((d && d.message) || "Imeshindikana");
+                    });
+                return;
+            }
+            if (act === "edit-music" && id) {
+                var nt = prompt("Jina jipya la wimbo:", actBtn.getAttribute("data-title") || "");
+                if (nt === null || !nt.trim()) return;
+                var ng = prompt("Genre:", actBtn.getAttribute("data-genre") || "") || "";
+                fetch("/api/user/music/" + id + "/edit", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ title: nt.trim(), genre: ng.trim() })
+                }).then(function (r) { return r.json(); })
+                  .then(function (d) {
+                      if (d && d.success) window.location.reload();
+                      else alert((d && d.message) || "Imeshindikana");
+                  });
+                return;
+            }
+            if (act === "report" && id && ctype) {
+                var reason = prompt("Sababu ya report (si lazima):", "") || "";
+                fetch("/api/user/content/report", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ content_type: ctype, content_id: Number(id), reason: reason })
+                }).then(function (r) { return r.json(); })
+                  .then(function (d) { alert((d && d.message) || "Asante"); });
+                return;
+            }
+            if (act === "interest" && id && ctype) {
+                fetch("/api/user/content/interest", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ content_type: ctype, content_id: Number(id) })
+                }).then(function (r) { return r.json(); })
+                  .then(function (d) { alert((d && d.message) || "OK"); });
+                return;
+            }
+        }
+
+        var descBtn = e.target.closest(".mf-desc-btn");
+        if (descBtn) {
+            var did = descBtn.getAttribute("data-desc-target");
+            var dbox = did ? document.getElementById(did) : null;
+            if (dbox) {
+                var dop = dbox.hidden;
+                dbox.hidden = !dop;
+                descBtn.classList.toggle("open", dop);
+            }
+            return;
+        }
+
         var lyrBtn = e.target.closest(".mf-lyric-btn");
         if (lyrBtn) {
             var tid = lyrBtn.getAttribute("data-lyrics-target");
@@ -2209,6 +2346,14 @@
                 ? `<img src="${escapeHtml(post.user.profile_image_url)}" alt="">`
                 : `<span class="qf-avatar-letter">${escapeHtml((post.user?.full_name || author || "M").trim().charAt(0).toUpperCase())}</span>`;
 
+            const ownerId = post.user?.id || post.user_id || null;
+            const isOwner = ownerId && Number(ownerId) === Number(CURRENT_USER_ID);
+            const menuItems = isOwner
+                ? `<button type="button" class="menu-act" data-act="edit-quote" data-id="${post.id}">Edit</button>
+                   <button type="button" class="menu-act danger" data-act="delete-quote" data-id="${post.id}">Delete</button>`
+                : `<button type="button" class="menu-act" data-act="interest" data-type="quote" data-id="${post.id}">Interested</button>
+                   <button type="button" class="menu-act" data-act="report" data-type="quote" data-id="${post.id}">Report</button>`;
+
             return `
                 <article class="feed-card quote-card" data-type="quote" data-id="${post.id}">
                     <div class="feed-card-head">
@@ -2219,17 +2364,17 @@
                                 ${uname ? `<span>@${uname}</span>` : ""}
                             </div>
                         </div>
-                        <button type="button" class="feed-card-menu" aria-label="Menu" onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden">
+                        <button type="button" class="feed-card-menu" aria-label="Menu" data-toggle-menu>
                             <i class="fa-solid fa-ellipsis"></i>
                         </button>
                         <div class="feed-card-menu-drop" hidden>
-                            <button type="button" onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(post.content||'')})">Copy text</button>
+                            <button type="button" class="menu-act" data-act="copy" data-text="${escapeHtml(post.content || "")}">Copy text</button>
+                            ${menuItems}
                         </div>
                     </div>
 
                     <div class="quote-frame">
-                        <button type="button" class="quote-copy-btn" title="Copy quote"
-                            onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(post.content||'')}).then(function(){this.textContent='✓';}.bind(this))">
+                        <button type="button" class="quote-copy-btn" title="Copy quote" data-act="copy" data-text="${escapeHtml(post.content || "")}">
                             <i class="fa-regular fa-copy"></i>
                         </button>
                         <span class="flower f1">🌸</span>
@@ -2282,6 +2427,14 @@
                 ? `<img src="${coverUrl}" alt="${title}" class="mf-cover-img">`
                 : `<div class="mf-cover-ph"><i class="fa-solid fa-music"></i></div>`;
             const pid = "m" + post.id;
+            const hasDesc = !!(post.description && String(post.description).trim());
+            const ownerId = user.id || post.user_id || null;
+            const isOwner = ownerId && Number(ownerId) === Number(CURRENT_USER_ID);
+            const menuItems = isOwner
+                ? `<button type="button" class="menu-act" data-act="edit-music" data-id="${post.id}" data-title="${escapeHtml(post.title||'')}" data-genre="${escapeHtml(post.genre||'')}" data-desc="${escapeHtml(post.description||'')}" data-lyrics="${escapeHtml(post.lyrics||'')}">Edit</button>
+                   <button type="button" class="menu-act danger" data-act="delete-music" data-id="${post.id}">Delete</button>`
+                : `<button type="button" class="menu-act" data-act="interest" data-type="music" data-id="${post.id}">Interested</button>
+                   <button type="button" class="menu-act" data-act="report" data-type="music" data-id="${post.id}">Report</button>`;
 
             return `
                 <article class="feed-card music-card-v2" data-type="music" data-id="${post.id}">
@@ -2293,12 +2446,12 @@
                                 ${username ? `<span>@${username}</span>` : ""}
                             </div>
                         </div>
-                        <button type="button" class="feed-card-menu" aria-label="Menu"
-                            onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden">
+                        <button type="button" class="feed-card-menu" aria-label="Menu" data-toggle-menu>
                             <i class="fa-solid fa-ellipsis"></i>
                         </button>
                         <div class="feed-card-menu-drop" hidden>
-                            ${audioUrl ? `<a href="${audioUrl}" download>Download audio</a>` : ""}
+                            ${audioUrl ? `<a href="${audioUrl}" download class="menu-act">Download</a>` : ""}
+                            ${menuItems}
                         </div>
                     </div>
 
@@ -2323,9 +2476,10 @@
                             ${genre ? `<span class="mf-chip"><i class="fa-solid fa-tag"></i> ${genre}</span>` : ""}
                             <span class="mf-chip mf-chip-title"><i class="fa-solid fa-music"></i> ${title}</span>
                             ${hasLyrics ? `<button type="button" class="mf-chip mf-lyric-btn" data-lyrics-target="lyr-${pid}"><i class="fa-solid fa-align-left"></i> Lyrics</button>` : ""}
+                            ${hasDesc ? `<button type="button" class="mf-chip mf-desc-btn" data-desc-target="desc-${pid}"><i class="fa-solid fa-circle-info"></i> Maelezo</button>` : ""}
                         </div>
                         <div class="mf-artist-line">${artistName}${albumTitle ? " · " + albumTitle : ""}</div>
-                        ${description ? `<p class="mf-desc">${description}</p>` : ""}
+                        ${hasDesc ? `<div class="mf-desc-box" id="desc-${pid}" hidden><p class="mf-desc">${description}</p></div>` : ""}
                         ${hasLyrics ? `<div class="mf-lyrics" id="lyr-${pid}" hidden><pre>${lyrics}</pre></div>` : ""}
 
                         ${audioUrl ? `
