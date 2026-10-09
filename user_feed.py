@@ -2056,3 +2056,274 @@ def content_share():
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
         close_connection(connection)
+
+
+# ============================================================
+# PROFILE POSTS + SEARCH
+# ============================================================
+
+@user_feed_bp.get("/api/user/profile/posts")
+def get_profile_posts():
+    current_user_id = session.get("user_id")
+    if not current_user_id:
+        return jsonify({"error": "Authentication required"}), 401
+
+    target_id = request.args.get("user_id", type=int) or current_user_id
+
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        try:
+            ensure_engagement_tables(connection)
+        except Exception:
+            pass
+
+        feed_items = []
+
+        cursor.execute("""
+            SELECT
+                q.id, q.text, q.author, q.language, q.created_at, q.user_id,
+                u.full_name, u.username, u.profile_image_url,
+                c.name, c.slug
+            FROM quotes q
+            LEFT JOIN users u ON u.id = q.user_id
+            LEFT JOIN categories c ON c.id = q.category_id
+            WHERE q.status = 'published' AND q.user_id = %s
+            ORDER BY q.created_at DESC
+            LIMIT 50
+        """, (target_id,))
+        for row in cursor.fetchall():
+            eng = {
+                "likes_count": 0, "is_liked": False,
+                "saves_count": 0, "is_saved": False, "shares_count": 0,
+            }
+            try:
+                eng = engagement_counts(cursor, "quote", row[0], current_user_id)
+            except Exception:
+                pass
+            feed_items.append({
+                "type": "quote",
+                "id": row[0],
+                "content": row[1],
+                "quote_author": row[2],
+                "language": row[3],
+                "created_at": row[4].isoformat() if row[4] else None,
+                "user": {
+                    "id": row[5],
+                    "full_name": row[6] or row[2] or "User",
+                    "username": row[7] or "",
+                    "profile_image_url": row[8],
+                },
+                "category": row[9],
+                "category_slug": row[10],
+                **eng,
+            })
+
+        cursor.execute("""
+            SELECT
+                s.id, s.title, s.slug, s.description, s.lyrics,
+                s.audio_url, s.cover_url, s.duration_seconds, s.genre,
+                s.language, s.created_at, s.play_count, s.download_count,
+                u.id, u.full_name, u.username, u.profile_image_url,
+                a.id, a.name, a.slug,
+                al.id, al.title, al.slug
+            FROM songs s
+            JOIN users u ON u.id = s.user_id
+            LEFT JOIN artists a ON a.id = s.artist_id
+            LEFT JOIN albums al ON al.id = s.album_id
+            WHERE s.status = 'published' AND s.user_id = %s
+            ORDER BY s.created_at DESC
+            LIMIT 50
+        """, (target_id,))
+        for row in cursor.fetchall():
+            eng = {
+                "likes_count": 0, "is_liked": False,
+                "saves_count": 0, "is_saved": False, "shares_count": 0,
+            }
+            try:
+                eng = engagement_counts(cursor, "music", row[0], current_user_id)
+            except Exception:
+                pass
+            feed_items.append({
+                "type": "music",
+                "id": row[0],
+                "title": row[1],
+                "slug": row[2],
+                "description": row[3],
+                "lyrics": row[4],
+                "audio_url": row[5],
+                "cover_url": row[6],
+                "duration_seconds": row[7],
+                "genre": row[8],
+                "language": row[9],
+                "created_at": row[10].isoformat() if row[10] else None,
+                "play_count": row[11],
+                "download_count": row[12],
+                "user": {
+                    "id": row[13],
+                    "full_name": row[14],
+                    "username": row[15],
+                    "profile_image_url": row[16],
+                },
+                "artist": {"id": row[17], "name": row[18], "slug": row[19]} if row[17] else None,
+                "album": {"id": row[20], "title": row[21], "slug": row[22]} if row[20] else None,
+                **eng,
+            })
+
+        feed_items.sort(key=lambda x: x.get("created_at") or "", reverse=True)
+        return jsonify({"success": True, "posts": feed_items[:50]})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    finally:
+        close_connection(connection)
+
+
+@user_feed_bp.get("/api/user/search")
+def user_search():
+    current_user_id = session.get("user_id")
+    if not current_user_id:
+        return jsonify({"error": "Authentication required"}), 401
+
+    q = (request.args.get("q") or "").strip()
+    stype = (request.args.get("type") or "all").strip().lower()
+    if not q:
+        return jsonify({"success": True, "posts": [], "query": q})
+
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        try:
+            ensure_engagement_tables(connection)
+        except Exception:
+            pass
+
+        feed_items = []
+        like = f"%{q}%"
+
+        if stype in ("all", "quote"):
+            cursor.execute("""
+                SELECT
+                    q.id, q.text, q.author, q.language, q.created_at, q.user_id,
+                    u.full_name, u.username, u.profile_image_url,
+                    c.name, c.slug
+                FROM quotes q
+                LEFT JOIN users u ON u.id = q.user_id
+                LEFT JOIN categories c ON c.id = q.category_id
+                WHERE q.status = 'published'
+                  AND (
+                    q.text ILIKE %s
+                    OR q.author ILIKE %s
+                    OR c.name ILIKE %s
+                    OR c.slug ILIKE %s
+                    OR u.username ILIKE %s
+                    OR u.full_name ILIKE %s
+                  )
+                ORDER BY q.created_at DESC
+                LIMIT 40
+            """, (like, like, like, like, like, like))
+            for row in cursor.fetchall():
+                eng = {
+                    "likes_count": 0, "is_liked": False,
+                    "saves_count": 0, "is_saved": False, "shares_count": 0,
+                }
+                try:
+                    eng = engagement_counts(cursor, "quote", row[0], current_user_id)
+                except Exception:
+                    pass
+                feed_items.append({
+                    "type": "quote",
+                    "id": row[0],
+                    "content": row[1],
+                    "quote_author": row[2],
+                    "language": row[3],
+                    "created_at": row[4].isoformat() if row[4] else None,
+                    "user": {
+                        "id": row[5],
+                        "full_name": row[6] or row[2] or "User",
+                        "username": row[7] or "",
+                        "profile_image_url": row[8],
+                    },
+                    "category": row[9],
+                    "category_slug": row[10],
+                    **eng,
+                })
+
+        if stype in ("all", "music"):
+            cursor.execute("""
+                SELECT
+                    s.id, s.title, s.slug, s.description, s.lyrics,
+                    s.audio_url, s.cover_url, s.duration_seconds, s.genre,
+                    s.language, s.created_at,
+                    u.id, u.full_name, u.username, u.profile_image_url,
+                    a.id, a.name, a.slug,
+                    al.id, al.title, al.slug
+                FROM songs s
+                JOIN users u ON u.id = s.user_id
+                LEFT JOIN artists a ON a.id = s.artist_id
+                LEFT JOIN albums al ON al.id = s.album_id
+                WHERE s.status = 'published'
+                  AND (
+                    s.title ILIKE %s
+                    OR s.genre ILIKE %s
+                    OR s.description ILIKE %s
+                    OR a.name ILIKE %s
+                    OR al.title ILIKE %s
+                    OR u.username ILIKE %s
+                    OR u.full_name ILIKE %s
+                  )
+                ORDER BY s.created_at DESC
+                LIMIT 40
+            """, (like, like, like, like, like, like, like))
+            for row in cursor.fetchall():
+                eng = {
+                    "likes_count": 0, "is_liked": False,
+                    "saves_count": 0, "is_saved": False, "shares_count": 0,
+                }
+                try:
+                    eng = engagement_counts(cursor, "music", row[0], current_user_id)
+                except Exception:
+                    pass
+                feed_items.append({
+                    "type": "music",
+                    "id": row[0],
+                    "title": row[1],
+                    "slug": row[2],
+                    "description": row[3],
+                    "lyrics": row[4],
+                    "audio_url": row[5],
+                    "cover_url": row[6],
+                    "duration_seconds": row[7],
+                    "genre": row[8],
+                    "language": row[9],
+                    "created_at": row[10].isoformat() if row[10] else None,
+                    "user": {
+                        "id": row[11],
+                        "full_name": row[12],
+                        "username": row[13],
+                        "profile_image_url": row[14],
+                    },
+                    "artist": {"id": row[15], "name": row[16], "slug": row[17]} if row[15] else None,
+                    "album": {"id": row[18], "title": row[19], "slug": row[20]} if row[18] else None,
+                    **eng,
+                })
+
+        feed_items.sort(key=lambda x: x.get("created_at") or "", reverse=True)
+        return jsonify({
+            "success": True,
+            "query": q,
+            "type": stype,
+            "posts": feed_items[:50],
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    finally:
+        close_connection(connection)
+
+
+@user_feed_bp.get("/search")
+def search_page():
+    if not session.get("user_id"):
+        return redirect(url_for("user_auth.login"))
+    return render_template("users/search.html")

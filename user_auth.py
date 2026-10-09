@@ -499,9 +499,24 @@ def profile():
             session.clear()
             return redirect(url_for("user_auth.login"))
 
+        posts_count = 0
+        try:
+            cursor.execute(
+                """
+                SELECT
+                    (SELECT COUNT(*) FROM quotes WHERE user_id = %s AND status = 'published')
+                  + (SELECT COUNT(*) FROM songs WHERE user_id = %s AND status = 'published')
+                """,
+                (user_id, user_id),
+            )
+            posts_count = int(cursor.fetchone()[0] or 0)
+        except Exception:
+            posts_count = 0
+
         return render_template(
             "users/profile.html",
-            user=user
+            user=user,
+            posts_count=posts_count,
         )
 
     finally:
