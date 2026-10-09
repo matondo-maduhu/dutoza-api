@@ -1,0 +1,214 @@
+{% extends "users/base.html" %}
+{% set nav_active = "profile" %}
+
+{% block title %}Settings — Incredibles{% endblock %}
+
+{% block extra_css %}
+.settings-wrap { max-width: 520px; margin: 0 auto; }
+.settings-title {
+    margin: 4px 0 14px;
+    font-size: 20px;
+    font-weight: 900;
+    color: #0f172a;
+}
+.settings-card {
+    background: #fff;
+    border: 1px solid #e8ecf0;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+}
+.settings-card h3 {
+    margin: 0;
+    padding: 12px 14px 0;
+    font-size: 13px;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.settings-card form,
+.settings-links { padding: 10px 14px 14px; }
+.s-field { margin-bottom: 10px; }
+.s-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 5px;
+}
+.s-field input,
+.s-field textarea {
+    width: 100%;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 11px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    background: #fff;
+}
+.s-field input:focus,
+.s-field textarea:focus { border-color: #1EB53A; }
+.s-field textarea { min-height: 72px; resize: vertical; }
+.s-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 11px 16px;
+    font-size: 14px;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    background: #1EB53A;
+    color: #fff;
+    width: 100%;
+}
+.s-btn.danger { background: #dc2626; }
+.s-btn.ghost {
+    background: #f1f5f9;
+    color: #334155;
+}
+.settings-links a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    text-decoration: none;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 650;
+}
+.settings-links a:last-child { border-bottom: none; }
+.settings-links a i.fa-chevron-right { color: #94a3b8; font-size: 12px; }
+.settings-links a .sl-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+.settings-links a .sl-left i {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    font-size: 13px;
+}
+.danger-zone h3 { color: #dc2626; }
+.hint {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 0 0 10px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="settings-wrap">
+    <h1 class="settings-title">Settings</h1>
+
+    <div class="settings-card">
+        <h3>Edit profile</h3>
+        <form method="POST" action="{{ url_for('user_auth.settings_update_profile') }}">
+            <div class="s-field">
+                <label for="full_name">Jina</label>
+                <input type="text" id="full_name" name="full_name" value="{{ user[1] or '' }}" required maxlength="150">
+            </div>
+            <div class="s-field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" value="{{ user[3] or '' }}" maxlength="150">
+            </div>
+            <div class="s-field">
+                <label for="bio">Bio</label>
+                <textarea id="bio" name="bio" maxlength="500" placeholder="Kuhusu wewe...">{{ user[6] or '' }}</textarea>
+            </div>
+            <button type="submit" class="s-btn">Hifadhi profile</button>
+        </form>
+    </div>
+
+    <div class="settings-card">
+        <h3>Username</h3>
+        <form method="POST" action="{{ url_for('user_auth.settings_update_username') }}">
+            <div class="s-field">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" value="{{ user[2] or '' }}" required minlength="3" maxlength="50">
+            </div>
+            <p class="hint">Herufi, namba, . au _ tu.</p>
+            <button type="submit" class="s-btn">Badili username</button>
+        </form>
+    </div>
+
+    <div class="settings-card">
+        <h3>Password</h3>
+        <form method="POST" action="{{ url_for('user_auth.settings_update_password') }}">
+            <div class="s-field">
+                <label for="current_password">Password ya sasa</label>
+                <input type="password" id="current_password" name="current_password" required>
+            </div>
+            <div class="s-field">
+                <label for="new_password">Password mpya</label>
+                <input type="password" id="new_password" name="new_password" required minlength="8">
+            </div>
+            <div class="s-field">
+                <label for="confirm_password">Thibitisha password mpya</label>
+                <input type="password" id="confirm_password" name="confirm_password" required minlength="8">
+            </div>
+            <button type="submit" class="s-btn">Badili password</button>
+        </form>
+    </div>
+
+    <div class="settings-card">
+        <h3>More</h3>
+        <div class="settings-links">
+            <a href="{{ url_for('user_auth.about') }}">
+                <span class="sl-left"><i class="fa-solid fa-circle-info"></i> About</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+            <a href="{{ url_for('user_auth.terms') }}">
+                <span class="sl-left"><i class="fa-solid fa-file-contract"></i> Terms &amp; Conditions</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+            <a href="{{ url_for('user_auth.privacy') }}">
+                <span class="sl-left"><i class="fa-solid fa-shield-halved"></i> Privacy Policy</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+            <a href="{{ url_for('user_auth.help_centre') }}">
+                <span class="sl-left"><i class="fa-solid fa-life-ring"></i> Help / Contact us</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="settings-card">
+        <h3>Account</h3>
+        <div class="settings-links">
+            <form method="POST" action="{{ url_for('user_auth.logout') }}" style="padding:0;margin:0;">
+                <button type="submit" class="s-btn ghost" style="display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="settings-card danger-zone">
+        <h3>Delete account</h3>
+        <form method="POST" action="{{ url_for('user_auth.settings_delete_account') }}">
+            <p class="hint">Hatua hii haiwezi kurudishwa. Andika <strong>DELETE</strong> na weka password.</p>
+            <div class="s-field">
+                <label for="confirm_text">Andika DELETE</label>
+                <input type="text" id="confirm_text" name="confirm_text" placeholder="DELETE" required autocomplete="off">
+            </div>
+            <div class="s-field">
+                <label for="del_password">Password</label>
+                <input type="password" id="del_password" name="password" required>
+            </div>
+            <button type="submit" class="s-btn danger" onclick="return confirm('Una uhakika unataka kufuta akaunti?');">
+                Futa akaunti
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

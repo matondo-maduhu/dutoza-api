@@ -1,0 +1,50 @@
+{% extends "users/base.html" %}
+{% set nav_active = "profile" %}
+{% set show_nav = true %}
+
+{% block title %}{{ page_title }} — Incredibles{% endblock %}
+
+{% block extra_css %}
+.static-card {
+    background: #fff;
+    border: 1px solid #e8ecf0;
+    border-radius: 14px;
+    padding: 18px 16px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+}
+.static-card h1 {
+    margin: 0 0 12px;
+    font-size: 20px;
+    font-weight: 900;
+    color: #0f172a;
+}
+.static-card p, .static-card li {
+    font-size: 14px;
+    line-height: 1.55;
+    color: #334155;
+}
+.static-card ul { padding-left: 18px; margin: 8px 0; }
+.static-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+}
+.static-back:hover { color: #1EB53A; }
+{% endblock %}
+
+{% block content %}
+<a class="static-back" href="{{ url_for('user_auth.settings') }}">
+    <i class="fa-solid fa-arrow-left"></i> Settings
+</a>
+<article class="static-card">
+    <h1>{{ page_heading }}</h1>
+    <div class="static-body">
+        {{ page_body | safe }}
+    </div>
+</article>
+{% endblock %}
