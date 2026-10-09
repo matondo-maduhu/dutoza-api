@@ -507,3 +507,320 @@ def profile():
     finally:
         if connection:
             connection.close()
+
+
+# ============================================================
+# SETTINGS
+# ============================================================
+
+@user_auth_bp.get("/settings")
+def settings():
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("user_auth.login"))
+
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            SELECT id, full_name, username, email,
+                   profile_image_url, cover_image_url, bio, status
+            FROM users WHERE id = %s LIMIT 1
+            """,
+            (user_id,),
+        )
+        user = cursor.fetchone()
+        if not user or user[7] != "active":
+            session.clear()
+            return redirect(url_for("user_auth.login"))
+        return render_template("users/settings.html", user=user)
+    finally:
+        if connection:
+            connection.close()
+
+
+@user_auth_bp.post("/settings/profile")
+def settings_update_profile():
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("user_auth.login"))
+
+    full_name = request.form.get("full_name", "").strip()[:150]
+    bio = request.form.get("bio", "").strip()[:500]
+    email = request.form.get("email", "").strip().lower()[:150]
+
+    if not full_name or len(full_name) < 2:
+        flash("Jina linahitajika.")
+        return redirect(url_for("user_auth.settings"))
+
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        if email:
+            cursor.execute(
+                """
+                SELECT id FROM users
+                WHERE LOWER(email) = LOWER(%s) AND id != %s LIMIT 1
+                """,
+                (email, user_id),
+            )
+            if cursor.fetchone():
+                flash("Email hii tayari inatumika.")
+                return redirect(url_for("user_auth.settings"))
+
+        cursor.execute(
+            """
+            UPDATE users
+            SET full_name = %s,
+                bio = %s,
+                email = COALESCE(NULLIF(%s, ''), email)
+            WHERE id = %s
+            """,
+            (full_name, bio or None, email, user_id),
+        )
+        connection.commit()
+        session["full_name"] = full_name
+        flash("Profile imesasishwa.")
+    except Exception:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        flash("Imeshindikana kusasisha profile.")
+    finally:
+        if connection:
+            connection.close()
+
+    return redirect(url_for("user_auth.settings"))
+
+
+@user_auth_bp.post("/settings/username")
+def settings_update_username():
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("user_auth.login"))
+
+    username = request.form.get("username", "").strip()
+    if len(username) < 3 or len(username) > 50:
+        flash("Username iwe herufi 3–50.")
+        return redirect(url_for("user_auth.settings"))
+
+    import re
+    if not re.match(r"^[A-Za-z0-9._]+$", username):
+        flash("Username: herufi, namba, . au _ tu.")
+        return redirect(url_for("user_auth.settings"))
+
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            SELECT id FROM users
+            WHERE LOWER(username) = LOWER(%s) AND id != %s LIMIT 1
+            """,
+            (username, user_id),
+        )
+        if cursor.fetchone():
+            flash("Username hii tayari imechukuliwa.")
+            return redirect(url_for("user_auth.settings"))
+
+        cursor.execute(
+            "UPDATE users SET username = %s WHERE id = %s",
+            (username, user_id),
+        )
+        connection.commit()
+        session["username"] = username
+        flash("Username imebadilishwa.")
+    except Exception:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        flash("Imeshindikana kubadili username.")
+    finally:
+        if connection:
+            connection.close()
+
+    return redirect(url_for("user_auth.settings"))
+
+
+@user_auth_bp.post("/settings/password")
+def settings_update_password():
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("user_auth.login"))
+
+    current = request.form.get("current_password", "")
+    new_password = request.form.get("new_password", "")
+    confirm = request.form.get("confirm_password", "")
+
+    if len(new_password) < 8:
+        flash("Password mpya iwe angalau herufi 8.")
+        return redirect(url_for("user_auth.settings"))
+    if new_password != confirm:
+        flash("Password mpya hazilingani.")
+        return redirect(url_for("user_auth.settings"))
+
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT password_hash FROM users WHERE id = %s LIMIT 1",
+            (user_id,),
+        )
+        row = cursor.fetchone()
+        if not row or not check_password_hash(row[0], current):
+            flash("Password ya sasa si sahihi.")
+            return redirect(url_for("user_auth.settings"))
+
+        cursor.execute(
+            "UPDATE users SET password_hash = %s WHERE id = %s",
+            (generate_password_hash(new_password), user_id),
+        )
+        connection.commit()
+        flash("Password imebadilishwa.")
+    except Exception:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        flash("Imeshindikana kubadili password.")
+    finally:
+        if connection:
+            connection.close()
+
+    return redirect(url_for("user_auth.settings"))
+
+
+@user_auth_bp.post("/settings/delete-account")
+def settings_delete_account():
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("user_auth.login"))
+
+    password = request.form.get("password", "")
+    confirm_text = request.form.get("confirm_text", "").strip().upper()
+
+    if confirm_text != "DELETE":
+        flash('Andika neno "DELETE" ili kuthibitisha.')
+        return redirect(url_for("user_auth.settings"))
+
+    connection = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT password_hash FROM users WHERE id = %s LIMIT 1",
+            (user_id,),
+        )
+        row = cursor.fetchone()
+        if not row or not check_password_hash(row[0], password):
+            flash("Password si sahihi.")
+            return redirect(url_for("user_auth.settings"))
+
+        # Soft-delete: deactivate account
+        cursor.execute(
+            """
+            UPDATE users
+            SET status = 'deleted',
+                email = CONCAT('deleted_', id, '_', email),
+                username = CONCAT('deleted_', id, '_', username)
+            WHERE id = %s
+            """,
+            (user_id,),
+        )
+        connection.commit()
+        session.clear()
+        flash("Akaunti imefutwa.")
+        return redirect(url_for("user_auth.login"))
+    except Exception:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        flash("Imeshindikana kufuta akaunti.")
+        return redirect(url_for("user_auth.settings"))
+    finally:
+        if connection:
+            connection.close()
+
+
+@user_auth_bp.get("/about")
+def about():
+    return render_template(
+        "users/static_page.html",
+        page_title="About",
+        page_heading="Kuhusu Incredibles",
+        page_body="""
+        <p><strong>Incredibles</strong> ni jukwaa la kushiriki quotes na muziki.
+        Watumiaji wanachapisha content; developers wanaitumia kupitia API.</p>
+        <p>Lengo letu ni kutoa catalog safi ya quotes na music kwa apps na watumiaji.</p>
+        """,
+    )
+
+
+@user_auth_bp.get("/terms")
+def terms():
+    return render_template(
+        "users/static_page.html",
+        page_title="Terms",
+        page_heading="Terms & Conditions",
+        page_body="""
+        <p>Kwa kutumia Incredibles, unakubali:</p>
+        <ul>
+            <li>Usichapishe content haramu, ya chuki, au inayokiuka haki miliki.</li>
+            <li>Uwe na haki ya content unayopakia (quotes, audio, cover).</li>
+            <li>Content iliyochapishwa inaweza kuonekana kwenye API ya developers.</li>
+            <li>Tunaweza kuondoa content au akaunti inayokiuka sheria hizi.</li>
+        </ul>
+        <p>Tunaweza kusasisha terms hizi; matumizi ya kuendelea yanamaanisha unakubali mabadiliko.</p>
+        """,
+    )
+
+
+@user_auth_bp.get("/privacy")
+def privacy():
+    return render_template(
+        "users/static_page.html",
+        page_title="Privacy",
+        page_heading="Privacy Policy",
+        page_body="""
+        <p>Tunahifadhi taarifa kama jina, username, email, na content unayochapisha.</p>
+        <ul>
+            <li>Hatuzuii data yako binafsi kwa wauzaji wa tatu kwa matangazo.</li>
+            <li>API keys na developer data zinatengwa na akaunti za watumiaji wa kawaida.</li>
+            <li>Unaweza kuhariri profile yako au kufuta akaunti kwenye Settings.</li>
+            <li>Baada ya kufuta akaunti, status inabadilika na login haifanyi kazi tena.</li>
+        </ul>
+        """,
+    )
+
+
+@user_auth_bp.get("/help")
+def help_centre():
+    return render_template(
+        "users/static_page.html",
+        page_title="Help",
+        page_heading="Help Centre / Contact",
+        page_body="""
+        <p><strong>Maswali ya kawaida</strong></p>
+        <ul>
+            <li><strong>Jinsi ya kupost quote?</strong> Fungua Home → bonyeza + au alama ya quote.</li>
+            <li><strong>Jinsi ya kupost music?</strong> Bonyeza alama ya muziki kwenye composer.</li>
+            <li><strong>Developer API?</strong> Tembelea /developers kwa key na docs.</li>
+        </ul>
+        <p><strong>Contact us</strong></p>
+        <p>Barua: support@incredibles.app</p>
+        <p>Tutaongeza form ya contact moja kwa moja baadaye.</p>
+        """,
+    )
