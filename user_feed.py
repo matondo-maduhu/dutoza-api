@@ -198,6 +198,7 @@ def get_posts():
                     s.title,
                     s.slug,
                     s.description,
+                    s.lyrics,
                     s.audio_url,
                     s.cover_url,
                     s.duration_seconds,
@@ -253,40 +254,41 @@ def get_posts():
                     "title": row[1],
                     "slug": row[2],
                     "description": row[3],
-                    "audio_url": row[4],
-                    "cover_url": row[5],
-                    "duration_seconds": row[6],
-                    "genre": row[7],
-                    "language": row[8],
+                    "lyrics": row[4],
+                    "audio_url": row[5],
+                    "cover_url": row[6],
+                    "duration_seconds": row[7],
+                    "genre": row[8],
+                    "language": row[9],
                     "release_date": (
-                        row[9].isoformat()
-                        if row[9] else None
+                        row[10].isoformat()
+                        if row[10] else None
                     ),
-                    "play_count": row[10],
-                    "download_count": row[11],
-                    "created_at": row[12].isoformat(),
+                    "play_count": row[11],
+                    "download_count": row[12],
+                    "created_at": row[13].isoformat() if row[13] else None,
 
                     "user": {
-                        "id": row[13],
-                        "full_name": row[14],
-                        "username": row[15],
-                        "profile_image_url": row[16]
+                        "id": row[14],
+                        "full_name": row[15],
+                        "username": row[16],
+                        "profile_image_url": row[17]
                     },
 
                     "artist": {
-                        "id": row[17],
-                        "name": row[18],
-                        "slug": row[19],
-                        "image_url": row[20],
-                        "country": row[21]
-                    } if row[17] else None,
+                        "id": row[18],
+                        "name": row[19],
+                        "slug": row[20],
+                        "image_url": row[21],
+                        "country": row[22]
+                    } if row[18] else None,
 
                     "album": {
-                        "id": row[22],
-                        "title": row[23],
-                        "slug": row[24],
-                        "cover_url": row[25]
-                    } if row[22] else None,
+                        "id": row[23],
+                        "title": row[24],
+                        "slug": row[25],
+                        "cover_url": row[26]
+                    } if row[23] else None,
 
                     # Music does not yet use post_likes.
                     "likes_count": 0,
