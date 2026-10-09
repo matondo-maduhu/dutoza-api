@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
+    <title>{% block title %}Incredibles{% endblock %}</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, Helvetica, sans-serif;
+            background: #f5f6f7;
+            color: #1f2937;
+            padding-bottom: 72px;
+        }
+
+        /* ========== Top nav ========== */
+        .topbar {
+            height: 56px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 14px 0 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 19px;
+            font-weight: 900;
+            text-decoration: none;
+            letter-spacing: -0.4px;
+            background: linear-gradient(120deg, #1EB53A 0%, #00A3DD 55%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            position: relative;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        .brand::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; bottom: -2px; height: 2px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #1EB53A, #00A3DD, #7c3aed);
+            opacity: 0.35;
+        }
+        .brand:active { opacity: 0.75; }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .notification-wrap { position: relative; }
+
+        .notification-btn {
+            border: 0;
+            background: transparent;
+            color: #334155;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            padding: 0;
+        }
+        .notification-btn:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        .notification-icon { font-size: 20px; }
+
+        .notification-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background: #dc2626;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+            line-height: 1;
+        }
+        .notification-badge.hidden { display: none; }
+
+        .notification-panel {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: #fff;
+            display: none;
+            flex-direction: column;
+        }
+        .notification-panel.open { display: flex; }
+
+        .notification-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .notification-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .notification-close {
+            border: 0;
+            background: #f1f5f9;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: #475569;
+        }
+        .notification-title {
+            font-size: 17px;
+            font-weight: 800;
+        }
+        .mark-all {
+            border: 0;
+            background: transparent;
+            color: #1EB53A;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .notification-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+        .notification-loading {
+            padding: 24px;
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .top-profile-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e2e8f0;
+            color: #475569;
+            text-decoration: none;
+            margin-left: 2px;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #e2e8f0;
+        }
+        .top-profile-btn img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .top-profile-btn i { font-size: 15px; }
+
+        /* ========== Bottom nav ========== */
+        .bottom-nav {
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            z-index: 90;
+            height: 60px;
+            background: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            align-items: stretch;
+            justify-content: space-around;
+            padding: 0 8px;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+            box-shadow: 0 -4px 20px rgba(15,23,42,.06);
+        }
+        .bn-item {
+            flex: 1;
+            max-width: 120px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 12px;
+            margin: 4px 0;
+        }
+        .bn-item i { font-size: 20px; }
+        .bn-item.active,
+        .bn-item:hover { color: #1EB53A; }
+        .bn-item.active i { color: #1EB53A; }
+
+        /* ========== Shared ========== */
+        .flash {
+            margin: 12px 14px 0;
+            padding: 12px 14px;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        main.page {
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 12px 12px 24px;
+        }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+{% set nav_active = nav_active|default('home') %}
+{% set show_nav = show_nav|default(true) %}
+
+{% if show_nav and session.get('user_id') %}
+<header class="topbar">
+    <a href="{{ url_for('user_feed.feed') }}" class="brand" id="brandHome" title="Incredibles — Home">
+        Incredibles
+    </a>
+
+    <div class="topbar-right">
+        <div class="notification-wrap">
+            <button
+                type="button"
+                class="notification-btn"
+                id="notificationButton"
+                aria-label="Notifications"
+                aria-expanded="false"
+                title="Notifications"
+            >
+                <i class="fa-solid fa-bell notification-icon" aria-hidden="true"></i>
+                <span class="notification-badge hidden" id="notificationBadge">0</span>
+            </button>
+
+            <div class="notification-panel" id="notificationPanel">
+                <div class="notification-header">
+                    <div class="notification-header-left">
+                        <button type="button" class="notification-close" id="notificationClose" aria-label="Close">
+                            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                        </button>
+                        <div class="notification-title">Notifications</div>
+                    </div>
+                    <button type="button" class="mark-all" id="markAllButton">Mark all as read</button>
+                </div>
+                <div class="notification-list" id="notificationList">
+                    <div class="notification-loading">Inapakia notifications...</div>
+                </div>
+            </div>
+        </div>
+
+        <a href="{{ url_for('user_auth.profile') }}" class="top-profile-btn" aria-label="Profile" title="Profile">
+            {% if session.get("profile_image_url") %}
+                <img src="{{ session.get('profile_image_url') }}" alt="Profile">
+            {% else %}
+                <i class="fa-solid fa-user" aria-hidden="true"></i>
+            {% endif %}
+        </a>
+    </div>
+</header>
+
+<nav class="bottom-nav" aria-label="Bottom navigation">
+    <a href="{{ url_for('user_feed.feed') }}"
+       class="bn-item {% if nav_active == 'home' %}active{% endif %}"
+       aria-label="Home" title="Home">
+        <i class="fa-solid fa-house" aria-hidden="true"></i>
+        <span>Home</span>
+    </a>
+    {% block bottom_nav_center %}
+    <a href="{{ url_for('user_feed.feed') }}" class="bn-item" aria-label="Post" title="Post" id="bnComposeLink">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        <span>Post</span>
+    </a>
+    {% endblock %}
+    <a href="{{ url_for('user_auth.profile') }}"
+       class="bn-item {% if nav_active == 'profile' %}active{% endif %}"
+       aria-label="Profile" title="Profile">
+        <i class="fa-solid fa-user" aria-hidden="true"></i>
+        <span>Profile</span>
+    </a>
+</nav>
+{% endif %}
+
+{% block body %}
+<main class="page">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="flash">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+{% endblock %}
+
+<script>
+(function () {
+    var brandHome = document.getElementById("brandHome");
+    if (brandHome) {
+        brandHome.addEventListener("click", function (e) {
+            if (window.location.pathname.indexOf("/feed") !== -1) {
+                e.preventDefault();
+                window.location.reload();
+            }
+        });
+    }
+})();
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

@@ -1,17 +1,18 @@
-<!DOCTYPE html>
-<html lang="sw">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "users/base.html" %}
 
-    <title>Feed — Incredibles</title>
+{% set nav_active = "home" %}
 
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    >
+{% block title %}Feed — Incredibles{% endblock %}
 
-    <style>
+{% block bottom_nav_center %}
+<button type="button" class="bn-item" id="bnCompose" aria-label="Post" title="Post quote">
+    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+    <span>Post</span>
+</button>
+{% endblock %}
+
+{% block extra_css %}
+
         * {
             box-sizing: border-box;
         }
@@ -1103,224 +1104,409 @@
     }
 }
 
-</style>
 
-<style id="mercyf-comments-pro-max">
-.comment-node {
-    margin: 0;
-    padding: 0;
-}
 
-.comment-body {
-    display: flex;
-    align-items: flex-start;
-    gap: 7px;
-}
-
-.comment-avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    flex: 0 0 28px;
-    font-size: 10px;
-    background: #eef1f3;
-}
-
-.comment-main {
-    min-width: 0;
-    flex: 1;
-}
-
-.comment-bubble {
-    width: fit-content;
-    max-width: min(92%, 620px);
-    background: #f1f3f5;
-    border-radius: 13px;
-    padding: 6px 10px;
-}
-
-.comment-author {
-    font-size: 12px;
-    line-height: 1.25;
-    font-weight: 700;
-    color: #202124;
-}
-
-.comment-replied-to {
-    font-size: 10px;
-    color: #6b7280;
-    margin-top: 1px;
-    margin-bottom: 2px;
-}
-
-.comment-text {
-    margin-top: 2px;
-    font-size: 13px;
-    line-height: 1.35;
-    overflow-wrap: anywhere;
-}
-
-.comment-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 2px;
-    padding-left: 2px;
-}
-
-.comment-meta button {
-    border: 0;
-    background: transparent;
-    padding: 2px 3px;
-    min-height: 24px;
-    color: #65676b;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    border-radius: 6px;
-}
-
-.comment-meta button:hover {
-    background: #f0f2f4;
-}
-
-.comment-like-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-}
-
-.comment-like-btn.liked {
-    color: #e11d48;
-}
-
-.comment-like-count {
-    font-size: 10px;
-}
-
-.comment-children {
-    margin-left: 22px;
-    padding-left: 9px;
-    border-left: 1px solid #e1e4e7;
-    margin-top: 5px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.comment-reply-form {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 5px 0 2px 35px;
-}
-
-.comment-reply-form input {
-    height: 32px;
-    min-width: 0;
-    flex: 1;
-    padding: 0 11px;
-    border: 1px solid #d7dbe0;
-    border-radius: 16px;
-    outline: none;
-    font-size: 12px;
-}
-
-.comment-reply-form input:focus {
-    border-color: #1EB53A;
-}
-
-.comment-reply-form button {
-    width: 32px;
-    height: 32px;
-    border: 0;
-    border-radius: 50%;
-    background: #1EB53A;
-    color: #fff;
-    cursor: pointer;
-    flex: 0 0 32px;
-}
-
-@media (max-width: 520px) {
-    .comment-bubble {
-        max-width: 94%;
+    .composer-trigger-box { cursor: default; }
+    .composer-fake-input {
+        flex: 1; border: none; background: transparent; text-align: left;
+        font-size: 15px; color: #8a8d91; padding: 10px 8px; cursor: pointer;
+        font-family: inherit;
     }
-
-    .comment-children {
-        margin-left: 13px;
-        padding-left: 7px;
+    .composer-fake-input:hover { color: #050505; }
+    .quote-modal-overlay {
+        position: fixed; inset: 0; z-index: 9999;
+        background: rgba(15, 23, 42, 0.45);
+        display: flex; align-items: flex-end; justify-content: center;
+        padding: 0;
     }
-
-    .comment-reply-form {
-        margin-left: 34px;
+    .quote-modal-overlay[hidden] { display: none !important; }
+    .quote-modal {
+        width: 100%; max-width: 480px;
+        background: #fff; border-radius: 18px 18px 0 0;
+        padding: 18px 18px 28px; max-height: 92vh; overflow-y: auto;
+        box-shadow: 0 -8px 40px rgba(0,0,0,.18);
+        animation: qmSlide 0.22s ease;
     }
+    @keyframes qmSlide {
+        from { transform: translateY(40px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    @media (min-width: 560px) {
+        .quote-modal-overlay { align-items: center; padding: 16px; }
+        .quote-modal { border-radius: 18px; }
+    }
+    .quote-modal-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 14px;
+    }
+    .quote-modal-header h2 {
+        margin: 0; font-size: 18px; font-weight: 800; color: #0f172a;
+    }
+    .quote-modal-close {
+        border: none; background: #f1f5f9; width: 36px; height: 36px;
+        border-radius: 50%; font-size: 22px; line-height: 1; cursor: pointer; color: #475569;
+    }
+    .qm-label {
+        display: block; font-size: 12px; font-weight: 700; color: #64748b;
+        margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    #postForm textarea#content {
+        width: 100%; box-sizing: border-box; min-height: 120px; resize: vertical;
+        border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;
+        font-size: 16px; font-family: inherit; line-height: 1.45; outline: none;
+    }
+    #postForm textarea#content:focus { border-color: #1EB53A; }
+    .qm-count { text-align: right; font-size: 12px; color: #94a3b8; margin-top: 4px; }
+    #postForm input[type=text], #postForm select {
+        width: 100%; box-sizing: border-box; border: 1.5px solid #e2e8f0;
+        border-radius: 12px; padding: 11px 14px; font-size: 15px; font-family: inherit;
+        background: #fff; outline: none;
+    }
+    #postForm input[type=text]:focus, #postForm select:focus { border-color: #1EB53A; }
+    .qm-hint { margin: 6px 0 0; font-size: 12px; color: #94a3b8; }
+    .quote-modal-actions {
+        display: flex; gap: 10px; margin-top: 20px;
+    }
+    .qm-btn {
+        flex: 1; border: none; border-radius: 14px; padding: 13px 16px;
+        font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer;
+    }
+    .qm-cancel { background: #f1f5f9; color: #475569; }
+    .qm-submit { background: #1EB53A; color: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .qm-submit:active { opacity: 0.9; }
+
+    /* ===== Feed cards (quote + music) ===== */
+    .feed-card {
+        background: #fff; border-radius: 18px; margin: 0 0 14px;
+        box-shadow: 0 2px 12px rgba(15,23,42,.06); overflow: visible;
+        border: 1px solid #eef1f4;
+    }
+    .feed-card-head {
+        display: flex; align-items: center; gap: 10px; padding: 12px 14px 8px;
+        position: relative;
+    }
+    .feed-card-user { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .feed-card-avatar {
+        width: 42px; height: 42px; border-radius: 50%; overflow: hidden;
+        background: linear-gradient(135deg, #e8f8ec, #d1fae5);
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .feed-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .qf-avatar-letter { font-weight: 800; color: #0d7a28; font-size: 16px; }
+    .feed-card-user-meta { min-width: 0; }
+    .feed-card-user-meta strong { display: block; font-size: 14px; font-weight: 800; color: #0f172a; line-height: 1.2; }
+    .feed-card-user-meta span { font-size: 12px; color: #64748b; }
+    .feed-card-menu {
+        margin-left: auto; border: none; background: transparent; color: #64748b;
+        width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 16px;
+        flex-shrink: 0;
+    }
+    .feed-card-menu:hover { background: #f1f5f9; }
+    .feed-card-menu-drop {
+        position: absolute; right: 12px; top: 48px; z-index: 20;
+        background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.12); min-width: 140px; padding: 6px;
+    }
+    .feed-card-menu-drop button, .feed-card-menu-drop a {
+        display: block; width: 100%; text-align: left; border: none; background: none;
+        padding: 10px 12px; font-size: 13px; font-weight: 600; color: #0f172a;
+        border-radius: 8px; cursor: pointer; text-decoration: none; box-sizing: border-box;
+    }
+    .feed-card-menu-drop button:hover, .feed-card-menu-drop a:hover { background: #f8fafc; }
+
+    .quote-frame {
+        position: relative; margin: 4px 12px 8px; border-radius: 16px;
+        background: linear-gradient(145deg, #fff7ed 0%, #fdf2f8 45%, #f0fdf4 100%);
+        border: 1.5px solid #fde68a; padding: 18px 16px 16px; overflow: hidden;
+    }
+    .quote-frame .flower {
+        position: absolute; font-size: 18px; opacity: 0.85; pointer-events: none;
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,.08));
+    }
+    .quote-frame .f1 { top: 8px; left: 10px; }
+    .quote-frame .f2 { top: 8px; right: 44px; }
+    .quote-frame .f3 { bottom: 10px; left: 12px; }
+    .quote-frame .f4 { bottom: 10px; right: 14px; }
+    .quote-copy-btn {
+        position: absolute; top: 10px; right: 10px; z-index: 5;
+        border: none; background: rgba(255,255,255,.85); width: 34px; height: 34px;
+        border-radius: 10px; cursor: pointer; color: #64748b; font-size: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .quote-copy-btn:hover { color: #0f172a; background: #fff; }
+    .quote-frame-inner { position: relative; z-index: 1; text-align: center; padding: 8px 28px 4px; }
+    .qf-mark { color: #f59e0b; font-size: 18px; opacity: 0.7; }
+    .qf-text {
+        margin: 10px 0 12px; font-size: 16px; font-weight: 650; line-height: 1.5;
+        color: #1e293b; word-break: break-word;
+    }
+    .qf-author { font-size: 13px; font-weight: 700; color: #64748b; }
+
+    .music-frame {
+        position: relative; margin: 4px 12px 8px; border-radius: 16px;
+        background: linear-gradient(145deg, #eff6ff 0%, #f5f3ff 50%, #ecfdf5 100%);
+        border: 1.5px solid #c7d2fe; padding: 16px 14px 14px; overflow: hidden;
+    }
+    .music-frame .flower {
+        position: absolute; font-size: 16px; opacity: 0.75; pointer-events: none;
+    }
+    .music-frame .f1 { top: 8px; left: 10px; }
+    .music-frame .f2 { top: 8px; right: 12px; }
+    .music-frame .f3 { bottom: 10px; left: 12px; }
+    .music-frame .f4 { bottom: 10px; right: 14px; }
+    .mf-center {
+        position: relative; z-index: 1; display: flex; flex-direction: column;
+        align-items: center; gap: 10px;
+    }
+    .mf-cover {
+        width: 96px; height: 96px; border-radius: 14px; overflow: hidden; flex-shrink: 0;
+        background: #e0e7ff; box-shadow: 0 4px 14px rgba(79,70,229,.15);
+    }
+    .mf-cover-lg {
+        width: 160px; height: 160px; border-radius: 18px;
+        box-shadow: 0 10px 28px rgba(79,70,229,.22);
+    }
+    .mf-cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mf-cover-ph {
+        width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+        font-size: 36px; color: #6366f1;
+        background: linear-gradient(145deg, #e0e7ff, #c7d2fe);
+    }
+    .mf-progress-wrap { width: 100%; max-width: 280px; }
+    .mf-progress-bar {
+        height: 6px; border-radius: 99px; background: rgba(99,102,241,.18); overflow: hidden;
+    }
+    .mf-progress-fill {
+        height: 100%; width: 0%; border-radius: 99px;
+        background: linear-gradient(90deg, #4f46e5, #06b6d4);
+        transition: width 0.15s linear;
+    }
+    .mf-time-row {
+        display: flex; justify-content: space-between; margin-top: 4px;
+        font-size: 11px; font-weight: 700; color: #64748b;
+    }
+    .mf-info-row {
+        position: relative; z-index: 1; display: flex; flex-wrap: nowrap; gap: 6px;
+        justify-content: center; align-items: center; margin-top: 12px;
+        overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 2px 4px;
+        scrollbar-width: none;
+    }
+    .mf-info-row::-webkit-scrollbar { display: none; }
+    .mf-chip {
+        display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+        border: none; background: rgba(255,255,255,.92); color: #334155;
+        border-radius: 99px; padding: 7px 12px; font-size: 12px; font-weight: 700;
+        font-family: inherit; box-shadow: 0 1px 4px rgba(0,0,0,.06); white-space: nowrap;
+        max-width: 180px; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mf-desc-btn { cursor: pointer; background: #ecfdf5; color: #047857; }
+    .mf-desc-btn:hover, .mf-desc-btn.open { background: #10b981; color: #fff; }
+    .mf-desc-btn.open i { color: #fff; }
+    .mf-desc-box { position: relative; z-index: 1; margin-top: 8px; text-align: center; }
+    .feed-card-menu-drop .menu-act.danger { color: #dc2626; }
+    .feed-card-menu-drop .menu-act {
+        display: block; width: 100%; text-align: left; border: none; background: none;
+        padding: 10px 12px; font-size: 13px; font-weight: 600; color: #0f172a;
+        border-radius: 8px; cursor: pointer; text-decoration: none; box-sizing: border-box;
+        font-family: inherit;
+    }
+    .feed-card-menu-drop .menu-act:hover { background: #f8fafc; }
+    .mf-chip i { font-size: 11px; color: #6366f1; }
+    .mf-chip-title { color: #0f172a; font-weight: 800; }
+    .mf-lyric-btn { cursor: pointer; background: #eef2ff; color: #4338ca; }
+    .mf-lyric-btn:hover, .mf-lyric-btn.open { background: #4f46e5; color: #fff; }
+    .mf-lyric-btn.open i { color: #fff; }
+    .mf-artist-line {
+        position: relative; z-index: 1; text-align: center; margin-top: 8px;
+        font-size: 13px; font-weight: 600; color: #475569;
+    }
+    .mf-desc {
+        position: relative; z-index: 1; margin: 8px 0 0; font-size: 13px;
+        color: #64748b; line-height: 1.4; text-align: center;
+    }
+    .mf-lyrics {
+        position: relative; z-index: 1; margin-top: 10px; padding: 12px;
+        background: rgba(255,255,255,.9); border-radius: 12px; border: 1px solid #e0e7ff;
+        max-height: 180px; overflow-y: auto; text-align: left;
+    }
+    .mf-lyrics pre {
+        margin: 0; white-space: pre-wrap; word-break: break-word;
+        font-family: inherit; font-size: 13px; line-height: 1.5; color: #1e293b;
+    }
+    .mf-player-row {
+        position: relative; z-index: 1; display: flex; justify-content: center; margin-top: 12px;
+    }
+    .mf-play-btn {
+        width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer;
+        background: linear-gradient(145deg, #4f46e5, #6366f1); color: #fff; font-size: 18px;
+        box-shadow: 0 6px 18px rgba(79,70,229,.35);
+        display: inline-flex; align-items: center; justify-content: center;
+    }
+    .mf-play-btn:active { transform: scale(0.96); }
+    .mf-audio-el { display: none; }
+    .mf-no-audio { font-size: 12px; color: #94a3b8; margin-top: 8px; text-align: center; }
+
+    /* Music modal form */
+    .music-modal-card { max-width: 440px; }
+    .mm-hero {
+        display: flex; gap: 14px; align-items: stretch; margin-bottom: 12px;
+    }
+    .mm-cover-pick {
+        width: 100px; height: 100px; border-radius: 16px; overflow: hidden;
+        border: 1.5px dashed #c7d2fe; background: #eef2ff; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        position: relative;
+    }
+    .mm-cover-pick input { display: none; }
+    .mm-cover-pick img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+    .mm-cover-placeholder {
+        display: flex; flex-direction: column; align-items: center; gap: 4px;
+        color: #6366f1; font-size: 22px;
+    }
+    .mm-cover-placeholder small { font-size: 11px; font-weight: 700; }
+    .mm-hero-fields { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+    .mm-audio-pick {
+        display: flex; align-items: center; gap: 8px; border: 1.5px solid #e2e8f0;
+        border-radius: 12px; padding: 10px 12px; cursor: pointer; background: #f8fafc;
+        font-size: 13px; font-weight: 600; color: #475569;
+    }
+    .mm-audio-pick input { display: none; }
+    .mm-audio-pick i { color: #4f46e5; }
+    .mm-hero-fields input[type=text] {
+        width: 100%; box-sizing: border-box; border: 1.5px solid #e2e8f0;
+        border-radius: 12px; padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none;
+    }
+    .mm-hero-fields input:focus { border-color: #4f46e5; }
+    .mm-row {
+        display: flex; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;
+    }
+    .mm-row input, .mm-row select {
+        flex: 1; min-width: 80px; box-sizing: border-box; border: 1.5px solid #e2e8f0;
+        border-radius: 12px; padding: 10px 12px; font-size: 13px; font-family: inherit;
+        background: #fff; outline: none;
+    }
+    .mm-row input:focus, .mm-row select:focus { border-color: #4f46e5; }
+
+    .feed-card-actions {
+        display: flex; gap: 6px; padding: 4px 10px 12px; border-top: none;
+    }
+    .fca-btn {
+        flex: 1; border: none; background: #f8fafc; color: #334155;
+        border-radius: 12px; padding: 10px 6px; font-size: 12.5px; font-weight: 700;
+        font-family: inherit; cursor: pointer; display: inline-flex; align-items: center;
+        justify-content: center; gap: 6px;
+    }
+    .fca-btn:hover { background: #f1f5f9; }
+    .fca-btn.liked, .fca-btn.liked i { color: #e11d48; }
+
+    /* Music modal form fields */
+    .mm-file-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+    .mm-file-btn {
+        flex: 1; min-width: 120px; border: 1.5px dashed #cbd5e1; border-radius: 12px;
+        padding: 14px 12px; text-align: center; cursor: pointer; background: #f8fafc;
+        font-size: 13px; font-weight: 700; color: #475569;
+    }
+    .mm-file-btn input { display: none; }
+    .mm-file-btn:hover { border-color: #1EB53A; background: #e8f8ec; color: #0d7a28; }
+    .mm-preview { font-size: 12px; color: #64748b; margin: 4px 0 8px; }
+    
+
+.composer-box {
+    position: relative;
 }
-</style>
 
-</head>
+.composer-plus-wrap {
+    position: absolute !important;
+    left: 12px !important;
+    bottom: 10px !important;
+    right: auto !important;
+    z-index: 20;
+}
 
-<body>
+.composer-box textarea,
+#content {
+    padding-left: 48px !important;
+    padding-bottom: 42px !important;
+}
 
-<header class="topbar">
-    <a href="{{ url_for('user_feed.feed') }}" class="brand" id="brandHome" title="Incredibles — Home">
-        Incredibles
-    </a>
+.composer-bottom {
+    padding-left: 0;
+}
 
-    <div class="topbar-right">
-        <div class="notification-wrap">
-            <button
-                type="button"
-                class="notification-btn"
-                id="notificationButton"
-                aria-label="Notifications"
-                aria-expanded="false"
-                title="Notifications"
-            >
-                <i class="fa-solid fa-bell notification-icon" aria-hidden="true"></i>
-                <span class="notification-badge hidden" id="notificationBadge">0</span>
-            </button>
 
-            <div class="notification-panel" id="notificationPanel">
-                <div class="notification-header">
-                    <div class="notification-header-left">
-                        <button type="button" class="notification-close" id="notificationClose" aria-label="Close">
-                            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-                        </button>
-                        <div class="notification-title">Notifications</div>
-                    </div>
-                    <button type="button" class="mark-all" id="markAllButton">Mark all as read</button>
-                </div>
-                <div class="notification-list" id="notificationList">
-                    <div class="notification-loading">Inapakia notifications...</div>
-                </div>
-            </div>
-        </div>
+/* FINAL COMPOSER LAYOUT */
+.composer-box {
+    position: relative !important;
+    padding-bottom: 52px !important;
+}
 
-        <a href="{{ url_for('user_auth.profile') }}" class="top-profile-btn" aria-label="Profile" title="Profile">
-            {% if session.get("profile_image_url") %}
-                <img src="{{ session.get('profile_image_url') }}" alt="Profile">
-            {% else %}
-                <i class="fa-solid fa-user" aria-hidden="true"></i>
-            {% endif %}
-        </a>
-    </div>
-</header>
+.composer-bottom-inside {
+    position: absolute !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    pointer-events: none !important;
+}
 
-<nav class="bottom-nav" aria-label="Bottom navigation">
-    <a href="{{ url_for('user_feed.feed') }}" class="bn-item active" aria-label="Home" title="Home">
-        <i class="fa-solid fa-house" aria-hidden="true"></i>
-        <span>Home</span>
-    </a>
-    <button type="button" class="bn-item" id="bnCompose" aria-label="Post" title="Post quote">
-        <i class="fa-solid fa-plus" aria-hidden="true"></i>
-        <span>Post</span>
-    </button>
-    <a href="{{ url_for('user_auth.profile') }}" class="bn-item" aria-label="Profile" title="Profile">
-        <i class="fa-solid fa-user" aria-hidden="true"></i>
-        <span>Profile</span>
-    </a>
-</nav>
+.composer-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    pointer-events: auto !important;
+}
 
+.composer-action {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    color: #65676b !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+}
+
+.composer-action:hover {
+    background: #f0f2f5 !important;
+}
+
+.composer-send {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: #229ED9 !important;
+    color: #fff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+.composer-send:hover {
+    opacity: .9 !important;
+}
+
+.composer-bottom {
+    display: none !important;
+}
+
+{% endblock %}
+
+{% block body %}
 <main class="page">
 
     {% with messages = get_flashed_messages() %}
@@ -1802,7 +1988,9 @@
     </section>
 
 </main>
+{% endblock %}
 
+{% block extra_js %}
 <script>
 (function () {
 
@@ -3758,101 +3946,4 @@
 
 })();
 </script>
-
-</body>
-</html>
-
-<style>
-.composer-box {
-    position: relative;
-}
-
-.composer-plus-wrap {
-    position: absolute !important;
-    left: 12px !important;
-    bottom: 10px !important;
-    right: auto !important;
-    z-index: 20;
-}
-
-.composer-box textarea,
-#content {
-    padding-left: 48px !important;
-    padding-bottom: 42px !important;
-}
-
-.composer-bottom {
-    padding-left: 0;
-}
-</style>
-<style>
-/* FINAL COMPOSER LAYOUT */
-.composer-box {
-    position: relative !important;
-    padding-bottom: 52px !important;
-}
-
-.composer-bottom-inside {
-    position: absolute !important;
-    left: 12px !important;
-    right: 12px !important;
-    bottom: 10px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    pointer-events: none !important;
-}
-
-.composer-actions {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    pointer-events: auto !important;
-}
-
-.composer-action {
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px !important;
-    padding: 0 !important;
-    border: 0 !important;
-    border-radius: 50% !important;
-    background: transparent !important;
-    color: #65676b !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 13px !important;
-    text-decoration: none !important;
-    cursor: pointer !important;
-}
-
-.composer-action:hover {
-    background: #f0f2f5 !important;
-}
-
-.composer-send {
-    width: 30px !important;
-    height: 30px !important;
-    min-width: 30px !important;
-    padding: 0 !important;
-    border: 0 !important;
-    border-radius: 50% !important;
-    background: #229ED9 !important;
-    color: #fff !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 13px !important;
-    cursor: pointer !important;
-    pointer-events: auto !important;
-}
-
-.composer-send:hover {
-    opacity: .9 !important;
-}
-
-.composer-bottom {
-    display: none !important;
-}
-</style>
+{% endblock %}

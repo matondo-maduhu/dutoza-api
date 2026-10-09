@@ -1,322 +1,157 @@
-<!DOCTYPE html>
-<html lang="sw">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile — Incredibles</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+{% extends "users/base.html" %}
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+{% set nav_active = "profile" %}
 
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f5f7f9;
-            color: #17212b;
-        }
+{% block title %}Profile — Incredibles{% endblock %}
 
-        .topbar {
-            background: #ffffff;
-            border-bottom: 1px solid #e2e6ea;
-            padding: 10px 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
+{% block extra_css %}
+.profile-card {
+    background: #ffffff;
+    border: 1px solid #e8ecf0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+.cover {
+    height: 88px;
+    background: linear-gradient(135deg, #1EB53A 0%, #00A3DD 50%, #7c3aed 100%);
+}
+.profile-body { padding: 0 16px 16px; }
+.avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin-top: -32px;
+    border: 3px solid #ffffff;
+    background: #e9edf0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-size: 22px;
+    font-weight: 800;
+    color: #17212b;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.name {
+    margin: 10px 0 2px;
+    font-size: 17px;
+    font-weight: 800;
+    color: #0f172a;
+}
+.username { color: #68737d; font-size: 13px; }
+.bio {
+    margin-top: 10px;
+    color: #4f5b65;
+    line-height: 1.45;
+    font-size: 13px;
+}
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid #edf0f2;
+    margin-top: 14px;
+    padding-top: 12px;
+    gap: 6px;
+}
+.stat { text-align: center; }
+.stat-number {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+}
+.stat-label {
+    margin-top: 2px;
+    color: #7b858d;
+    font-size: 11px;
+}
+.account {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #edf0f2;
+    color: #68737d;
+    font-size: 12px;
+}
+.logout-row { margin-top: 14px; }
+.logout-row form { margin: 0; }
+.logout {
+    width: 100%;
+    border: 0;
+    background: #f1f5f9;
+    color: #334155;
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+}
+.logout:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+@media (max-width: 520px) {
+    .cover { height: 72px; }
+    .avatar {
+        width: 56px;
+        height: 56px;
+        margin-top: -28px;
+        font-size: 18px;
+    }
+    .name { font-size: 16px; }
+}
+{% endblock %}
 
-        .logo {
-            font-size: 18px;
-            font-weight: 900;
-            text-decoration: none;
-            letter-spacing: -0.4px;
-            background: linear-gradient(120deg, #1EB53A 0%, #00A3DD 55%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: transparent;
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-        }
+{% block content %}
+<section class="profile-card">
+    <div class="cover"></div>
+    <div class="profile-body">
+        <div class="avatar">
+            {% if user[4] %}
+                <img src="{{ user[4] }}" alt="Picha ya profile">
+            {% else %}
+                {{ user[1][0]|upper }}
+            {% endif %}
+        </div>
 
-        .main-nav {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+        <div class="name">{{ user[1] }}</div>
+        <div class="username">@{{ user[2] }}</div>
 
-        .nav-link {
-            border-radius: 8px;
-            padding: 6px 10px;
-            color: #4f5b65;
-            text-decoration: none;
-            font-size: 12.5px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
+        {% if user[6] %}
+        <div class="bio">{{ user[6] }}</div>
+        {% endif %}
 
-        .nav-link i { font-size: 12px; }
-
-        .nav-link:hover {
-            background: #f5f7f9;
-        }
-
-        .nav-link.active {
-            background: #e8f8ec;
-            color: #0d7a28;
-        }
-
-        .logout {
-            border: 0;
-            background: #f1f5f9;
-            color: #334155;
-            border-radius: 8px;
-            padding: 6px 10px;
-            font-weight: 700;
-            font-size: 12.5px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-family: inherit;
-        }
-
-        .logout:hover {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 520px;
-            margin: 16px auto;
-            padding: 0 12px;
-        }
-
-        .profile-card {
-            background: #ffffff;
-            border: 1px solid #e8ecf0;
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-        }
-
-        .cover {
-            height: 88px;
-            background: linear-gradient(135deg, #1EB53A 0%, #00A3DD 50%, #7c3aed 100%);
-        }
-
-        .profile-body {
-            padding: 0 16px 16px;
-        }
-
-        .avatar {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            margin-top: -32px;
-            border: 3px solid #ffffff;
-            background: #e9edf0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            font-size: 22px;
-            font-weight: 800;
-            color: #17212b;
-            box-shadow: 0 2px 8px rgba(0,0,0,.08);
-        }
-
-        .avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .name {
-            margin: 10px 0 2px;
-            font-size: 17px;
-            font-weight: 800;
-            color: #0f172a;
-        }
-
-        .username {
-            color: #68737d;
-            font-size: 13px;
-        }
-
-        .bio {
-            margin-top: 10px;
-            color: #4f5b65;
-            line-height: 1.45;
-            font-size: 13px;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            border-top: 1px solid #edf0f2;
-            margin-top: 14px;
-            padding-top: 12px;
-            gap: 6px;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 15px;
-            font-weight: 800;
-            color: #0f172a;
-        }
-
-        .stat-label {
-            margin-top: 2px;
-            color: #7b858d;
-            font-size: 11px;
-        }
-
-        .account {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #edf0f2;
-            color: #68737d;
-            font-size: 12px;
-        }
-
-        @media (max-width: 520px) {
-            .topbar {
-                padding: 8px 10px;
-            }
-
-            .nav-link,
-            .logout {
-                padding: 6px 8px;
-                font-size: 12px;
-            }
-
-            .container {
-                margin-top: 12px;
-                padding: 0 10px;
-            }
-
-            .profile-body {
-                padding: 0 14px 14px;
-            }
-
-            .cover {
-                height: 72px;
-            }
-
-            .avatar {
-                width: 56px;
-                height: 56px;
-                margin-top: -28px;
-                font-size: 18px;
-            }
-
-            .name {
-                font-size: 16px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <header class="topbar">
-    <a href="{{ url_for('user_feed.feed') }}" class="logo" title="Incredibles">
-        Incredibles
-    </a>
-
-    <nav class="main-nav" aria-label="Navigation">
-        <a href="{{ url_for('user_feed.feed') }}" class="nav-link">
-            <i class="fa-solid fa-house"></i> Home
-        </a>
-
-        <a href="{{ url_for('user_auth.profile') }}" class="nav-link active">
-            <i class="fa-solid fa-user"></i> Profile
-        </a>
-
-        <form method="POST" action="{{ url_for('user_auth.logout') }}">
-            <button class="logout" type="submit">
-                <i class="fa-solid fa-right-from-bracket"></i> Toka
-            </button>
-        </form>
-    </nav>
-</header>
-
-    <main class="container">
-
-        <section class="profile-card">
-
-            <div class="cover"></div>
-
-            <div class="profile-body">
-
-                <div class="avatar">
-                    {% if user[4] %}
-                        <img src="{{ user[4] }}" alt="Picha ya profile">
-                    {% else %}
-                        {{ user[1][0]|upper }}
-                    {% endif %}
-                </div>
-
-                <div class="name">
-                    {{ user[1] }}
-                </div>
-
-                <div class="username">
-                    @{{ user[2] }}
-                </div>
-
-                {% if user[6] %}
-                    <div class="bio">
-                        {{ user[6] }}
-                    </div>
-                {% else %}
-                    <div class="bio">
-                        Karibu kwenye Dutoza.
-                    </div>
-                {% endif %}
-
-                <div class="stats">
-
-                    <div class="stat">
-                        <div class="stat-number">0</div>
-                        <div class="stat-label">Followers</div>
-                    </div>
-
-                    <div class="stat">
-                        <div class="stat-number">0</div>
-                        <div class="stat-label">Following</div>
-                    </div>
-
-                    <div class="stat">
-                        <div class="stat-number">0</div>
-                        <div class="stat-label">Posts</div>
-                    </div>
-
-                </div>
-
-                <div class="account">
-                    Akaunti imefunguliwa:
-                    {{ user[8].strftime("%d %b %Y") }}
-                </div>
-
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Posts</div>
             </div>
+            <div class="stat">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Followers</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Following</div>
+            </div>
+        </div>
 
-        </section>
+        <div class="account">
+            Akaunti · {{ user[3] }}
+        </div>
 
-    </main>
-
-</body>
-</html>
+        <div class="logout-row">
+            <form method="POST" action="{{ url_for('user_auth.logout') }}">
+                <button class="logout" type="submit">
+                    <i class="fa-solid fa-right-from-bracket"></i> Toka
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
