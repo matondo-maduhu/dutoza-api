@@ -1344,9 +1344,9 @@
                     <button type="button" class="composer-action" id="quoteOption" aria-label="Quote" title="Post quote">
                         <i class="fa-solid fa-quote-left" aria-hidden="true"></i>
                     </button>
-                    <a href="{{ url_for('user_music.music_composer') }}" class="composer-action" aria-label="Music" title="Post music">
+                    <button type="button" class="composer-action" id="musicOption" aria-label="Music" title="Post music">
                         <i class="fa-solid fa-music" aria-hidden="true"></i>
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1484,7 +1484,191 @@
     .qm-cancel { background: #f1f5f9; color: #475569; }
     .qm-submit { background: #1EB53A; color: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
     .qm-submit:active { opacity: 0.9; }
+
+    /* ===== Feed cards (quote + music) ===== */
+    .feed-card {
+        background: #fff; border-radius: 18px; margin: 0 0 14px;
+        box-shadow: 0 2px 12px rgba(15,23,42,.06); overflow: visible;
+        border: 1px solid #eef1f4;
+    }
+    .feed-card-head {
+        display: flex; align-items: center; gap: 10px; padding: 12px 14px 8px;
+        position: relative;
+    }
+    .feed-card-user { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .feed-card-avatar {
+        width: 42px; height: 42px; border-radius: 50%; overflow: hidden;
+        background: linear-gradient(135deg, #e8f8ec, #d1fae5);
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .feed-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .qf-avatar-letter { font-weight: 800; color: #0d7a28; font-size: 16px; }
+    .feed-card-user-meta { min-width: 0; }
+    .feed-card-user-meta strong { display: block; font-size: 14px; font-weight: 800; color: #0f172a; line-height: 1.2; }
+    .feed-card-user-meta span { font-size: 12px; color: #64748b; }
+    .feed-card-menu {
+        margin-left: auto; border: none; background: transparent; color: #64748b;
+        width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 16px;
+        flex-shrink: 0;
+    }
+    .feed-card-menu:hover { background: #f1f5f9; }
+    .feed-card-menu-drop {
+        position: absolute; right: 12px; top: 48px; z-index: 20;
+        background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.12); min-width: 140px; padding: 6px;
+    }
+    .feed-card-menu-drop button, .feed-card-menu-drop a {
+        display: block; width: 100%; text-align: left; border: none; background: none;
+        padding: 10px 12px; font-size: 13px; font-weight: 600; color: #0f172a;
+        border-radius: 8px; cursor: pointer; text-decoration: none; box-sizing: border-box;
+    }
+    .feed-card-menu-drop button:hover, .feed-card-menu-drop a:hover { background: #f8fafc; }
+
+    .quote-frame {
+        position: relative; margin: 4px 12px 8px; border-radius: 16px;
+        background: linear-gradient(145deg, #fff7ed 0%, #fdf2f8 45%, #f0fdf4 100%);
+        border: 1.5px solid #fde68a; padding: 18px 16px 16px; overflow: hidden;
+    }
+    .quote-frame .flower {
+        position: absolute; font-size: 18px; opacity: 0.85; pointer-events: none;
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,.08));
+    }
+    .quote-frame .f1 { top: 8px; left: 10px; }
+    .quote-frame .f2 { top: 8px; right: 44px; }
+    .quote-frame .f3 { bottom: 10px; left: 12px; }
+    .quote-frame .f4 { bottom: 10px; right: 14px; }
+    .quote-copy-btn {
+        position: absolute; top: 10px; right: 10px; z-index: 5;
+        border: none; background: rgba(255,255,255,.85); width: 34px; height: 34px;
+        border-radius: 10px; cursor: pointer; color: #64748b; font-size: 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .quote-copy-btn:hover { color: #0f172a; background: #fff; }
+    .quote-frame-inner { position: relative; z-index: 1; text-align: center; padding: 8px 28px 4px; }
+    .qf-mark { color: #f59e0b; font-size: 18px; opacity: 0.7; }
+    .qf-text {
+        margin: 10px 0 12px; font-size: 16px; font-weight: 650; line-height: 1.5;
+        color: #1e293b; word-break: break-word;
+    }
+    .qf-author { font-size: 13px; font-weight: 700; color: #64748b; }
+
+    .music-frame {
+        position: relative; margin: 4px 12px 8px; border-radius: 16px;
+        background: linear-gradient(145deg, #eff6ff 0%, #f5f3ff 50%, #ecfdf5 100%);
+        border: 1.5px solid #c7d2fe; padding: 14px; overflow: hidden;
+    }
+    .music-frame .flower {
+        position: absolute; font-size: 16px; opacity: 0.8; pointer-events: none;
+    }
+    .music-frame .f1 { top: 8px; left: 10px; }
+    .music-frame .f2 { top: 8px; right: 12px; }
+    .music-frame .f3 { bottom: 10px; left: 12px; }
+    .music-frame .f4 { bottom: 10px; right: 14px; }
+    .music-frame-inner {
+        position: relative; z-index: 1; display: flex; gap: 14px; align-items: flex-start;
+    }
+    .mf-cover {
+        width: 96px; height: 96px; border-radius: 14px; overflow: hidden; flex-shrink: 0;
+        background: #e0e7ff; box-shadow: 0 4px 14px rgba(79,70,229,.15);
+    }
+    .mf-cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mf-cover-ph {
+        width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+        font-size: 28px; color: #6366f1;
+    }
+    .mf-body { flex: 1; min-width: 0; }
+    .mf-label {
+        font-size: 11px; font-weight: 800; color: #4f46e5; letter-spacing: 0.6px;
+        margin-bottom: 4px;
+    }
+    .mf-title {
+        margin: 0 0 4px; font-size: 16px; font-weight: 800; color: #0f172a;
+        line-height: 1.25; word-break: break-word;
+    }
+    .mf-artist { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 4px; }
+    .mf-meta { font-size: 12px; color: #64748b; margin-bottom: 6px; }
+    .mf-desc { margin: 0 0 8px; font-size: 13px; color: #64748b; line-height: 1.4; }
+    .mf-audio { width: 100%; margin-top: 6px; height: 36px; }
+    .mf-no-audio { font-size: 12px; color: #94a3b8; margin-top: 6px; }
+
+    .feed-card-actions {
+        display: flex; gap: 6px; padding: 4px 10px 12px; border-top: none;
+    }
+    .fca-btn {
+        flex: 1; border: none; background: #f8fafc; color: #334155;
+        border-radius: 12px; padding: 10px 6px; font-size: 12.5px; font-weight: 700;
+        font-family: inherit; cursor: pointer; display: inline-flex; align-items: center;
+        justify-content: center; gap: 6px;
+    }
+    .fca-btn:hover { background: #f1f5f9; }
+    .fca-btn.liked, .fca-btn.liked i { color: #e11d48; }
+
+    /* Music modal form fields */
+    .mm-file-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+    .mm-file-btn {
+        flex: 1; min-width: 120px; border: 1.5px dashed #cbd5e1; border-radius: 12px;
+        padding: 14px 12px; text-align: center; cursor: pointer; background: #f8fafc;
+        font-size: 13px; font-weight: 700; color: #475569;
+    }
+    .mm-file-btn input { display: none; }
+    .mm-file-btn:hover { border-color: #1EB53A; background: #e8f8ec; color: #0d7a28; }
+    .mm-preview { font-size: 12px; color: #64748b; margin: 4px 0 8px; }
     </style>
+
+    <!-- Music form modal -->
+    <div class="quote-modal-overlay" id="musicModal" hidden>
+        <div class="quote-modal" role="dialog" aria-modal="true" aria-labelledby="musicModalTitle">
+            <div class="quote-modal-header">
+                <h2 id="musicModalTitle">Chapisha Music</h2>
+                <button type="button" class="quote-modal-close" id="closeMusicModal" aria-label="Funga">&times;</button>
+            </div>
+            <form id="musicModalForm" enctype="multipart/form-data">
+                <label class="qm-label">Audio *</label>
+                <div class="mm-file-row">
+                    <label class="mm-file-btn">
+                        <i class="fa-solid fa-file-audio"></i> Chagua audio
+                        <input type="file" name="audio" id="mmAudio" accept="audio/*" required>
+                    </label>
+                    <label class="mm-file-btn">
+                        <i class="fa-solid fa-image"></i> Cover
+                        <input type="file" name="cover" id="mmCover" accept="image/*">
+                    </label>
+                </div>
+                <div class="mm-preview" id="mmAudioName"></div>
+
+                <label class="qm-label" for="mmTitle">Jina la wimbo *</label>
+                <input type="text" name="title" id="mmTitle" maxlength="200" required placeholder="Mfano: Kiswahili">
+
+                <label class="qm-label" for="mmArtist">Msanii</label>
+                <input type="text" name="artist" id="mmArtist" maxlength="150" placeholder="Jina la msanii">
+
+                <label class="qm-label" for="mmAlbum">Album (si lazima)</label>
+                <input type="text" name="album" id="mmAlbum" maxlength="150" placeholder="Album">
+
+                <label class="qm-label" for="mmGenre">Genre</label>
+                <input type="text" name="genre" id="mmGenre" maxlength="80" placeholder="Mfano: Bongo">
+
+                <label class="qm-label" for="mmLanguage">Lugha</label>
+                <select name="language" id="mmLanguage">
+                    <option value="sw" selected>Kiswahili (SW)</option>
+                    <option value="en">English (EN)</option>
+                    <option value="mixed">Mixed</option>
+                </select>
+
+                <label class="qm-label" for="mmDesc">Maelezo (si lazima)</label>
+                <textarea name="description" id="mmDesc" rows="2" maxlength="1000" placeholder="Maelezo mafupi..."></textarea>
+
+                <div id="mmError" style="display:none;color:#dc2626;font-size:13px;font-weight:600;margin-top:10px;"></div>
+
+                <div class="quote-modal-actions">
+                    <button type="button" class="qm-btn qm-cancel" id="cancelMusicModal">Ghairi</button>
+                    <button type="submit" class="qm-btn qm-submit" id="mmSubmit">
+                        <i class="fa-solid fa-paper-plane"></i> Chapisha
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <section id="feed">
 
@@ -1631,10 +1815,89 @@
         });
     }
     document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape" && quoteModal && !quoteModal.hidden) {
-            closeQuoteModal();
+        if (e.key === "Escape") {
+            if (quoteModal && !quoteModal.hidden) closeQuoteModal();
+            if (musicModal && !musicModal.hidden) closeMusicModal();
         }
     });
+
+    /* ===== Music modal ===== */
+    const musicModal = document.getElementById("musicModal");
+    const musicOption = document.getElementById("musicOption");
+    const closeMusicModalBtn = document.getElementById("closeMusicModal");
+    const cancelMusicModalBtn = document.getElementById("cancelMusicModal");
+    const musicModalForm = document.getElementById("musicModalForm");
+    const mmAudio = document.getElementById("mmAudio");
+    const mmAudioName = document.getElementById("mmAudioName");
+    const mmError = document.getElementById("mmError");
+    const mmSubmit = document.getElementById("mmSubmit");
+
+    function openMusicModal() {
+        if (!musicModal) return;
+        musicModal.hidden = false;
+        document.body.style.overflow = "hidden";
+        if (mmError) { mmError.style.display = "none"; mmError.textContent = ""; }
+    }
+    function closeMusicModal() {
+        if (!musicModal) return;
+        musicModal.hidden = true;
+        document.body.style.overflow = "";
+    }
+    if (musicOption) musicOption.addEventListener("click", openMusicModal);
+    if (closeMusicModalBtn) closeMusicModalBtn.addEventListener("click", closeMusicModal);
+    if (cancelMusicModalBtn) cancelMusicModalBtn.addEventListener("click", closeMusicModal);
+    if (musicModal) {
+        musicModal.addEventListener("click", function (e) {
+            if (e.target === musicModal) closeMusicModal();
+        });
+    }
+    if (mmAudio && mmAudioName) {
+        mmAudio.addEventListener("change", function () {
+            mmAudioName.textContent = (mmAudio.files && mmAudio.files[0])
+                ? ("Audio: " + mmAudio.files[0].name)
+                : "";
+        });
+    }
+    if (musicModalForm) {
+        musicModalForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            if (mmError) { mmError.style.display = "none"; mmError.textContent = ""; }
+            if (mmSubmit) {
+                mmSubmit.disabled = true;
+                mmSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Inatuma…';
+            }
+            const fd = new FormData(musicModalForm);
+            fetch("/api/user/music", {
+                method: "POST",
+                body: fd,
+                credentials: "same-origin"
+            })
+            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+            .then(function (res) {
+                if (res.ok && res.d && res.d.success) {
+                    closeMusicModal();
+                    musicModalForm.reset();
+                    if (mmAudioName) mmAudioName.textContent = "";
+                    window.location.reload();
+                } else {
+                    var msg = (res.d && (res.d.message || res.d.error)) || "Imeshindikana kutuma wimbo.";
+                    if (mmError) { mmError.textContent = msg; mmError.style.display = "block"; }
+                }
+            })
+            .catch(function () {
+                if (mmError) {
+                    mmError.textContent = "Tatizo la mtandao. Jaribu tena.";
+                    mmError.style.display = "block";
+                }
+            })
+            .finally(function () {
+                if (mmSubmit) {
+                    mmSubmit.disabled = false;
+                    mmSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Chapisha';
+                }
+            });
+        });
+    }
 
     // keep counter working
     if (false && quoteOption && contentInput) {
@@ -1741,53 +2004,61 @@
            QUOTE FEED ITEM
            ================================ */
         if (post.type === "quote") {
-            const content = escapeHtml(
-                post.content || ""
-            );
-
+            const content = escapeHtml(post.content || "");
             const author = escapeHtml(
                 post.quote_author || post.user?.full_name || "Mercfy"
             );
-
-            const username = escapeHtml(
-                post.user?.username || ""
-            );
+            const uname = escapeHtml(post.user?.username || "");
+            const displayName = escapeHtml(post.user?.full_name || author);
+            const rawText = (post.content || "").replace(/"/g, "&quot;");
+            const avatarHtml = post.user?.profile_image_url
+                ? `<img src="${escapeHtml(post.user.profile_image_url)}" alt="">`
+                : `<span class="qf-avatar-letter">${escapeHtml((post.user?.full_name || author || "M").trim().charAt(0).toUpperCase())}</span>`;
 
             return `
-                <article class="feed-post quote-feed-item">
-                    <div class="post-header">
-                        <div class="post-user">
-                            <div class="post-avatar">
-                                ${
-                                    post.user?.profile_image_url
-                                        ? `<img src="${escapeHtml(post.user.profile_image_url)}" alt="">`
-                                        : `<i class="fa-solid fa-user"></i>`
-                                }
+                <article class="feed-card quote-card" data-type="quote" data-id="${post.id}">
+                    <div class="feed-card-head">
+                        <div class="feed-card-user">
+                            <div class="feed-card-avatar">${avatarHtml}</div>
+                            <div class="feed-card-user-meta">
+                                <strong>${displayName}</strong>
+                                ${uname ? `<span>@${uname}</span>` : ""}
                             </div>
-
-                            <div class="post-user-info">
-                                <strong>${escapeHtml(
-                                    post.user?.full_name || author
-                                )}</strong>
-                                ${
-                                    username
-                                        ? `<span>@${username}</span>`
-                                        : ""
-                                }
-                            </div>
+                        </div>
+                        <button type="button" class="feed-card-menu" aria-label="Menu" onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden">
+                            <i class="fa-solid fa-ellipsis"></i>
+                        </button>
+                        <div class="feed-card-menu-drop" hidden>
+                            <button type="button" onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(post.content||'')})">Copy text</button>
                         </div>
                     </div>
 
-                    <div class="quote-content">
-                        <i class="fa-solid fa-quote-left quote-mark"></i>
-
-                        <div class="quote-text">
-                            ${content}
+                    <div class="quote-frame">
+                        <button type="button" class="quote-copy-btn" title="Copy quote"
+                            onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(post.content||'')}).then(function(){this.textContent='✓';}.bind(this))">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                        <span class="flower f1">🌸</span>
+                        <span class="flower f2">🌺</span>
+                        <span class="flower f3">🌼</span>
+                        <span class="flower f4">🌷</span>
+                        <div class="quote-frame-inner">
+                            <i class="fa-solid fa-quote-left qf-mark"></i>
+                            <p class="qf-text">${content}</p>
+                            <div class="qf-author">— ${author}</div>
                         </div>
+                    </div>
 
-                        <div class="quote-author">
-                            — ${author}
-                        </div>
+                    <div class="feed-card-actions">
+                        <button type="button" class="fca-btn" title="Save"><i class="fa-regular fa-bookmark"></i> Save</button>
+                        <button type="button" class="fca-btn" title="Share"
+                            onclick="navigator.share?navigator.share({text:${JSON.stringify((post.content||'')+' — '+(post.quote_author||''))}):navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(post.content||'')})">
+                            <i class="fa-solid fa-share-nodes"></i> Share
+                        </button>
+                        <button type="button" class="fca-btn like-btn ${post.is_liked ? 'liked' : ''}" title="Like">
+                            <i class="fa-${post.is_liked ? 'solid' : 'regular'} fa-heart"></i>
+                            <span>${post.likes_count || 0}</span>
+                        </button>
                     </div>
                 </article>
             `;
@@ -1797,224 +2068,68 @@
            MUSIC FEED ITEM
            ================================ */
         if (post.type === "music") {
-            const title = escapeHtml(
-                post.title || "Untitled Song"
-            );
-
-            const description = escapeHtml(
-                post.description || ""
-            );
-
-            const audioUrl = escapeHtml(
-                post.audio_url || ""
-            );
-
-            const coverUrl = post.cover_url
-                ? escapeHtml(post.cover_url)
-                : "";
-
-            const artistName = escapeHtml(
-                post.artist?.name || "Unknown Artist"
-            );
-
-            const albumTitle = escapeHtml(
-                post.album?.title || ""
-            );
-
-            const genre = escapeHtml(
-                post.genre || ""
-            );
-
+            const title = escapeHtml(post.title || "Untitled Song");
+            const description = escapeHtml(post.description || "");
+            const audioUrl = escapeHtml(post.audio_url || "");
+            const coverUrl = post.cover_url ? escapeHtml(post.cover_url) : "";
+            const artistName = escapeHtml(post.artist?.name || "Unknown Artist");
+            const albumTitle = escapeHtml(post.album?.title || "");
+            const genre = escapeHtml(post.genre || "");
+            const avatarHtml = user.profile_image_url
+                ? `<img src="${escapeHtml(user.profile_image_url)}" alt="">`
+                : `<span class="qf-avatar-letter">${escapeHtml((user.full_name || "M").trim().charAt(0).toUpperCase())}</span>`;
             const cover = coverUrl
-                ? `
-                    <img
-                        src="${coverUrl}"
-                        alt="${title} cover"
-                        class="music-cover-image"
-                    >
-                  `
-                : `
-                    <div class="music-cover-placeholder">
-                        <i
-                            class="fa-solid fa-music"
-                            aria-hidden="true"
-                        ></i>
-                    </div>
-                  `;
+                ? `<img src="${coverUrl}" alt="${title}" class="mf-cover-img">`
+                : `<div class="mf-cover-ph"><i class="fa-solid fa-music"></i></div>`;
 
             return `
-                <article class="post music-post">
-
-                    <div class="post-header">
-
-                        <div class="avatar">
-                            ${image}
-                        </div>
-
-                        <div>
-                            <div class="user-name">
-                                ${name}
+                <article class="feed-card music-card-v2" data-type="music" data-id="${post.id}">
+                    <div class="feed-card-head">
+                        <div class="feed-card-user">
+                            <div class="feed-card-avatar">${avatarHtml}</div>
+                            <div class="feed-card-user-meta">
+                                <strong>${name}</strong>
+                                ${username ? `<span>@${username}</span>` : ""}
                             </div>
-
-                            <a
-                                class="username"
-                                href="/users/${encodeURIComponent(
-                                    user.username || ""
-                                )}"
-                            >
-                                @${username}
-                            </a>
                         </div>
-
-                        <div class="post-time">
-                            ${formatDate(post.created_at)}
+                        <button type="button" class="feed-card-menu" aria-label="Menu"
+                            onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden">
+                            <i class="fa-solid fa-ellipsis"></i>
+                        </button>
+                        <div class="feed-card-menu-drop" hidden>
+                            ${audioUrl ? `<a href="${audioUrl}" download>Download audio</a>` : ""}
                         </div>
-
                     </div>
 
-                    <div class="music-card">
-
-                        <div class="music-cover">
-                            ${cover}
-                        </div>
-
-                        <div class="music-info">
-
-                            <div class="music-label">
-                                <i
-                                    class="fa-solid fa-music"
-                                    aria-hidden="true"
-                                ></i>
-                                MUSIC
+                    <div class="music-frame">
+                        <span class="flower f1">🎵</span>
+                        <span class="flower f2">🌸</span>
+                        <span class="flower f3">🎧</span>
+                        <span class="flower f4">🌺</span>
+                        <div class="music-frame-inner">
+                            <div class="mf-cover">${cover}</div>
+                            <div class="mf-body">
+                                <div class="mf-label"><i class="fa-solid fa-music"></i> MUSIC</div>
+                                <h3 class="mf-title">${title}</h3>
+                                <div class="mf-artist">${artistName}</div>
+                                ${(albumTitle || genre) ? `<div class="mf-meta">${albumTitle ? albumTitle : ""}${albumTitle && genre ? " · " : ""}${genre || ""}</div>` : ""}
+                                ${description ? `<p class="mf-desc">${description}</p>` : ""}
+                                ${audioUrl ? `<audio class="mf-audio" controls preload="metadata" src="${audioUrl}"></audio>` : `<div class="mf-no-audio">Audio haipatikani</div>`}
                             </div>
-
-                            <h3 class="music-title">
-                                ${title}
-                            </h3>
-
-                            <div class="music-artist">
-                                <i
-                                    class="fa-solid fa-microphone"
-                                    aria-hidden="true"
-                                ></i>
-                                ${artistName}
-                            </div>
-
-                            ${
-                                albumTitle || genre
-                                    ? `
-                                        <div class="music-meta">
-
-                                            ${
-                                                albumTitle
-                                                    ? `
-                                                        <span>
-                                                            <i
-                                                                class="fa-solid fa-compact-disc"
-                                                                aria-hidden="true"
-                                                            ></i>
-                                                            ${albumTitle}
-                                                        </span>
-                                                      `
-                                                    : ""
-                                            }
-
-                                            ${
-                                                genre
-                                                    ? `
-                                                        <span>
-                                                            <i
-                                                                class="fa-solid fa-tag"
-                                                                aria-hidden="true"
-                                                            ></i>
-                                                            ${genre}
-                                                        </span>
-                                                      `
-                                                    : ""
-                                            }
-
-                                        </div>
-                                      `
-                                    : ""
-                            }
-
-                            ${
-                                description
-                                    ? `
-                                        <div class="music-description">
-                                            ${description}
-                                        </div>
-                                      `
-                                    : ""
-                            }
-
                         </div>
-
                     </div>
 
-                    ${
-                        audioUrl
-                            ? `
-                                <div class="music-player">
-
-                                    <audio
-                                        class="music-audio"
-                                        controls
-                                        preload="metadata"
-                                        src="${audioUrl}"
-                                    ></audio>
-
-                                </div>
-                              `
-                            : `
-                                <div class="music-no-audio">
-                                    Audio haipatikani kwa sasa.
-                                </div>
-                              `
-                    }
-
-                    <div class="music-stats">
-
-                        <span>
-                            <i
-                                class="fa-solid fa-play"
-                                aria-hidden="true"
-                            ></i>
-                            ${Number(post.play_count || 0)}
-                        </span>
-
-                        <span>
-                            <i
-                                class="fa-solid fa-download"
-                                aria-hidden="true"
-                            ></i>
-                            ${Number(post.download_count || 0)}
-                        </span>
-
+                    <div class="feed-card-actions">
+                        <button type="button" class="fca-btn" title="Save"><i class="fa-regular fa-bookmark"></i> Save</button>
+                        <button type="button" class="fca-btn" title="Share"
+                            onclick="navigator.share?navigator.share({title:${JSON.stringify(post.title||'')},text:${JSON.stringify((post.title||'')+' — '+(post.artist?.name||''))}):null">
+                            <i class="fa-solid fa-share-nodes"></i> Share
+                        </button>
+                        <button type="button" class="fca-btn like-btn ${post.is_liked ? 'liked' : ''}" title="Like">
+                            <i class="fa-${post.is_liked ? 'solid' : 'regular'} fa-heart"></i>
+                            <span>${post.likes_count || 0}</span>
+                        </button>
                     </div>
-
-                    ${
-                        audioUrl
-                            ? `
-                                <div class="music-actions">
-
-                                    <a
-                                        href="${audioUrl}"
-                                        download
-                                        class="music-action-btn"
-                                    >
-                                        <i
-                                            class="fa-solid fa-download"
-                                            aria-hidden="true"
-                                        ></i>
-                                        Download
-                                    </a>
-
-                                </div>
-                              `
-                            : ""
-                    }
-
                 </article>
             `;
         }
