@@ -59,6 +59,14 @@
         }
         .brand:active { opacity: 0.75; }
 
+        
+        .search-top-btn {
+            width: 42px; height: 42px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: #334155; text-decoration: none; font-size: 18px;
+        }
+        .search-top-btn:hover { background: #f1f5f9; color: #0f172a; }
+
         .topbar-right {
             display: flex;
             align-items: center;
@@ -256,6 +264,10 @@
     </a>
 
     <div class="topbar-right">
+        <a href="{{ url_for('user_feed.search_page') }}" class="search-top-btn" aria-label="Search" title="Search">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        </a>
+
         <div class="notification-wrap">
             <button
                 type="button"

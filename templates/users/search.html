@@ -1,0 +1,226 @@
+{% extends "users/base.html" %}
+{% set nav_active = "home" %}
+
+{% block title %}Search — Incredibles{% endblock %}
+
+{% block extra_css %}
+.search-box {
+    display: flex; gap: 8px; margin-bottom: 12px;
+}
+.search-box input {
+    flex: 1; border: 1.5px solid #e2e8f0; border-radius: 14px;
+    padding: 12px 14px; font-size: 15px; font-family: inherit; outline: none;
+}
+.search-box input:focus { border-color: #1EB53A; }
+.search-box button {
+    border: none; border-radius: 14px; padding: 0 16px; background: #1EB53A;
+    color: #fff; font-weight: 800; cursor: pointer; font-family: inherit;
+}
+.search-filters {
+    display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.search-filters button {
+    border: 1px solid #e2e8f0; background: #fff; border-radius: 99px;
+    padding: 7px 12px; font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: inherit; color: #475569;
+}
+.search-filters button.active {
+    background: #e8f8ec; border-color: #1EB53A; color: #0d7a28;
+}
+.search-status { text-align: center; color: #94a3b8; font-size: 14px; padding: 16px; }
+.feed-card {
+    background: #fff; border-radius: 18px; margin: 0 0 14px;
+    box-shadow: 0 2px 12px rgba(15,23,42,.06); border: 1px solid #eef1f4;
+}
+.feed-card-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px 8px; }
+.feed-card-user { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.feed-card-avatar {
+    width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #e8f8ec;
+    display: flex; align-items: center; justify-content: center;
+}
+.feed-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.feed-card-user-meta strong { display: block; font-size: 14px; font-weight: 800; }
+.feed-meta-line { font-size: 12px; color: #64748b; }
+.quote-frame {
+    margin: 4px 12px 8px; border-radius: 16px; padding: 16px 14px; text-align: center;
+    background: linear-gradient(145deg, #fff7ed, #fdf2f8 45%, #f0fdf4);
+    border: 1.5px solid #fde68a;
+}
+.qf-text { margin: 8px 0; font-size: 15px; font-weight: 650; line-height: 1.45; }
+.qf-author { font-size: 12px; font-weight: 700; color: #64748b; }
+.qf-cat {
+    display: inline-block; margin-top: 6px; font-size: 11px; font-weight: 700;
+    background: #fff; border-radius: 99px; padding: 3px 10px; color: #92400e;
+}
+.music-frame {
+    margin: 4px 12px 8px; border-radius: 16px; padding: 14px; text-align: center;
+    background: linear-gradient(145deg, #eff6ff, #f5f3ff 50%, #ecfdf5);
+    border: 1.5px solid #c7d2fe;
+}
+.mf-cover-lg {
+    width: 110px; height: 110px; border-radius: 14px; overflow: hidden; margin: 0 auto 10px; background: #e0e7ff;
+}
+.mf-cover-lg img { width: 100%; height: 100%; object-fit: cover; }
+.mf-title { margin: 0; font-size: 15px; font-weight: 800; }
+.mf-artist { font-size: 13px; color: #475569; margin-top: 4px; }
+.mf-audio { width: 100%; margin-top: 10px; height: 36px; }
+.feed-card-actions { display: flex; gap: 6px; padding: 4px 10px 12px; }
+.fca-btn {
+    flex: 1; border: none; background: #f8fafc; color: #334155; border-radius: 12px;
+    padding: 10px 6px; font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+.fca-btn.liked, .fca-btn.liked i { color: #e11d48; }
+.fca-btn.saved, .fca-btn.saved i { color: #1EB53A; }
+{% endblock %}
+
+{% block content %}
+<form class="search-box" id="searchForm">
+    <input type="search" id="searchInput" placeholder="Tafuta quote, category, wimbo, msanii, album..." autocomplete="off" required>
+    <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+</form>
+<div class="search-filters" id="searchFilters">
+    <button type="button" class="active" data-type="all">Zote</button>
+    <button type="button" data-type="quote">Quotes</button>
+    <button type="button" data-type="music">Music</button>
+</div>
+<div id="searchResults">
+    <div class="search-status">Andika neno ili kutafuta.</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var form = document.getElementById('searchForm');
+    var input = document.getElementById('searchInput');
+    var results = document.getElementById('searchResults');
+    var filters = document.getElementById('searchFilters');
+    var stype = 'all';
+
+    function esc(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function relTime(dateString) {
+        if (!dateString) return '';
+        var d = new Date(dateString);
+        if (isNaN(d.getTime())) return '';
+        var sec = Math.floor((Date.now() - d.getTime()) / 1000);
+        if (sec < 60) return 'sasa hivi';
+        if (sec < 3600) return Math.floor(sec / 60) + ' dk';
+        if (sec < 86400) return Math.floor(sec / 3600) + ' saa';
+        if (sec < 604800) return Math.floor(sec / 86400) + ' siku';
+        return d.toLocaleDateString();
+    }
+
+    filters.addEventListener('click', function (e) {
+        var b = e.target.closest('button[data-type]');
+        if (!b) return;
+        filters.querySelectorAll('button').forEach(function (x) { x.classList.remove('active'); });
+        b.classList.add('active');
+        stype = b.getAttribute('data-type');
+        if (input.value.trim()) runSearch();
+    });
+
+    function render(post) {
+        var user = post.user || {};
+        var name = esc(user.full_name || 'User');
+        var uname = esc(user.username || '');
+        var avatar = user.profile_image_url
+            ? '<img src="' + esc(user.profile_image_url) + '" alt="">'
+            : '<span style="font-weight:800;color:#0d7a28;">' + esc((user.full_name || 'U').charAt(0).toUpperCase()) + '</span>';
+        var actions =
+            '<div class="feed-card-actions">' +
+            '<button type="button" class="fca-btn ' + (post.is_saved ? 'saved' : '') + '" data-engage="save" data-type="' + post.type + '" data-id="' + post.id + '"><i class="fa-' + (post.is_saved ? 'solid' : 'regular') + ' fa-bookmark"></i> <span class="save-count">' + (post.saves_count||0) + '</span></button>' +
+            '<button type="button" class="fca-btn" data-engage="share" data-type="' + post.type + '" data-id="' + post.id + '" data-share-text="' + esc(post.type==='quote'?(post.content||''):(post.title||'')) + '"><i class="fa-solid fa-share-nodes"></i> <span class="share-count">' + (post.shares_count||0) + '</span></button>' +
+            '<button type="button" class="fca-btn ' + (post.is_liked ? 'liked' : '') + '" data-engage="like" data-type="' + post.type + '" data-id="' + post.id + '"><i class="fa-' + (post.is_liked ? 'solid' : 'regular') + ' fa-heart"></i> <span class="like-count">' + (post.likes_count||0) + '</span></button>' +
+            '</div>';
+        var head = '<div class="feed-card-head"><div class="feed-card-user"><div class="feed-card-avatar">' + avatar + '</div><div class="feed-card-user-meta"><strong>' + name + '</strong><span class="feed-meta-line">' + (uname ? '@'+uname+' · ' : '') + relTime(post.created_at) + '</span></div></div></div>';
+        if (post.type === 'quote') {
+            return '<article class="feed-card">' + head + '<div class="quote-frame"><p class="qf-text">' + esc(post.content) + '</p><div class="qf-author">— ' + esc(post.quote_author||name) + '</div>' + (post.category ? '<div class="qf-cat">' + esc(post.category) + '</div>' : '') + '</div>' + actions + '</article>';
+        }
+        var cover = post.cover_url ? '<img src="' + esc(post.cover_url) + '" alt="">' : '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#6366f1;"><i class="fa-solid fa-music"></i></div>';
+        var artist = (post.artist && post.artist.name) ? esc(post.artist.name) : '';
+        var album = (post.album && post.album.title) ? ' · ' + esc(post.album.title) : '';
+        return '<article class="feed-card">' + head + '<div class="music-frame"><div class="mf-cover-lg">' + cover + '</div><h3 class="mf-title">' + esc(post.title) + '</h3><div class="mf-artist">' + artist + album + '</div>' + (post.audio_url ? '<audio class="mf-audio" controls preload="metadata" src="' + esc(post.audio_url) + '"></audio>' : '') + '</div>' + actions + '</article>';
+    }
+
+    function runSearch() {
+        var q = input.value.trim();
+        if (!q) return;
+        results.innerHTML = '<div class="search-status">Inatafuta...</div>';
+        fetch('/api/user/search?q=' + encodeURIComponent(q) + '&type=' + encodeURIComponent(stype), { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var posts = (data && data.posts) ? data.posts : [];
+                if (!posts.length) {
+                    results.innerHTML = '<div class="search-status">Hakuna matokeo ya “' + esc(q) + '”.</div>';
+                    return;
+                }
+                results.innerHTML = posts.map(render).join('');
+            })
+            .catch(function () {
+                results.innerHTML = '<div class="search-status">Tatizo la mtandao.</div>';
+            });
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        runSearch();
+    });
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-engage]');
+        if (!btn) return;
+        e.preventDefault();
+        var act = btn.getAttribute('data-engage');
+        var ctype = btn.getAttribute('data-type');
+        var id = btn.getAttribute('data-id');
+        if (act === 'share') {
+            var text = btn.getAttribute('data-share-text') || '';
+            var count = function () {
+                fetch('/api/user/content/share', {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content_type: ctype, content_id: Number(id) })
+                }).then(function (r) { return r.json(); })
+                  .then(function (d) {
+                      if (d && d.success) {
+                          var c = btn.querySelector('.share-count');
+                          if (c) c.textContent = d.shares_count;
+                      }
+                  });
+            };
+            if (navigator.share) navigator.share({ text: text }).then(count).catch(count);
+            else if (navigator.clipboard) navigator.clipboard.writeText(text).then(count).catch(count);
+            else count();
+            return;
+        }
+        var endpoint = act === 'like' ? '/api/user/content/like' : '/api/user/content/save';
+        btn.disabled = true;
+        fetch(endpoint, {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content_type: ctype, content_id: Number(id) })
+        }).then(function (r) { return r.json(); })
+          .then(function (d) {
+              if (!d || !d.success) return;
+              if (act === 'like') {
+                  btn.classList.toggle('liked', !!d.liked);
+                  var icon = btn.querySelector('i');
+                  if (icon) icon.className = d.liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+                  var c = btn.querySelector('.like-count');
+                  if (c) c.textContent = d.likes_count;
+              } else {
+                  btn.classList.toggle('saved', !!d.saved);
+                  var icon = btn.querySelector('i');
+                  if (icon) icon.className = d.saved ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
+                  var c = btn.querySelector('.save-count');
+                  if (c) c.textContent = d.saves_count;
+              }
+          })
+          .finally(function () { btn.disabled = false; });
+    });
+})();
+</script>
+{% endblock %}

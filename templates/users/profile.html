@@ -1,5 +1,4 @@
 {% extends "users/base.html" %}
-
 {% set nav_active = "profile" %}
 
 {% block title %}Profile — Incredibles{% endblock %}
@@ -18,93 +17,80 @@
 }
 .profile-body { padding: 0 16px 16px; }
 .avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    margin-top: -32px;
-    border: 3px solid #ffffff;
-    background: #e9edf0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    font-size: 22px;
-    font-weight: 800;
-    color: #17212b;
+    width: 64px; height: 64px; border-radius: 50%; margin-top: -32px;
+    border: 3px solid #ffffff; background: #e9edf0;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    font-size: 22px; font-weight: 800; color: #17212b;
     box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
-.name {
-    margin: 10px 0 2px;
-    font-size: 17px;
-    font-weight: 800;
-    color: #0f172a;
-}
+.name { margin: 10px 0 2px; font-size: 17px; font-weight: 800; color: #0f172a; }
 .username { color: #68737d; font-size: 13px; }
-.bio {
-    margin-top: 10px;
-    color: #4f5b65;
-    line-height: 1.45;
-    font-size: 13px;
-}
+.bio { margin-top: 10px; color: #4f5b65; line-height: 1.45; font-size: 13px; }
 .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    border-top: 1px solid #edf0f2;
-    margin-top: 14px;
-    padding-top: 12px;
-    gap: 6px;
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid #edf0f2; margin-top: 14px; padding-top: 12px; gap: 6px;
 }
 .stat { text-align: center; }
-.stat-number {
-    font-size: 15px;
-    font-weight: 800;
-    color: #0f172a;
-}
-.stat-label {
-    margin-top: 2px;
-    color: #7b858d;
-    font-size: 11px;
-}
-.account {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #edf0f2;
-    color: #68737d;
-    font-size: 12px;
-}
-.logout-row { margin-top: 14px; }
+.stat-number { font-size: 15px; font-weight: 800; color: #0f172a; }
+.stat-label { margin-top: 2px; color: #7b858d; font-size: 11px; }
+.account { margin-top: 12px; padding-top: 12px; border-top: 1px solid #edf0f2; color: #68737d; font-size: 12px; }
+.logout-row { margin-top: 10px; }
 .logout-row form { margin: 0; }
 .logout {
-    width: 100%;
-    border: 0;
-    background: #f1f5f9;
-    color: #334155;
-    border-radius: 12px;
-    padding: 11px 14px;
-    font-weight: 700;
-    font-size: 13px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-family: inherit;
+    width: 100%; border: 0; background: #f1f5f9; color: #334155; border-radius: 12px;
+    padding: 11px 14px; font-weight: 700; font-size: 13px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit;
 }
-.logout:hover {
-    background: #fee2e2;
-    color: #b91c1c;
+.logout:hover { background: #fee2e2; color: #b91c1c; }
+.profile-posts-title {
+    margin: 18px 4px 10px; font-size: 15px; font-weight: 800; color: #0f172a;
 }
-@media (max-width: 520px) {
-    .cover { height: 72px; }
-    .avatar {
-        width: 56px;
-        height: 56px;
-        margin-top: -28px;
-        font-size: 18px;
-    }
-    .name { font-size: 16px; }
+.profile-loading, .profile-empty {
+    text-align: center; color: #94a3b8; font-size: 14px; padding: 20px 8px;
 }
+.feed-card {
+    background: #fff; border-radius: 18px; margin: 0 0 14px;
+    box-shadow: 0 2px 12px rgba(15,23,42,.06); border: 1px solid #eef1f4;
+}
+.feed-card-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px 8px; position: relative; }
+.feed-card-user { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.feed-card-avatar {
+    width: 40px; height: 40px; border-radius: 50%; overflow: hidden;
+    background: #e8f8ec; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.feed-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.qf-avatar-letter { font-weight: 800; color: #0d7a28; font-size: 15px; }
+.feed-card-user-meta strong { display: block; font-size: 14px; font-weight: 800; color: #0f172a; }
+.feed-meta-line { font-size: 12px; color: #64748b; }
+.quote-frame {
+    position: relative; margin: 4px 12px 8px; border-radius: 16px;
+    background: linear-gradient(145deg, #fff7ed 0%, #fdf2f8 45%, #f0fdf4 100%);
+    border: 1.5px solid #fde68a; padding: 16px 14px; text-align: center;
+}
+.qf-text { margin: 8px 0; font-size: 15px; font-weight: 650; line-height: 1.45; color: #1e293b; }
+.qf-author { font-size: 12px; font-weight: 700; color: #64748b; }
+.music-frame {
+    margin: 4px 12px 8px; border-radius: 16px; padding: 14px;
+    background: linear-gradient(145deg, #eff6ff 0%, #f5f3ff 50%, #ecfdf5 100%);
+    border: 1.5px solid #c7d2fe; text-align: center;
+}
+.mf-cover-lg {
+    width: 120px; height: 120px; border-radius: 16px; overflow: hidden; margin: 0 auto 10px;
+    background: #e0e7ff; box-shadow: 0 6px 18px rgba(79,70,229,.18);
+}
+.mf-cover-lg img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mf-title { margin: 0; font-size: 15px; font-weight: 800; color: #0f172a; }
+.mf-artist { font-size: 13px; color: #475569; margin-top: 4px; }
+.mf-audio { width: 100%; margin-top: 10px; height: 36px; }
+.feed-card-actions { display: flex; gap: 6px; padding: 4px 10px 12px; }
+.fca-btn {
+    flex: 1; border: none; background: #f8fafc; color: #334155; border-radius: 12px;
+    padding: 10px 6px; font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+.fca-btn.liked, .fca-btn.liked i { color: #e11d48; }
+.fca-btn.saved, .fca-btn.saved i { color: #1EB53A; }
 {% endblock %}
 
 {% block content %}
@@ -113,22 +99,17 @@
     <div class="profile-body">
         <div class="avatar">
             {% if user[4] %}
-                <img src="{{ user[4] }}" alt="Picha ya profile">
+                <img src="{{ user[4] }}" alt="Profile">
             {% else %}
                 {{ user[1][0]|upper }}
             {% endif %}
         </div>
-
         <div class="name">{{ user[1] }}</div>
         <div class="username">@{{ user[2] }}</div>
-
-        {% if user[6] %}
-        <div class="bio">{{ user[6] }}</div>
-        {% endif %}
-
+        {% if user[6] %}<div class="bio">{{ user[6] }}</div>{% endif %}
         <div class="stats">
             <div class="stat">
-                <div class="stat-number">0</div>
+                <div class="stat-number" id="statPosts">{{ posts_count|default(0) }}</div>
                 <div class="stat-label">Posts</div>
             </div>
             <div class="stat">
@@ -140,17 +121,12 @@
                 <div class="stat-label">Following</div>
             </div>
         </div>
-
-        <div class="account">
-            Akaunti · {{ user[3] }}
-        </div>
-
+        <div class="account">Akaunti · {{ user[3] }}</div>
         <div class="logout-row" style="margin-bottom:8px;">
             <a href="{{ url_for('user_auth.settings') }}" class="logout" style="text-decoration:none;background:#e8f8ec;color:#0d7a28;">
                 <i class="fa-solid fa-gear"></i> Settings
             </a>
         </div>
-
         <div class="logout-row">
             <form method="POST" action="{{ url_for('user_auth.logout') }}">
                 <button class="logout" type="submit">
@@ -160,4 +136,145 @@
         </div>
     </div>
 </section>
+
+<h2 class="profile-posts-title">Machapisho yako</h2>
+<div id="profileFeed">
+    <div class="profile-loading">Inapakia posts...</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const CURRENT_USER_ID = {{ session.get("user_id") or 0 }};
+    const feedEl = document.getElementById("profileFeed");
+
+    function esc(s) {
+        return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+    function relTime(dateString) {
+        if (!dateString) return "";
+        var d = new Date(dateString);
+        if (isNaN(d.getTime())) return "";
+        var sec = Math.floor((Date.now() - d.getTime()) / 1000);
+        if (sec < 60) return "sasa hivi";
+        if (sec < 3600) return Math.floor(sec / 60) + " dk";
+        if (sec < 86400) return Math.floor(sec / 3600) + " saa";
+        if (sec < 604800) return Math.floor(sec / 86400) + " siku";
+        try { return d.toLocaleDateString("sw-TZ", { day: "numeric", month: "short" }); }
+        catch (e) { return d.toLocaleDateString(); }
+    }
+
+    function render(post) {
+        var user = post.user || {};
+        var name = esc(user.full_name || "User");
+        var uname = esc(user.username || "");
+        var avatar = user.profile_image_url
+            ? '<img src="' + esc(user.profile_image_url) + '" alt="">'
+            : '<span class="qf-avatar-letter">' + esc((user.full_name || "U").charAt(0).toUpperCase()) + '</span>';
+        var actions =
+            '<div class="feed-card-actions">' +
+            '<button type="button" class="fca-btn save-btn ' + (post.is_saved ? 'saved' : '') + '" data-engage="save" data-type="' + post.type + '" data-id="' + post.id + '">' +
+            '<i class="fa-' + (post.is_saved ? 'solid' : 'regular') + ' fa-bookmark"></i> <span class="save-count">' + (post.saves_count || 0) + '</span></button>' +
+            '<button type="button" class="fca-btn share-btn" data-engage="share" data-type="' + post.type + '" data-id="' + post.id + '" data-share-text="' + esc(post.type === 'quote' ? (post.content || '') : (post.title || '')) + '">' +
+            '<i class="fa-solid fa-share-nodes"></i> <span class="share-count">' + (post.shares_count || 0) + '</span></button>' +
+            '<button type="button" class="fca-btn like-btn ' + (post.is_liked ? 'liked' : '') + '" data-engage="like" data-type="' + post.type + '" data-id="' + post.id + '">' +
+            '<i class="fa-' + (post.is_liked ? 'solid' : 'regular') + ' fa-heart"></i> <span class="like-count">' + (post.likes_count || 0) + '</span></button>' +
+            '</div>';
+
+        var head =
+            '<div class="feed-card-head"><div class="feed-card-user"><div class="feed-card-avatar">' + avatar + '</div>' +
+            '<div class="feed-card-user-meta"><strong>' + name + '</strong>' +
+            '<span class="feed-meta-line">' + (uname ? '@' + uname + ' · ' : '') + relTime(post.created_at) + '</span></div></div></div>';
+
+        if (post.type === 'quote') {
+            return '<article class="feed-card" data-type="quote" data-id="' + post.id + '">' + head +
+                '<div class="quote-frame"><p class="qf-text">' + esc(post.content) + '</p>' +
+                '<div class="qf-author">— ' + esc(post.quote_author || name) + '</div></div>' + actions + '</article>';
+        }
+        if (post.type === 'music') {
+            var cover = post.cover_url
+                ? '<img src="' + esc(post.cover_url) + '" alt="">'
+                : '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#6366f1;font-size:28px;"><i class="fa-solid fa-music"></i></div>';
+            var artist = (post.artist && post.artist.name) ? esc(post.artist.name) : '';
+            return '<article class="feed-card" data-type="music" data-id="' + post.id + '">' + head +
+                '<div class="music-frame"><div class="mf-cover-lg">' + cover + '</div>' +
+                '<h3 class="mf-title">' + esc(post.title) + '</h3>' +
+                '<div class="mf-artist">' + artist + '</div>' +
+                (post.audio_url ? '<audio class="mf-audio" controls preload="metadata" src="' + esc(post.audio_url) + '"></audio>' : '') +
+                '</div>' + actions + '</article>';
+        }
+        return '';
+    }
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-engage]');
+        if (!btn) return;
+        e.preventDefault();
+        var act = btn.getAttribute('data-engage');
+        var ctype = btn.getAttribute('data-type');
+        var id = btn.getAttribute('data-id');
+        if (act === 'share') {
+            var text = btn.getAttribute('data-share-text') || '';
+            var count = function () {
+                fetch('/api/user/content/share', {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content_type: ctype, content_id: Number(id) })
+                }).then(function (r) { return r.json(); })
+                  .then(function (d) {
+                      if (d && d.success) {
+                          var c = btn.querySelector('.share-count');
+                          if (c) c.textContent = d.shares_count;
+                      }
+                  });
+            };
+            if (navigator.share) navigator.share({ text: text }).then(count).catch(count);
+            else if (navigator.clipboard) navigator.clipboard.writeText(text).then(count).catch(count);
+            else count();
+            return;
+        }
+        var endpoint = act === 'like' ? '/api/user/content/like' : '/api/user/content/save';
+        btn.disabled = true;
+        fetch(endpoint, {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content_type: ctype, content_id: Number(id) })
+        }).then(function (r) { return r.json(); })
+          .then(function (d) {
+              if (!d || !d.success) return;
+              if (act === 'like') {
+                  btn.classList.toggle('liked', !!d.liked);
+                  var icon = btn.querySelector('i');
+                  if (icon) icon.className = d.liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+                  var c = btn.querySelector('.like-count');
+                  if (c) c.textContent = d.likes_count;
+              } else {
+                  btn.classList.toggle('saved', !!d.saved);
+                  var icon = btn.querySelector('i');
+                  if (icon) icon.className = d.saved ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
+                  var c = btn.querySelector('.save-count');
+                  if (c) c.textContent = d.saves_count;
+              }
+          })
+          .finally(function () { btn.disabled = false; });
+    });
+
+    fetch('/api/user/profile/posts', { credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            var posts = (data && data.posts) ? data.posts : [];
+            if (!posts.length) {
+                feedEl.innerHTML = '<div class="profile-empty">Bado hujachapisha chochote.</div>';
+                return;
+            }
+            feedEl.innerHTML = posts.map(render).join('');
+            var stat = document.getElementById('statPosts');
+            if (stat) stat.textContent = posts.length;
+        })
+        .catch(function () {
+            feedEl.innerHTML = '<div class="profile-empty">Imeshindikana kupakia posts.</div>';
+        });
+})();
+</script>
 {% endblock %}
