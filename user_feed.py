@@ -169,14 +169,32 @@ def get_posts():
 
             quote_rows = cursor.fetchall()
 
+            try:
+                ensure_engagement_tables(connection)
+            except Exception:
+                pass
+
             for row in quote_rows:
+                eng = {
+                    "likes_count": 0,
+                    "is_liked": False,
+                    "saves_count": 0,
+                    "is_saved": False,
+                    "shares_count": 0,
+                }
+                try:
+                    eng = engagement_counts(
+                        cursor, "quote", row[0], current_user_id
+                    )
+                except Exception:
+                    pass
                 feed_items.append({
                     "type": "quote",
                     "id": row[0],
                     "content": row[1],
                     "quote_author": row[2],
                     "language": row[3],
-                    "created_at": row[4].isoformat(),
+                    "created_at": row[4].isoformat() if row[4] else None,
                     "user": {
                         "id": row[5],
                         "full_name": row[6] or row[2] or "Mercfy",
@@ -185,8 +203,11 @@ def get_posts():
                     },
                     "category": row[9],
                     "category_slug": row[10],
-                    "likes_count": 0,
-                    "is_liked": False
+                    "likes_count": eng["likes_count"],
+                    "is_liked": eng["is_liked"],
+                    "saves_count": eng["saves_count"],
+                    "is_saved": eng["is_saved"],
+                    "shares_count": eng["shares_count"],
                 })
 
             # -------------------------------------------------
@@ -290,10 +311,25 @@ def get_posts():
                         "cover_url": row[26]
                     } if row[23] else None,
 
-                    # Music does not yet use post_likes.
                     "likes_count": 0,
-                    "is_liked": False
+                    "is_liked": False,
+                    "saves_count": 0,
+                    "is_saved": False,
+                    "shares_count": 0,
                 })
+                try:
+                    eng = engagement_counts(
+                        cursor, "music", row[0], current_user_id
+                    )
+                    feed_items[-1].update({
+                        "likes_count": eng["likes_count"],
+                        "is_liked": eng["is_liked"],
+                        "saves_count": eng["saves_count"],
+                        "is_saved": eng["is_saved"],
+                        "shares_count": eng["shares_count"],
+                    })
+                except Exception:
+                    pass
 
             cursor.close()
 
@@ -1774,6 +1810,243 @@ def toggle_interest():
         )
         connection.commit()
         return jsonify({"success": True, "interested": True, "message": "Imeongezwa kwenye interested"})
+    except Exception as e:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        close_connection(connection)
+
+
+# ============================================================
+# CONTENT ENGAGEMENT: like / save / share (quote + music)
+# ============================================================
+
+def ensure_engagement_tables(connection):
+    cursor = connection.cursor()
+    try:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS content_likes (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                content_type VARCHAR(20) NOT NULL,
+                content_id INTEGER NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                UNIQUE (user_id, content_type, content_id)
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS content_saves (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                content_type VARCHAR(20) NOT NULL,
+                content_id INTEGER NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                UNIQUE (user_id, content_type, content_id)
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS content_shares (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER,
+                content_type VARCHAR(20) NOT NULL,
+                content_id INTEGER NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        connection.commit()
+    finally:
+        cursor.close()
+
+
+def engagement_counts(cursor, content_type, content_id, user_id):
+    cursor.execute(
+        "SELECT COUNT(*) FROM content_likes WHERE content_type = %s AND content_id = %s",
+        (content_type, content_id),
+    )
+    likes = cursor.fetchone()[0]
+    cursor.execute(
+        """
+        SELECT EXISTS(
+            SELECT 1 FROM content_likes
+            WHERE content_type = %s AND content_id = %s AND user_id = %s
+        )
+        """,
+        (content_type, content_id, user_id),
+    )
+    is_liked = bool(cursor.fetchone()[0])
+    cursor.execute(
+        "SELECT COUNT(*) FROM content_saves WHERE content_type = %s AND content_id = %s",
+        (content_type, content_id),
+    )
+    saves = cursor.fetchone()[0]
+    cursor.execute(
+        """
+        SELECT EXISTS(
+            SELECT 1 FROM content_saves
+            WHERE content_type = %s AND content_id = %s AND user_id = %s
+        )
+        """,
+        (content_type, content_id, user_id),
+    )
+    is_saved = bool(cursor.fetchone()[0])
+    cursor.execute(
+        "SELECT COUNT(*) FROM content_shares WHERE content_type = %s AND content_id = %s",
+        (content_type, content_id),
+    )
+    shares = cursor.fetchone()[0]
+    return {
+        "likes_count": likes,
+        "is_liked": is_liked,
+        "saves_count": saves,
+        "is_saved": is_saved,
+        "shares_count": shares,
+    }
+
+
+@user_feed_bp.post("/api/user/content/like")
+def content_like_toggle():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"success": False, "message": "Login required"}), 401
+
+    data = request.get_json(silent=True) or {}
+    content_type = (data.get("content_type") or "").strip().lower()
+    content_id = data.get("content_id")
+    if content_type not in ("quote", "music", "post") or not content_id:
+        return jsonify({"success": False, "message": "Invalid"}), 400
+
+    connection = None
+    try:
+        connection = get_connection()
+        ensure_engagement_tables(connection)
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            SELECT id FROM content_likes
+            WHERE user_id = %s AND content_type = %s AND content_id = %s
+            LIMIT 1
+            """,
+            (user_id, content_type, int(content_id)),
+        )
+        row = cursor.fetchone()
+        if row:
+            cursor.execute("DELETE FROM content_likes WHERE id = %s", (row[0],))
+            liked = False
+        else:
+            cursor.execute(
+                """
+                INSERT INTO content_likes (user_id, content_type, content_id)
+                VALUES (%s, %s, %s)
+                """,
+                (user_id, content_type, int(content_id)),
+            )
+            liked = True
+        connection.commit()
+        cursor.execute(
+            "SELECT COUNT(*) FROM content_likes WHERE content_type = %s AND content_id = %s",
+            (content_type, int(content_id)),
+        )
+        count = cursor.fetchone()[0]
+        return jsonify({"success": True, "liked": liked, "likes_count": count})
+    except Exception as e:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        close_connection(connection)
+
+
+@user_feed_bp.post("/api/user/content/save")
+def content_save_toggle():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"success": False, "message": "Login required"}), 401
+
+    data = request.get_json(silent=True) or {}
+    content_type = (data.get("content_type") or "").strip().lower()
+    content_id = data.get("content_id")
+    if content_type not in ("quote", "music", "post") or not content_id:
+        return jsonify({"success": False, "message": "Invalid"}), 400
+
+    connection = None
+    try:
+        connection = get_connection()
+        ensure_engagement_tables(connection)
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            SELECT id FROM content_saves
+            WHERE user_id = %s AND content_type = %s AND content_id = %s
+            LIMIT 1
+            """,
+            (user_id, content_type, int(content_id)),
+        )
+        row = cursor.fetchone()
+        if row:
+            cursor.execute("DELETE FROM content_saves WHERE id = %s", (row[0],))
+            saved = False
+        else:
+            cursor.execute(
+                """
+                INSERT INTO content_saves (user_id, content_type, content_id)
+                VALUES (%s, %s, %s)
+                """,
+                (user_id, content_type, int(content_id)),
+            )
+            saved = True
+        connection.commit()
+        cursor.execute(
+            "SELECT COUNT(*) FROM content_saves WHERE content_type = %s AND content_id = %s",
+            (content_type, int(content_id)),
+        )
+        count = cursor.fetchone()[0]
+        return jsonify({"success": True, "saved": saved, "saves_count": count})
+    except Exception as e:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        close_connection(connection)
+
+
+@user_feed_bp.post("/api/user/content/share")
+def content_share():
+    user_id = session.get("user_id")
+    data = request.get_json(silent=True) or {}
+    content_type = (data.get("content_type") or "").strip().lower()
+    content_id = data.get("content_id")
+    if content_type not in ("quote", "music", "post") or not content_id:
+        return jsonify({"success": False, "message": "Invalid"}), 400
+
+    connection = None
+    try:
+        connection = get_connection()
+        ensure_engagement_tables(connection)
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO content_shares (user_id, content_type, content_id)
+            VALUES (%s, %s, %s)
+            """,
+            (user_id, content_type, int(content_id)),
+        )
+        connection.commit()
+        cursor.execute(
+            "SELECT COUNT(*) FROM content_shares WHERE content_type = %s AND content_id = %s",
+            (content_type, int(content_id)),
+        )
+        count = cursor.fetchone()[0]
+        return jsonify({"success": True, "shares_count": count})
     except Exception as e:
         if connection:
             try:
