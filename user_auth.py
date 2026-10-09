@@ -500,6 +500,8 @@ def profile():
             return redirect(url_for("user_auth.login"))
 
         posts_count = 0
+        followers_count = 0
+        following_count = 0
         try:
             cursor.execute(
                 """
@@ -513,10 +515,33 @@ def profile():
         except Exception:
             posts_count = 0
 
+        try:
+            cursor.execute(
+                """
+                SELECT COUNT(*) FROM subscriptions
+                WHERE subscribed_to_id = %s
+                """,
+                (user_id,),
+            )
+            followers_count = int(cursor.fetchone()[0] or 0)
+            cursor.execute(
+                """
+                SELECT COUNT(*) FROM subscriptions
+                WHERE subscriber_id = %s
+                """,
+                (user_id,),
+            )
+            following_count = int(cursor.fetchone()[0] or 0)
+        except Exception:
+            followers_count = 0
+            following_count = 0
+
         return render_template(
             "users/profile.html",
             user=user,
             posts_count=posts_count,
+            followers_count=followers_count,
+            following_count=following_count,
         )
 
     finally:
