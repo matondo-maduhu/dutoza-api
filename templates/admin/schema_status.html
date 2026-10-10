@@ -1,243 +1,65 @@
-<!DOCTYPE html>
-<html lang="sw">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dutoza API - Schema Status</title>
+{% extends "admin/panel_base.html" %}
+{% block title %}Schema Status{% endblock %}
+{% block topbar_title %}Schema Status{% endblock %}
 
-    <style>
-        * { box-sizing: border-box; }
+{% block content %}
+{% set missing_tables = status.tables | rejectattr('exists') | list %}
+{% set missing_columns = status.columns | rejectattr('exists') | list %}
+{% set missing_indexes = status.indexes | rejectattr('exists') | list %}
+{% set failed = status.last_run.failed %}
 
-        body {
-            margin: 0;
-            background: #f5f7fa;
-            font-family: Arial, sans-serif;
-            color: #111827;
-        }
+<div class="page-head">
+  <div><h1>Schema Status</h1><p>Hali ya tables, columns na indexes kwenye database. Ukurasa huu unasoma tu.</p></div>
+  <div class="btn-row">
+    <form class="inline" method="post" action="{{ url_for('admin.schema_status_run') }}">
+      <button class="btn" type="submit">▶ Endesha schema upya</button>
+    </form>
+    <a class="btn ghost" href="{{ url_for('admin.schema_status') }}">Onyesha upya</a>
+  </div>
+</div>
 
-        header {
-            background: #111827;
-            color: white;
-            padding: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+{% if not status.db_ok %}
+  <div class="flash error">Database haipatikani: {{ status.db_error }}</div>
+{% elif missing_tables or missing_columns or missing_indexes or failed %}
+  <div class="flash" style="background:var(--amber-soft);color:var(--amber-text)">Kuna vitu vinavyokosekana au vilivyoshindwa. Angalia maelezo hapa chini.</div>
+{% else %}
+  <div class="flash">✅ Kila kitu kiko sawa: tables {{ status.tables | length }}/{{ status.tables | length }}, columns {{ status.columns | length }}/{{ status.columns | length }}, indexes {{ status.indexes | length }}/{{ status.indexes | length }}.</div>
+{% endif %}
 
-        header a { color: white; text-decoration: none; }
-
-        main {
-            width: 94%;
-            max-width: 1100px;
-            margin: 25px auto;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,.05);
-            margin-bottom: 20px;
-        }
-
-        h1 { font-size: 22px; margin: 0 0 6px; }
-        h2 { font-size: 17px; margin: 0 0 14px; }
-        .muted { color: #6b7280; font-size: 14px; }
-
-        .banner {
-            padding: 14px 16px;
-            border-radius: 12px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .banner.ok   { background: #dcfce7; color: #166534; }
-        .banner.warn { background: #fef3c7; color: #92400e; }
-        .banner.bad  { background: #fee2e2; color: #991b1b; }
-
-        .message {
-            padding: 12px 14px;
-            border-radius: 10px;
-            margin-bottom: 14px;
-            background: #dcfce7;
-            color: #166534;
-        }
-        .message.error { background: #fee2e2; color: #991b1b; }
-
-        .table-wrap { overflow-x: auto; }
-
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td {
-            text-align: left;
-            padding: 10px 8px;
-            border-bottom: 1px solid #e5e7eb;
-            white-space: nowrap;
-        }
-        th { color: #6b7280; font-weight: 600; }
-
-        .badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .badge.ok  { background: #dcfce7; color: #166534; }
-        .badge.bad { background: #fee2e2; color: #991b1b; }
-
-        .errors { margin: 0; padding-left: 18px; font-size: 13px; }
-        .errors li { margin-bottom: 8px; word-break: break-word; }
-        .errors code {
-            display: block;
-            background: #f3f4f6;
-            padding: 6px 8px;
-            border-radius: 6px;
-            margin-top: 3px;
-            white-space: pre-wrap;
-        }
-
-        .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn {
-            display: inline-block;
-            padding: 10px 14px;
-            background: #2563eb;
-            color: white;
-            border: 0;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        .btn.secondary { background: #374151; }
-    </style>
-</head>
-
-<body>
-
-<header>
-    <strong>Dutoza API Admin</strong>
-    <a href="{{ url_for('admin.admin_logout') }}">Logout</a>
-</header>
-
-<main>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <div class="message {% if category == 'error' %}error{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endwith %}
-
-    <h1>Schema Status</h1>
-    <p class="muted">
-        Hali ya tables na indexes kwenye database. Ukurasa huu unasoma tu,
-        hauvunji wala kubadilisha data.
-    </p>
-
-    {% set missing_tables = status.tables | rejectattr('exists') | list %}
-    {% set missing_indexes = status.indexes | rejectattr('exists') | list %}
-    {% set failed = status.last_run.failed %}
-
-    {% if not status.db_ok %}
-        <div class="banner bad">
-            Database haipatikani: {{ status.db_error }}
-        </div>
-    {% elif missing_tables or missing_indexes or failed %}
-        <div class="banner warn">
-            Kuna vitu vinavyokosekana au vilivyoshindwa. Angalia maelezo hapa chini.
-        </div>
+<div class="card">
+  <div class="card-title"><span>Run ya mwisho ya schema</span></div>
+  {% if status.last_run.at %}
+    <p class="muted small">{{ status.last_run.at.strftime('%Y-%m-%d %H:%M:%S') }} UTC · statements: {{ status.last_run.total }} · zilizoshindwa: {{ failed | length }}</p>
+    {% for label, error in failed %}
+      <div class="flash error"><b>{{ label }}</b><br><span class="small">{{ error }}</span></div>
     {% else %}
-        <div class="banner ok">
-            Kila kitu kiko sawa: tables {{ status.tables | length }}/{{ status.tables | length }},
-            indexes {{ status.indexes | length }}/{{ status.indexes | length }}.
-        </div>
-    {% endif %}
+      <p class="muted small">Hakuna statement iliyoshindwa.</p>
+    {% endfor %}
+  {% else %}
+    <p class="muted small">Schema haijaendeshwa kwenye process hii bado. Bonyeza "Endesha schema upya".</p>
+  {% endif %}
+</div>
 
-    <div class="card">
-        <h2>Run ya mwisho ya schema (tangu app ilipoanza)</h2>
-
-        {% if status.last_run.at %}
-            <p class="muted">
-                Ilifanyika: {{ status.last_run.at.strftime('%Y-%m-%d %H:%M:%S') }} UTC &middot;
-                statements: {{ status.last_run.total }} &middot;
-                zilizoshindwa: {{ failed | length }}
-            </p>
-
-            {% if failed %}
-                <ul class="errors">
-                    {% for label, error in failed %}
-                        <li>
-                            <strong>{{ label }}</strong>
-                            <code>{{ error }}</code>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="muted">Hakuna statement iliyoshindwa.</p>
-            {% endif %}
-        {% else %}
-            <p class="muted">
-                Schema haijaendeshwa kwenye process hii bado
-                (huenda database haikupatikana wakati app inaanza).
-                Bonyeza kitufe hapa chini kuiendesha.
-            </p>
-        {% endif %}
-
-        <div class="actions" style="margin-top:14px;">
-            <form method="post" action="{{ url_for('admin.schema_status_run') }}">
-                <button class="btn" type="submit">Endesha schema upya</button>
-            </form>
-            <a class="btn secondary" href="{{ url_for('admin.schema_status') }}">Onyesha upya</a>
-            <a class="btn secondary" href="{{ url_for('admin.admin_dashboard') }}">Rudi Dashboard</a>
-        </div>
-    </div>
-
-    {% if status.db_ok %}
-        <div class="card">
-            <h2>Tables</h2>
-            <div class="table-wrap">
-                <table>
-                    <tr><th>Jina</th><th>Hali</th></tr>
-                    {% for t in status.tables %}
-                        <tr>
-                            <td>{{ t.name }}</td>
-                            <td>
-                                {% if t.exists %}
-                                    <span class="badge ok">Ipo</span>
-                                {% else %}
-                                    <span class="badge bad">Haipo</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Indexes</h2>
-            <div class="table-wrap">
-                <table>
-                    <tr><th>Index</th><th>Table</th><th>Hali</th></tr>
-                    {% for i in status.indexes %}
-                        <tr>
-                            <td>{{ i.name }}</td>
-                            <td>{{ i.table }}</td>
-                            <td>
-                                {% if i.exists %}
-                                    <span class="badge ok">Ipo</span>
-                                {% else %}
-                                    <span class="badge bad">Haipo</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            </div>
-        </div>
-    {% endif %}
-
-</main>
-
-</body>
-</html>
+{% if status.db_ok %}
+<div class="grid cols-3 mt">
+  <div class="card">
+    <div class="card-title"><span>Tables</span></div>
+    {% for t in status.tables %}
+      <div class="list-row"><div class="grow">{{ t.name }}</div><span class="badge {{ 'green' if t.exists else 'red' }}">{{ 'Ipo' if t.exists else 'Haipo' }}</span></div>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-title"><span>Columns</span></div>
+    {% for c in status.columns %}
+      <div class="list-row"><div class="grow">{{ c.table }}.{{ c.name }}</div><span class="badge {{ 'green' if c.exists else 'red' }}">{{ 'Ipo' if c.exists else 'Haipo' }}</span></div>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-title"><span>Indexes</span></div>
+    {% for i in status.indexes %}
+      <div class="list-row"><div class="grow">{{ i.name }}<div class="small muted">{{ i.table }}</div></div><span class="badge {{ 'green' if i.exists else 'red' }}">{{ 'Ipo' if i.exists else 'Haipo' }}</span></div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

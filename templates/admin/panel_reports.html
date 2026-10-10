@@ -1,0 +1,68 @@
+{% extends "admin/panel_base.html" %}
+{% block title %}Reports{% endblock %}
+{% block topbar_title %}Reports{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div><h1>Reports</h1><p>Maudhui yaliyoripotiwa na watumiaji. Amua kila moja.</p></div>
+</div>
+
+<div class="pills">
+  <a class="pill {{ 'active' if status == 'open' }}" href="{{ page_url(status='open', page=None) }}">Wazi<span class="n">{{ counts.open }}</span></a>
+  <a class="pill {{ 'active' if status == 'resolved' }}" href="{{ page_url(status='resolved', page=None) }}">Zilizoshughulikiwa<span class="n">{{ counts.resolved }}</span></a>
+  <a class="pill {{ 'active' if status == 'all' }}" href="{{ page_url(status='all', page=None) }}">Zote</a>
+</div>
+
+{% if reports %}
+  {% for r in reports %}
+  <div class="card">
+    <div class="card-title">
+      <span>{{ content_types[r[1]].icon if r[1] in content_types else '🚩' }}
+        {{ content_types[r[1]].label if r[1] in content_types else r[1] }} #{{ r[2] }}</span>
+      <span>
+        {% if r[5] == 'open' %}<span class="badge amber">Wazi</span>
+        {% else %}<span class="badge green">{{ {'dismissed':'Imekataliwa','content_hidden':'Imefichwa','author_blocked':'Mwandishi amezuiwa'}.get(r[6], 'Imeshughulikiwa') }}</span>{% endif %}
+      </span>
+    </div>
+
+    <div class="small muted">Imeripotiwa na <b>@{{ r[8] or 'haijulikani' }}</b> · {{ r[4] | fmt_dt }}</div>
+    <p style="margin:10px 0 6px"><b>Sababu:</b> {{ r[3] or 'Hakuna sababu iliyotolewa' }}</p>
+
+    <div class="card" style="box-shadow:none;background:var(--input)">
+      {% if r[9] %}
+        <div class="small muted">Maudhui yenyewe
+          {% if r[10] %}· <span class="badge {{ 'green' if r[10] == 'published' else 'amber' }}">{{ r[10] }}</span>{% endif %}
+          {% if r[12] %}· mwandishi <b>@{{ r[12] }}</b> {% if r[13] and r[13] != 'active' %}<span class="badge red">{{ r[13] }}</span>{% endif %}{% endif %}
+        </div>
+        <div style="margin-top:6px">{{ r[9] | truncate(300) }}</div>
+      {% else %}
+        <div class="muted">Maudhui hayapatikani tena (huenda yamefutwa).</div>
+      {% endif %}
+    </div>
+
+    {% if r[5] == 'open' %}
+    <div class="btn-row mt">
+      {% for act, label, cls, ask in [
+          ('dismiss', 'Kataa report', 'ghost', ''),
+          ('hide', 'Ficha maudhui', 'amber', 'Ficha maudhui haya na ufunge reports zake zote?'),
+          ('block_author', 'Ficha + zuia mwandishi', 'red', 'Ficha maudhui na UZUIE mwandishi wake?') ] %}
+        {% if act == 'dismiss' or r[9] %}
+        <form class="inline" method="post" action="{{ url_for('panel.report_resolve', report_id=r[0]) }}" {% if ask %}data-confirm="{{ ask }}"{% endif %}>
+          <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
+          <input type="hidden" name="action" value="{{ act }}">
+          <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+          <button class="btn sm {{ cls }}" type="submit">{{ label }}</button>
+        </form>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% elif r[7] %}
+      <div class="small muted mt">Ilishughulikiwa {{ r[7] | fmt_dt }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% include "admin/panel_pager.html" %}
+{% else %}
+  <div class="card"><div class="empty"><div class="big">🎉</div>Hakuna reports hapa.</div></div>
+{% endif %}
+{% endblock %}

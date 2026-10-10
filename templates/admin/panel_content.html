@@ -1,0 +1,66 @@
+{% extends "admin/panel_base.html" %}
+{% block title %}Moderation{% endblock %}
+{% block topbar_title %}Moderation{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div><h1>Moderation ya maudhui</h1><p>Ficha maudhui yasiyofaa na uyarudishe ukihitaji. Hakuna kinachofutwa.</p></div>
+</div>
+
+<div class="pills">
+  {% for key, cfg in content_types.items() %}
+    <a class="pill {{ 'active' if key == ctype }}" href="{{ page_url(type=key, page=None) }}">{{ cfg.icon }} {{ cfg.label }}</a>
+  {% endfor %}
+</div>
+
+<div class="pills">
+  {% for s, label in [('all','Yote'),('published','Yanaonekana'),('hidden','Yaliyofichwa')] %}
+    <a class="pill {{ 'active' if s == status }}" href="{{ page_url(status=s, page=None) }}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+<form class="searchbar" method="get">
+  <input type="hidden" name="type" value="{{ ctype }}">
+  <input type="hidden" name="status" value="{{ status }}">
+  <input type="search" name="q" value="{{ search }}" placeholder="Tafuta maudhui au username…">
+  <button class="btn" type="submit">🔍 Tafuta</button>
+  {% if search %}<a class="btn ghost" href="{{ page_url(q=None, page=None) }}">Futa</a>{% endif %}
+</form>
+
+<div class="card">
+  {% if items %}
+  <div class="table-wrap">
+    <table class="rtable">
+      <thead><tr><th>Maudhui</th><th>Mwandishi</th><th>Status</th><th>Reports</th><th>Tarehe</th><th></th></tr></thead>
+      <tbody>
+      {% for it in items %}
+        <tr>
+          <td data-label="Maudhui" class="clip"><b>#{{ it[0] }}</b> {{ (it[1] or '(tupu)') | truncate(110) }}</td>
+          <td data-label="Mwandishi">{% if it[5] %}@{{ it[5] }}{% else %}<span class="muted">Mercfy/admin</span>{% endif %}</td>
+          <td data-label="Status"><span class="badge {{ 'green' if it[2] == 'published' else 'amber' if it[2] == 'hidden' else 'gray' }}">{{ it[2] }}</span></td>
+          <td data-label="Reports">{% if it[7] %}<span class="badge red">🚩 {{ it[7] }}</span>{% else %}<span class="muted">0</span>{% endif %}</td>
+          <td data-label="Tarehe">{{ it[3] | fmt_dt('%d %b %Y') }}</td>
+          <td class="nolabel">
+            <form class="inline" method="post" action="{{ url_for('panel.content_set_status', ctype=ctype, content_id=it[0]) }}">
+              <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
+              <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+              {% if it[2] == 'hidden' %}
+                <input type="hidden" name="action" value="restore">
+                <button class="btn sm green" type="submit">Rudisha</button>
+              {% else %}
+                <input type="hidden" name="action" value="hide">
+                <button class="btn sm amber" type="submit">Ficha</button>
+              {% endif %}
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "admin/panel_pager.html" %}
+  {% else %}
+    <div class="empty"><div class="big">📭</div>Hakuna maudhui yaliyopatikana.</div>
+  {% endif %}
+</div>
+{% endblock %}

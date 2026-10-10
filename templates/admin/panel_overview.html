@@ -1,0 +1,136 @@
+{% extends "admin/panel_base.html" %}
+{% block title %}Muhtasari{% endblock %}
+{% block topbar_title %}Muhtasari{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Karibu tena 👋</h1>
+    <p>Hali ya Dutoza kwa muhtasari: watumiaji, maudhui na kinachohitaji uangalizi.</p>
+  </div>
+  <div class="btn-row">
+    <a class="btn" href="{{ url_for('panel.quotes_page') }}">✍️ Andika quotes</a>
+  </div>
+</div>
+
+{% if stats.reports_open %}
+  <a href="{{ url_for('panel.reports_page') }}" class="flash error" style="display:block;color:inherit">
+    🚩 Kuna <b>{{ stats.reports_open }}</b> {{ 'report' if stats.reports_open == 1 else 'reports' }} zinazosubiri kushughulikiwa. Bonyeza kuzifungua →
+  </a>
+{% endif %}
+
+<div class="grid cols-3">
+  <div class="card stat">
+    <div class="glyph g-indigo">👥</div>
+    <div class="label">Watumiaji</div>
+    <div class="value">{{ '{:,}'.format(stats.users_total) }}</div>
+    <div class="sub">{{ stats.users_active }} hai · {{ stats.users_blocked }} wamezuiwa</div>
+  </div>
+  <div class="card stat">
+    <div class="glyph g-violet">💬</div>
+    <div class="label">Quotes</div>
+    <div class="value">{{ '{:,}'.format(stats.quotes_total) }}</div>
+    <div class="sub">{{ stats.categories_total }} categories · {{ stats.quotes_hidden }} zimefichwa</div>
+  </div>
+  <div class="card stat">
+    <div class="glyph g-sky">🎵</div>
+    <div class="label">Nyimbo</div>
+    <div class="value">{{ '{:,}'.format(stats.songs_total) }}</div>
+    <div class="sub">{{ '{:,}'.format(stats.plays_total) }} plays · {{ stats.songs_hidden }} zimefichwa</div>
+  </div>
+  <div class="card stat">
+    <div class="glyph g-red">❤️</div>
+    <div class="label">Likes zote</div>
+    <div class="value">{{ '{:,}'.format(stats.likes_total) }}</div>
+    <div class="sub">kwenye quotes na muziki</div>
+  </div>
+  <div class="card stat">
+    <div class="glyph g-amber">🚩</div>
+    <div class="label">Reports wazi</div>
+    <div class="value">{{ stats.reports_open }}</div>
+    <div class="sub">zinasubiri uamuzi wako</div>
+  </div>
+  <div class="card stat">
+    <div class="glyph g-green">🔑</div>
+    <div class="label">Developers</div>
+    <div class="value">{{ stats.developers_total }}</div>
+    <div class="sub">{{ stats.api_keys_total }} API keys</div>
+  </div>
+</div>
+
+<div class="grid cols-2 mt">
+  <div class="card">
+    <div class="card-title">
+      <span>Shughuli za siku 7</span>
+      <span class="legend"><span><i style="background:#4f46e5"></i>Users wapya</span><span><i style="background:#059669"></i>Maudhui mapya</span></span>
+    </div>
+    <div class="chart">
+      {% for d in chart %}
+        <div class="col" title="{{ d.date }}: {{ d.users }} users, {{ d.content }} maudhui">
+          <div class="bars">
+            <div class="bar u" style="height: {{ (d.users / chart_max * 100) | round(1) }}%"></div>
+            <div class="bar c" style="height: {{ (d.content / chart_max * 100) | round(1) }}%"></div>
+          </div>
+          <div class="lbl">{{ d.label }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>Takwimu nyingine</span></div>
+    <div class="grid cols-3">
+      <div class="card mini" style="box-shadow:none"><div class="value">{{ stats.posts_total }}</div><div class="label">Posts</div></div>
+      <div class="card mini" style="box-shadow:none"><div class="value">{{ stats.comments_total }}</div><div class="label">Comments</div></div>
+      <div class="card mini" style="box-shadow:none"><div class="value">{{ stats.categories_total }}</div><div class="label">Categories</div></div>
+    </div>
+    <div class="quick mt" style="grid-template-columns: repeat(2, 1fr)">
+      <a href="{{ url_for('panel.content_page') }}"><span class="q-ico">🛡️</span>Moderation</a>
+      <a href="{{ url_for('panel.users_page') }}"><span class="q-ico">👥</span>Users</a>
+      <a href="/admin/music"><span class="q-ico">🎵</span>Ongeza muziki</a>
+      <a href="/admin/api-keys"><span class="q-ico">🔑</span>API Keys</a>
+    </div>
+  </div>
+</div>
+
+<div class="grid cols-3 mt">
+  <div class="card">
+    <div class="card-title"><span>Watumiaji wapya</span><a class="small" href="{{ url_for('panel.users_page') }}">Wote →</a></div>
+    {% for u in recent_users %}
+      <div class="list-row">
+        <div class="avatar">{{ (u[1] or u[2] or '?')[:1] | upper }}</div>
+        <div class="grow"><b>{{ u[1] or u[2] }}</b><div class="small muted">@{{ u[2] }} · {{ u[4] | fmt_dt('%d %b') }}</div></div>
+        <span class="badge {{ 'green' if u[3] == 'active' else 'red' if u[3] == 'blocked' else 'gray' }}">{{ u[3] }}</span>
+      </div>
+    {% else %}
+      <div class="empty small">Hakuna watumiaji bado.</div>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>Reports mpya</span><a class="small" href="{{ url_for('panel.reports_page') }}">Zote →</a></div>
+    {% for r in recent_reports %}
+      <div class="list-row">
+        <div class="avatar" style="background:var(--amber-soft);color:var(--amber-text)">{{ content_types[r[1]].icon if r[1] in content_types else '🚩' }}</div>
+        <div class="grow"><b>{{ content_types[r[1]].label if r[1] in content_types else r[1] }} #{{ r[2] }}</b><div class="small muted clip">{{ r[3] or 'Hakuna sababu' }}</div></div>
+        <span class="small muted">{{ r[4] | fmt_dt('%d %b') }}</span>
+      </div>
+    {% else %}
+      <div class="empty small"><div class="big">🎉</div>Hakuna report wazi.</div>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>Shughuli za admin</span></div>
+    {% for a in recent_audit %}
+      <div class="list-row">
+        <div class="grow"><b>{{ a[0] | replace('_', ' ') }}</b>
+          <div class="small muted clip">{{ a[1] or '' }}{% if a[2] %} #{{ a[2] }}{% endif %}{% if a[3] %} · {{ a[3] }}{% endif %}</div></div>
+        <span class="small muted">{{ a[4] | fmt_dt('%d %b %H:%M') }}</span>
+      </div>
+    {% else %}
+      <div class="empty small">Hakuna shughuli zilizorekodiwa bado.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

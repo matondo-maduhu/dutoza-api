@@ -1,0 +1,9 @@
+{% if pager.pages > 1 %}
+<div class="pager">
+  <span class="small muted">Ukurasa {{ pager.page }} kati ya {{ pager.pages }} · jumla {{ pager.total }}</span>
+  <div class="btn-row">
+    {% if pager.has_prev %}<a class="btn ghost sm" href="{{ page_url(page=pager.page - 1) }}">← Nyuma</a>{% endif %}
+    {% if pager.has_next %}<a class="btn ghost sm" href="{{ page_url(page=pager.page + 1) }}">Mbele →</a>{% endif %}
+  </div>
+</div>
+{% endif %}

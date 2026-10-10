@@ -1,0 +1,70 @@
+{% extends "admin/panel_base.html" %}
+{% block title %}Users{% endblock %}
+{% block topbar_title %}Users{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div><h1>Watumiaji</h1><p>Tafuta, angalia na zuia au rudisha akaunti.</p></div>
+</div>
+
+<div class="pills">
+  {% for s in statuses %}
+    <a class="pill {{ 'active' if s == status }}" href="{{ page_url(status=s, page=None) }}">
+      {{ {'all':'Wote','active':'Hai','blocked':'Waliozuiwa','deactivated':'Waliozimwa','deleted':'Waliofutwa'}[s] }}<span class="n">{{ counts.get(s, 0) }}</span>
+    </a>
+  {% endfor %}
+</div>
+
+<form class="searchbar" method="get">
+  <input type="hidden" name="status" value="{{ status }}">
+  <input type="search" name="q" value="{{ search }}" placeholder="Tafuta jina, username au email…">
+  <button class="btn" type="submit">🔍 Tafuta</button>
+  {% if search %}<a class="btn ghost" href="{{ page_url(q=None, page=None) }}">Futa</a>{% endif %}
+</form>
+
+<div class="card">
+  {% if users %}
+  <div class="table-wrap">
+    <table class="rtable">
+      <thead><tr><th>Mtumiaji</th><th>Email</th><th>Status</th><th>Maudhui</th><th>Alijiunga</th><th></th></tr></thead>
+      <tbody>
+      {% for u in users %}
+        <tr>
+          <td data-label="Mtumiaji">
+            <div class="who">
+              <div class="avatar">{% if u[4] %}<img src="{{ u[4] }}" alt="" loading="lazy">{% else %}{{ (u[1] or u[2] or '?')[:1] | upper }}{% endif %}</div>
+              <div><b>{{ u[1] or u[2] }}</b><span class="small muted">@{{ u[2] }}</span></div>
+            </div>
+          </td>
+          <td data-label="Email" class="clip">{{ u[3] }}</td>
+          <td data-label="Status"><span class="badge {{ 'green' if u[5] == 'active' else 'red' if u[5] == 'blocked' else 'gray' }}">{{ u[5] }}</span></td>
+          <td data-label="Maudhui">{{ u[7] }} quotes · {{ u[8] }} nyimbo</td>
+          <td data-label="Alijiunga">{{ u[6] | fmt_dt('%d %b %Y') }}</td>
+          <td class="nolabel">
+            {% if u[5] == 'blocked' %}
+              <form class="inline" method="post" action="{{ url_for('panel.user_set_status', user_id=u[0]) }}">
+                <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
+                <input type="hidden" name="action" value="unblock">
+                <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+                <button class="btn sm green" type="submit">Rudisha</button>
+              </form>
+            {% elif u[5] in ('active', 'deactivated') %}
+              <form class="inline" method="post" action="{{ url_for('panel.user_set_status', user_id=u[0]) }}" data-confirm="Zuia @{{ u[2] }}? Atatolewa kwenye app na maudhui yake yatafichwa.">
+                <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
+                <input type="hidden" name="action" value="block">
+                <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+                <button class="btn sm red" type="submit">Zuia</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "admin/panel_pager.html" %}
+  {% else %}
+    <div class="empty"><div class="big">🔎</div>Hakuna mtumiaji aliyepatikana.</div>
+  {% endif %}
+</div>
+{% endblock %}

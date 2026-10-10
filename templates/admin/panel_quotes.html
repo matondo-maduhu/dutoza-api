@@ -1,0 +1,389 @@
+{% extends "admin/panel_base.html" %}
+{% block title %}Quotes{% endblock %}
+{% block topbar_title %}Quotes{% endblock %}
+
+{% block head %}
+<style>
+  .gridwrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; background: var(--card); }
+  table.sheet { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 760px; }
+  .sheet thead th {
+    position: sticky; top: 0; z-index: 2;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff;
+    text-align: left; padding: 12px 10px; font-size: 13px; letter-spacing: .6px; text-transform: uppercase;
+  }
+  .sheet thead th:first-child { border-top-left-radius: 13px; }
+  .sheet thead th:last-child { border-top-right-radius: 13px; }
+  .sheet td { padding: 0; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); vertical-align: top; background: var(--card); }
+  .sheet td:last-child { border-right: 0; }
+  .sheet td.num { width: 46px; text-align: center; color: var(--muted); font-size: 12px; padding-top: 14px; background: var(--input); }
+  .sheet td.del { width: 44px; text-align: center; }
+  .sheet .gi { width: 100%; border: 0; border-radius: 0; background: transparent; padding: 11px 10px; font-size: 14px; min-height: 44px; resize: none; display: block; overflow: hidden; color: var(--text); font-family: inherit; }
+  .sheet .gi:focus { outline: 2px solid var(--primary); outline-offset: -2px; background: var(--primary-soft); }
+  .sheet tr.bad td { background: var(--red-soft); }
+  .sheet tr.bad td.num { color: var(--red-text); font-weight: 700; }
+  .sheet .x { border: 0; background: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 10px; }
+  .sheet .x:hover { color: var(--red); }
+  .gridbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin: 14px 0; }
+  .counter { font-size: 14px; color: var(--muted); }
+  .counter b { color: var(--text); }
+  .defaults { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .result { display: none; margin-top: 16px; }
+  .result.show { display: block; }
+  .hint { background: var(--primary-soft); color: var(--primary); border-radius: 12px; padding: 12px 14px; font-size: 14px; margin-bottom: 14px; }
+  @media (max-width: 960px) { .defaults { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div><h1>Quotes</h1><p>Jumla {{ '{:,}'.format(total) }} quotes. Andika nyingi kwa mara moja, pakia CSV, au ongeza moja moja.</p></div>
+</div>
+
+<div class="card">
+  <div class="tabs" id="tabs">
+    <button type="button" class="tab" data-tab="write">✍️ Andika (Grid)</button>
+    <button type="button" class="tab" data-tab="single">➕ Moja moja</button>
+    <button type="button" class="tab" data-tab="csv">📄 Pakia CSV file</button>
+  </div>
+
+  <!-- ================= GRID YA KUANDIKA ================= -->
+  <div class="tab-panel" id="tab-write">
+    <div class="hint">
+      Titles ziko juu, maudhui yako chini. Andika kila quote kwenye safu yake. Unaweza pia
+      <b>kubandika (paste)</b> data kutoka Excel/Google Sheets au CSV: itajaza safu na columns zote mara moja.
+    </div>
+
+    <div class="defaults">
+      <div class="field" style="margin:0"><label>Category ya kawaida (inatumika safu isipokuwa na category)</label>
+        <input type="text" id="defCat" list="catlist" placeholder="mfano: Motivation"></div>
+      <div class="field" style="margin:0"><label>Lugha ya kawaida</label>
+        <select id="defLang"><option value="sw">Kiswahili (sw)</option><option value="en">English (en)</option></select></div>
+    </div>
+    <datalist id="catlist">{% for c in categories %}<option value="{{ c[1] }}">{% endfor %}</datalist>
+
+    <div class="gridwrap">
+      <table class="sheet">
+        <thead><tr><th>#</th><th style="min-width:340px">text</th><th style="min-width:150px">author</th><th style="min-width:150px">category</th><th style="width:110px">language</th><th></th></tr></thead>
+        <tbody id="gridBody"></tbody>
+      </table>
+    </div>
+
+    <div class="gridbar">
+      <div class="btn-row">
+        <button type="button" class="btn ghost sm" id="add1">+ Safu 1</button>
+        <button type="button" class="btn ghost sm" id="add5">+ Safu 5</button>
+        <button type="button" class="btn ghost sm" id="clearAll">Futa zote</button>
+        <a class="btn ghost sm" href="{{ url_for('panel.quotes_template_csv') }}">⬇ Template ya CSV</a>
+      </div>
+      <div class="counter" id="gridCount"></div>
+    </div>
+
+    <button type="button" class="btn green" id="importBtn" style="width:100%;padding:14px" disabled>📥 Ingiza</button>
+    <div class="small muted" style="margin-top:8px">Kikomo: {{ max_rows }} safu kwa mara moja. Quotes zinazojirudia zinarukwa zenyewe. Category isiyokuwepo huundwa yenyewe.</div>
+
+    <div class="result" id="importResult"></div>
+  </div>
+
+  <!-- ================= MOJA MOJA ================= -->
+  <div class="tab-panel" id="tab-single">
+    <form method="post" action="{{ url_for('admin.add_quote') }}">
+      <input type="hidden" name="next" value="/admin/quotes?tab=single">
+      <div class="field"><label>Quote</label><textarea name="text" required placeholder="Andika quote hapa…"></textarea></div>
+      <div class="grid cols-3">
+        <div class="field"><label>Mwandishi (author)</label><input type="text" name="author" placeholder="mfano: Dutoza"></div>
+        <div class="field"><label>Category</label>
+          <select name="category_id" required>
+            <option value="">Chagua category…</option>
+            {% for c in categories %}<option value="{{ c[0] }}">{{ c[1] }}</option>{% endfor %}
+          </select></div>
+        <div class="field"><label>Lugha</label>
+          <select name="language"><option value="sw">Kiswahili</option><option value="en">English</option></select></div>
+      </div>
+      <button class="btn" type="submit">Ongeza quote</button>
+    </form>
+
+    <hr style="border:0;border-top:1px solid var(--border);margin:22px 0">
+
+    <form method="post" action="{{ url_for('admin.add_category') }}">
+      <input type="hidden" name="next" value="/admin/quotes?tab=single">
+      <div class="field"><label>Category mpya</label><input type="text" name="name" required placeholder="mfano: Mapenzi"></div>
+      <button class="btn ghost" type="submit">Ongeza category</button>
+    </form>
+  </div>
+
+  <!-- ================= CSV FILE ================= -->
+  <div class="tab-panel" id="tab-csv">
+    <div class="hint">CSV lazima iwe na header: <b>text,author,category,language</b>. <a href="{{ url_for('panel.quotes_template_csv') }}">Pakua template</a>.</div>
+    <form method="post" action="{{ url_for('admin.bulk_upload') }}" enctype="multipart/form-data" id="csvForm">
+      <input type="hidden" name="next" value="/admin/quotes?tab=csv">
+      <div class="field"><input type="file" name="csv_file" accept=".csv,text/csv" required></div>
+      <button class="btn" type="submit" id="csvBtn">📥 Pakia CSV</button>
+    </form>
+  </div>
+</div>
+
+<div class="grid cols-2 mt">
+  <div class="card">
+    <div class="card-title"><span>Categories ({{ categories | length }})</span></div>
+    {% for c in categories %}
+      <div class="list-row"><div class="grow"><b>{{ c[1] }}</b><div class="small muted">{{ c[2] }}</div></div><span class="badge indigo">{{ c[3] }}</span></div>
+    {% else %}
+      <div class="empty small">Hakuna categories bado.</div>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>Quotes za karibuni</span><a class="small" href="{{ url_for('panel.content_page', type='quote') }}">Zote →</a></div>
+    {% for q in recent %}
+      <div class="list-row">
+        <div class="grow"><div>{{ (q[1] or '') | truncate(100) }}</div>
+          <div class="small muted">{{ q[2] or 'Bila mwandishi' }} · {{ q[3] or 'Bila category' }} · {{ q[4] }}</div></div>
+      </div>
+    {% else %}
+      <div class="empty small">Hakuna quotes bado.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  /* ---------- Tabs ---------- */
+  var current = "{{ tab }}";
+  function showTab(name) {
+    document.querySelectorAll(".tab").forEach(function (b) { b.classList.toggle("active", b.dataset.tab === name); });
+    document.querySelectorAll(".tab-panel").forEach(function (p) { p.classList.toggle("active", p.id === "tab-" + name); });
+  }
+  document.querySelectorAll(".tab").forEach(function (b) { b.addEventListener("click", function () { showTab(b.dataset.tab); }); });
+  showTab(current);
+
+  var csvForm = document.getElementById("csvForm");
+  if (csvForm) csvForm.addEventListener("submit", function () {
+    var b = document.getElementById("csvBtn"); b.disabled = true; b.textContent = "Inapakia…";
+  });
+
+  /* ---------- Grid ---------- */
+  var MAX = {{ max_rows }};
+  var CSRF = "{{ panel_csrf() }}";
+  var HEAD = ["text", "author", "category", "language"];
+  var tbody = document.getElementById("gridBody");
+  var counter = document.getElementById("gridCount");
+  var defCat = document.getElementById("defCat");
+  var defLang = document.getElementById("defLang");
+  var importBtn = document.getElementById("importBtn");
+  var result = document.getElementById("importResult");
+
+  function cell(el) { var td = document.createElement("td"); td.appendChild(el); return td; }
+
+  function makeRow(vals) {
+    vals = vals || {};
+    var tr = document.createElement("tr");
+
+    var num = document.createElement("td"); num.className = "num"; tr.appendChild(num);
+
+    var text = document.createElement("textarea");
+    text.className = "gi"; text.rows = 1; text.dataset.col = "0"; text.placeholder = "Andika quote…";
+    text.value = vals.text || "";
+    tr.appendChild(cell(text));
+
+    var author = document.createElement("input");
+    author.type = "text"; author.className = "gi"; author.dataset.col = "1"; author.placeholder = "Mwandishi";
+    author.value = vals.author || "";
+    tr.appendChild(cell(author));
+
+    var cat = document.createElement("input");
+    cat.type = "text"; cat.className = "gi"; cat.dataset.col = "2"; cat.setAttribute("list", "catlist"); cat.placeholder = "Category";
+    cat.value = vals.category || "";
+    tr.appendChild(cell(cat));
+
+    var lang = document.createElement("select");
+    lang.className = "gi"; lang.dataset.col = "3";
+    [["", "kawaida"], ["sw", "sw"], ["en", "en"]].forEach(function (o) {
+      var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; lang.appendChild(op);
+    });
+    lang.value = vals.language || "";
+    tr.appendChild(cell(lang));
+
+    var del = document.createElement("td"); del.className = "del";
+    var x = document.createElement("button"); x.type = "button"; x.className = "x"; x.title = "Futa safu"; x.textContent = "×";
+    x.addEventListener("click", function () { tr.remove(); ensureRows(1); refresh(); });
+    del.appendChild(x); tr.appendChild(del);
+
+    tbody.appendChild(tr);
+    grow(text);
+    return tr;
+  }
+
+  function grow(t) { t.style.height = "auto"; t.style.height = Math.max(44, t.scrollHeight) + "px"; }
+  function rows() { return Array.prototype.slice.call(tbody.children); }
+  function fields(tr) { return tr.querySelectorAll("[data-col]"); }
+
+  function read(tr) {
+    var f = fields(tr);
+    return { text: f[0].value.trim(), author: f[1].value.trim(), category: f[2].value.trim(), language: f[3].value };
+  }
+
+  function normLang(v) {
+    v = (v || "").trim().toLowerCase();
+    if (v === "sw" || v === "swahili" || v === "kiswahili") return "sw";
+    if (v === "en" || v === "english" || v === "kiingereza") return "en";
+    return "";
+  }
+
+  function ensureRows(min) { while (rows().length < min) makeRow(); }
+
+  function refresh() {
+    var filled = 0, valid = 0, bad = 0;
+    var dc = defCat.value.trim();
+    rows().forEach(function (tr, i) {
+      tr.querySelector(".num").textContent = i + 1;
+      var r = read(tr);
+      var empty = !r.text && !r.author && !r.category;
+      var ok = !!r.text && !!(r.category || dc);
+      tr.classList.toggle("bad", !empty && !ok);
+      if (!empty) { filled++; if (ok) valid++; else bad++; }
+    });
+    counter.innerHTML = "Safu zilizojazwa: <b>" + filled + "</b> · Tayari: <b>" + valid + "</b>" + (bad ? " · Zenye upungufu: <b style='color:var(--red)'>" + bad + "</b>" : "");
+    importBtn.disabled = valid === 0;
+    importBtn.textContent = valid ? "📥 Ingiza quotes " + valid : "📥 Ingiza";
+  }
+
+  /* kuandika: kukuza textarea na kuhesabu */
+  tbody.addEventListener("input", function (e) { if (e.target.tagName === "TEXTAREA") grow(e.target); refresh(); });
+  defCat.addEventListener("input", refresh);
+
+  /* Enter kwenye text = nenda safu inayofuata (Shift+Enter = mstari mpya) */
+  tbody.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey && e.target.dataset && e.target.dataset.col === "0") {
+      e.preventDefault();
+      var tr = e.target.closest("tr");
+      var next = tr.nextElementSibling;
+      if (!next) { if (rows().length >= MAX) return; next = makeRow(); refresh(); }
+      fields(next)[0].focus();
+    }
+  });
+
+  /* ---------- Paste kutoka Excel / Sheets / CSV ---------- */
+  function parseTable(txt, d) {
+    var out = [], row = [], cur = "", q = false;
+    for (var i = 0; i < txt.length; i++) {
+      var c = txt[i];
+      if (q) {
+        if (c === '"') { if (txt[i + 1] === '"') { cur += '"'; i++; } else q = false; }
+        else cur += c;
+      } else if (c === '"' && cur === "") { q = true; }
+      else if (c === d) { row.push(cur); cur = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && txt[i + 1] === "\n") i++;
+        row.push(cur); cur = ""; out.push(row); row = [];
+      } else cur += c;
+    }
+    if (cur !== "" || row.length) { row.push(cur); out.push(row); }
+    return out.filter(function (r) { return r.some(function (v) { return v.trim() !== ""; }); });
+  }
+
+  tbody.addEventListener("paste", function (e) {
+    var t = e.target;
+    if (!t.dataset || t.dataset.col === undefined) return;
+    var txt = (e.clipboardData || window.clipboardData).getData("text");
+    if (!txt) return;
+    var multiline = /\r?\n/.test(txt.replace(/[\r\n]+$/, ""));
+    var hasTab = txt.indexOf("\t") > -1;
+    if (!hasTab && !multiline) return;          /* paste ya kawaida ya seli moja */
+
+    e.preventDefault();
+    var table = parseTable(txt, hasTab ? "\t" : ",");
+    if (!table.length) return;
+
+    var first = table[0].map(function (v) { return v.trim().toLowerCase(); });
+    if (first[0] === "text" && (first.length === 1 || HEAD.indexOf(first[1]) > -1)) table.shift();
+
+    var trs = rows();
+    var start = trs.indexOf(t.closest("tr"));
+    var col0 = parseInt(t.dataset.col, 10);
+    var cut = false;
+
+    table.forEach(function (cells, ri) {
+      var idx = start + ri;
+      if (idx >= MAX) { cut = true; return; }
+      ensureRows(idx + 1);
+      var f = fields(rows()[idx]);
+      cells.forEach(function (v, ci) {
+        var col = col0 + ci;
+        if (col > 3) return;
+        if (col === 3) f[3].value = normLang(v);
+        else f[col].value = v.trim();
+      });
+      grow(f[0]);
+    });
+
+    if (cut) alert("Safu zimezidi kikomo cha " + MAX + ". Za ziada hazikuingizwa.");
+    refresh();
+  });
+
+  /* ---------- Vitufe ---------- */
+  document.getElementById("add1").addEventListener("click", function () { if (rows().length < MAX) { makeRow(); refresh(); } });
+  document.getElementById("add5").addEventListener("click", function () { for (var i = 0; i < 5 && rows().length < MAX; i++) makeRow(); refresh(); });
+  document.getElementById("clearAll").addEventListener("click", function () {
+    var any = rows().some(function (tr) { var r = read(tr); return r.text || r.author || r.category; });
+    if (any && !confirm("Futa safu zote ulizoandika?")) return;
+    tbody.innerHTML = ""; ensureRows(5); refresh(); result.className = "result";
+  });
+
+  function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+  importBtn.addEventListener("click", function () {
+    var dc = defCat.value.trim(), dl = defLang.value, payload = [], trs = rows();
+
+    trs.forEach(function (tr, i) {
+      var r = read(tr);
+      var category = r.category || dc;
+      if (r.text && category) payload.push({ n: i + 1, text: r.text, author: r.author, category: category, language: r.language || dl });
+    });
+    if (!payload.length) return;
+
+    importBtn.disabled = true; importBtn.textContent = "Inaingiza…";
+    result.className = "result";
+
+    fetch("{{ url_for('panel.quotes_write_import') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF },
+      body: JSON.stringify({ rows: payload })
+    })
+    .then(function (r) { return r.json().catch(function () { return { ok: false, error: "Jibu si sahihi kutoka server." }; }); })
+    .then(function (d) {
+      if (!d.ok) {
+        result.innerHTML = '<div class="flash error">' + esc(d.error || "Imeshindikana.") + "</div>";
+        result.className = "result show";
+        return;
+      }
+
+      var badRows = {};
+      (d.invalid_rows || []).forEach(function (x) { badRows[x.row] = x.reason; });
+
+      /* ondoa safu zilizoingizwa/kurukwa; acha zenye makosa ili zirekebishwe */
+      payload.forEach(function (p) { if (!badRows[p.n]) { var tr = trs[p.n - 1]; if (tr) tr.remove(); } });
+      ensureRows(5);
+
+      var html = '<div class="flash">✅ Imekamilika: <b>' + d.imported + "</b> zimeingizwa · " + d.skipped + " zimerukwa (zilikuwepo) · " + d.invalid + " zenye makosa" +
+                 (d.categories_created ? " · categories mpya: " + d.categories_created : "") + "</div>";
+      if (d.invalid_rows && d.invalid_rows.length) {
+        html += '<div class="flash error"><b>Safu zenye makosa (zimebaki kwenye grid):</b><br>' +
+                d.invalid_rows.map(function (x) { return "Safu " + x.row + ": " + esc(x.reason); }).join("<br>") + "</div>";
+      }
+      result.innerHTML = html; result.className = "result show";
+      refresh();
+    })
+    .catch(function () {
+      result.innerHTML = '<div class="flash error">Mtandao umekatika. Jaribu tena.</div>';
+      result.className = "result show";
+    })
+    .finally(function () { refresh(); });
+  });
+
+  ensureRows(5);
+  refresh();
+})();
+</script>
+{% endblock %}
