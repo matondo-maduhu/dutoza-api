@@ -54,7 +54,7 @@
     <div class="glyph g-green">🔑</div>
     <div class="label">Developers</div>
     <div class="value">{{ stats.developers_total }}</div>
-    <div class="sub">{{ stats.api_keys_total }} API keys</div>
+    <div class="sub">{{ stats.api_keys_total }} API keys · <a href="{{ url_for('panel.developers_page') }}">Simamia →</a></div>
   </div>
 </div>
 
@@ -88,7 +88,7 @@
       <a href="{{ url_for('panel.content_page') }}"><span class="q-ico">🛡️</span>Moderation</a>
       <a href="{{ url_for('panel.users_page') }}"><span class="q-ico">👥</span>Users</a>
       <a href="/admin/music"><span class="q-ico">🎵</span>Ongeza muziki</a>
-      <a href="/admin/api-keys"><span class="q-ico">🔑</span>API Keys</a>
+      <a href="{{ url_for('panel.developers_page') }}"><span class="q-ico">🧑‍💻</span>Developers</a>
     </div>
   </div>
 </div>

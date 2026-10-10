@@ -1,0 +1,102 @@
+{% extends "admin/panel_base.html" %}
+{% block title %}{{ dev[1] }}{% endblock %}
+{% block topbar_title %}Developer{% endblock %}
+
+{% block content %}
+{% set back_here = request.path %}
+<a class="small" href="{{ url_for('panel.developers_page') }}">← Developers wote</a>
+
+<div class="page-head mt">
+  <div class="who">
+    <div class="avatar" style="width:56px;height:56px;font-size:22px">{{ (dev[1] or dev[2] or '?')[:1] | upper }}</div>
+    <div>
+      <h1>{{ dev[1] }} <span class="badge {{ 'green' if dev[4] == 'active' else 'red' }}" style="vertical-align:middle">{{ 'hai' if dev[4] == 'active' else 'amesimamishwa' }}</span></h1>
+      <p>{{ dev[2] }} · alijiunga {{ dev[3] | fmt_dt('%d %b %Y') }}</p>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    {% if dev[4] == 'active' %}
+      <form class="inline" method="post" action="{{ url_for('panel.developer_set_status', dev_id=dev[0]) }}"
+            data-confirm="Simamisha {{ dev[1] }}? API keys zake zote zitazimwa na hataweza kuingia kwenye dashboard yake.">
+        <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
+        <input type="hidden" name="action" value="suspend">
+        <button class="btn red" type="submit">⏸ Simamisha developer</button>
+      </form>
+    {% else %}
+      <form class="inline" method="post" action="{{ url_for('panel.developer_set_status', dev_id=dev[0]) }}">
+        <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
+        <input type="hidden" name="action" value="reactivate">
+        <button class="btn green" type="submit">▶ Rudisha developer</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid cols-3">
+  <div class="card stat"><div class="glyph g-green">🔑</div><div class="label">Keys zinazofanya kazi</div><div class="value">{{ active_keys }}<span class="muted" style="font-size:16px"> / {{ keys | length }}</span></div></div>
+  <div class="card stat"><div class="glyph g-sky">📈</div><div class="label">Requests zote</div><div class="value">{{ '{:,}'.format(total_requests) }}</div></div>
+  <div class="card stat"><div class="glyph g-amber">🕒</div><div class="label">Alitumia mwisho</div><div class="value" style="font-size:20px;margin-top:12px">{{ last_used | fmt_dt('%d %b %Y, %H:%M') if last_used else 'Hajatumia' }}</div></div>
+</div>
+
+{% if dev[4] != 'active' %}
+  <div class="flash error mt">Developer huyu amesimamishwa: hawezi kuingia kwenye dashboard na keys zake haziwezi kuwashwa mpaka umrudishe.</div>
+{% endif %}
+
+<div class="card mt">
+  <div class="card-title"><span>API Keys ({{ keys | length }})</span></div>
+
+  {% if keys %}
+  <div class="table-wrap">
+    <table class="rtable">
+      <thead><tr><th>Jina</th><th>Key</th><th>Status</th><th>Limit / dakika</th><th>Requests</th><th>Mwisho</th><th></th></tr></thead>
+      <tbody>
+      {% for k in keys %}
+        <tr>
+          <td data-label="Jina"><b>{{ k[1] }}</b><div class="small muted">{{ k[7] | fmt_dt('%d %b %Y') }}</div></td>
+          <td data-label="Key"><code>{{ k[2] }}…</code></td>
+          <td data-label="Status"><span class="badge {{ 'green' if k[3] == 'active' else 'amber' if k[3] == 'inactive' else 'gray' }}">{{ {'active':'inafanya kazi','inactive':'imezimwa','revoked':'imefutwa'}.get(k[3], k[3]) }}</span></td>
+          <td data-label="Limit / dakika">
+            {% if k[3] != 'revoked' %}
+            <form class="inline" method="post" action="{{ url_for('panel.developer_key_limit', key_id=k[0]) }}" style="display:flex;gap:6px;align-items:center">
+              <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
+              <input type="hidden" name="next" value="{{ back_here }}">
+              <input type="number" name="rate_limit" value="{{ k[4] or 100 }}" min="{{ rate_min }}" max="{{ rate_max }}" style="width:96px;padding:6px 8px">
+              <button class="btn ghost sm" type="submit">Hifadhi</button>
+            </form>
+            {% else %}{{ k[4] or 100 }}{% endif %}
+          </td>
+          <td data-label="Requests">{{ '{:,}'.format(k[5] or 0) }}</td>
+          <td data-label="Mwisho">{{ k[6] | fmt_dt('%d %b %Y') if k[6] else '-' }}</td>
+          <td class="nolabel">
+            <div class="btn-row">
+              {% if k[3] == 'active' %}
+                <form class="inline" method="post" action="{{ url_for('panel.developer_key_action', key_id=k[0]) }}">
+                  <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}"><input type="hidden" name="next" value="{{ back_here }}">
+                  <input type="hidden" name="action" value="disable"><button class="btn amber sm" type="submit">Zima</button>
+                </form>
+              {% elif k[3] == 'inactive' %}
+                <form class="inline" method="post" action="{{ url_for('panel.developer_key_action', key_id=k[0]) }}">
+                  <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}"><input type="hidden" name="next" value="{{ back_here }}">
+                  <input type="hidden" name="action" value="enable"><button class="btn green sm" type="submit">Washa</button>
+                </form>
+              {% endif %}
+              {% if k[3] != 'revoked' %}
+                <form class="inline" method="post" action="{{ url_for('panel.developer_key_action', key_id=k[0]) }}"
+                      data-confirm="Futa key '{{ k[1] }}' kabisa? Haiwezi kurudishwa.">
+                  <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}"><input type="hidden" name="next" value="{{ back_here }}">
+                  <input type="hidden" name="action" value="revoke"><button class="btn red sm" type="submit">Futa</button>
+                </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty small"><div class="big">🔑</div>Developer huyu hana API key.</div>
+  {% endif %}
+</div>
+{% endblock %}

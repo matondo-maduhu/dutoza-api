@@ -174,7 +174,7 @@ form.inline { display: inline; margin: 0; }
 
 .field { margin-bottom: 14px; }
 .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--muted); }
-input[type=text], input[type=search], input[type=file], select, textarea {
+input[type=text], input[type=search], input[type=file], input[type=number], select, textarea {
   width: 100%; padding: 11px 13px; border-radius: 10px;
   border: 1px solid var(--border); background: var(--input); color: var(--text);
   font-size: 15px; font-family: inherit;
@@ -287,6 +287,7 @@ table.rtable { width: 100%; border-collapse: collapse; }
     <a href="{{ url_for('panel.users_page') }}" class="{{ 'active' if active == 'users' }}"><span class="ico">👥</span>Users</a>
 
     <div class="nav-title">Mfumo</div>
+    <a href="{{ url_for('panel.developers_page') }}" class="{{ 'active' if active == 'developers' }}"><span class="ico">🧑‍💻</span>Developers</a>
     <a href="/admin/api-keys" class="{{ 'active' if active == 'apikeys' }}"><span class="ico">🔑</span>API Keys</a>
     <a href="{{ url_for('admin.schema_status') }}" class="{{ 'active' if active == 'schema' }}"><span class="ico">🛠️</span>Schema Status</a>
   </nav>

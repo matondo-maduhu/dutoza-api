@@ -1,0 +1,67 @@
+{% extends "admin/panel_base.html" %}
+{% block title %}Developers{% endblock %}
+{% block topbar_title %}Developers{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div><h1>Developers</h1><p>Wanaotumia API yako: angalia matumizi yao, simamisha au rudisha, na simamia API keys zao.</p></div>
+</div>
+
+<div class="grid cols-3">
+  <div class="card stat"><div class="glyph g-indigo">🧑‍💻</div><div class="label">Developers</div><div class="value">{{ counts.get('all', 0) }}</div><div class="sub">{{ counts.get('active', 0) }} hai · {{ counts.get('suspended', 0) }} wamesimamishwa</div></div>
+  <div class="card stat"><div class="glyph g-green">🔑</div><div class="label">API keys</div><div class="value">{{ totals.keys }}</div><div class="sub">zote kwenye mfumo</div></div>
+  <div class="card stat"><div class="glyph g-sky">📈</div><div class="label">Requests zote</div><div class="value">{{ '{:,}'.format(totals.requests) }}</div><div class="sub">tangu mwanzo</div></div>
+</div>
+
+{% if totals.orphans %}
+  <div class="flash mt" style="background:var(--amber-soft);color:var(--amber-text)">
+    Kuna API keys <b>{{ totals.orphans }}</b> zisizo na developer (ulizitengeneza mwenyewe). Zisimamie kwenye <a href="/admin/api-keys">API Keys →</a>
+  </div>
+{% endif %}
+
+<div class="pills mt">
+  {% for s in statuses %}
+    <a class="pill {{ 'active' if s == status }}" href="{{ page_url(status=s, page=None) }}">
+      {{ {'all':'Wote','active':'Hai','suspended':'Waliosimamishwa'}[s] }}<span class="n">{{ counts.get(s, 0) }}</span>
+    </a>
+  {% endfor %}
+</div>
+
+<form class="searchbar" method="get">
+  <input type="hidden" name="status" value="{{ status }}">
+  <input type="search" name="q" value="{{ search }}" placeholder="Tafuta jina au email…">
+  <button class="btn" type="submit">🔍 Tafuta</button>
+  {% if search %}<a class="btn ghost" href="{{ page_url(q=None, page=None) }}">Futa</a>{% endif %}
+</form>
+
+<div class="card">
+  {% if developers %}
+  <div class="table-wrap">
+    <table class="rtable">
+      <thead><tr><th>Developer</th><th>Status</th><th>Keys</th><th>Requests</th><th>Alitumia mwisho</th><th>Alijiunga</th><th></th></tr></thead>
+      <tbody>
+      {% for d in developers %}
+        <tr>
+          <td data-label="Developer">
+            <div class="who">
+              <div class="avatar">{{ (d[1] or d[2] or '?')[:1] | upper }}</div>
+              <div><b>{{ d[1] }}</b><span class="small muted">{{ d[2] }}</span></div>
+            </div>
+          </td>
+          <td data-label="Status"><span class="badge {{ 'green' if d[4] == 'active' else 'red' }}">{{ 'hai' if d[4] == 'active' else 'amesimamishwa' }}</span></td>
+          <td data-label="Keys">{{ d[6] }} / {{ d[5] }} zinafanya kazi</td>
+          <td data-label="Requests">{{ '{:,}'.format(d[7] or 0) }}</td>
+          <td data-label="Alitumia mwisho">{{ d[8] | fmt_dt('%d %b %Y') if d[8] else 'Hajatumia' }}</td>
+          <td data-label="Alijiunga">{{ d[3] | fmt_dt('%d %b %Y') }}</td>
+          <td class="nolabel"><a class="btn sm" href="{{ url_for('panel.developer_detail', dev_id=d[0]) }}">Simamia →</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "admin/panel_pager.html" %}
+  {% else %}
+    <div class="empty"><div class="big">🧑‍💻</div>Hakuna developer aliyepatikana.</div>
+  {% endif %}
+</div>
+{% endblock %}
