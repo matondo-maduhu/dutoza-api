@@ -7,12 +7,17 @@ data iliyopo. Kila statement inaendeshwa peke yake, kwa hiyo kama moja
 ikishindwa (mfano column haipo) nyingine zinaendelea.
 """
 
+import re
 import threading
+from datetime import datetime, timezone
 
 from db import get_connection
 
 _lock = threading.Lock()
 _done = False
+
+# Matokeo ya run ya mwisho (yanaonyeshwa kwenye /admin/schema-status)
+_last_run = {"at": None, "failed": [], "total": 0}
 
 
 TABLES = [
@@ -150,6 +155,10 @@ def ensure_schema(force=False):
         statements = TABLES + INDEXES
         failed = _run(statements)
 
+        _last_run["at"] = datetime.now(timezone.utc)
+        _last_run["failed"] = list(failed)
+        _last_run["total"] = len(statements)
+
         for label, error in failed:
             print(f"[schema] imeshindwa: {label} -> {error}")
 
@@ -160,3 +169,106 @@ def ensure_schema(force=False):
             _done = True
 
         return not failed
+
+
+# ------------------------------------------------------------
+# Ripoti ya hali (kwa ukurasa wa admin)
+# ------------------------------------------------------------
+
+def _table_names():
+    return [
+        re.search(r"CREATE TABLE IF NOT EXISTS\s+(\w+)", sql).group(1)
+        for sql in TABLES
+    ]
+
+
+def _index_defs():
+    """Rudisha [(jina_la_index, jina_la_table)]"""
+    result = []
+
+    for sql in INDEXES:
+        m = re.search(
+            r"CREATE INDEX IF NOT EXISTS\s+(\w+)\s+ON\s+(\w+)", sql
+        )
+        result.append((m.group(1), m.group(2)))
+
+    return result
+
+
+def get_status():
+    """
+    Angalia kwenye database kama tables na indexes zipo kweli.
+    Haibadilishi chochote - ni usomaji tu.
+    """
+    status = {
+        "db_ok": False,
+        "db_error": None,
+        "tables": [],
+        "indexes": [],
+        "last_run": {
+            "at": _last_run["at"],
+            "total": _last_run["total"],
+            "failed": list(_last_run["failed"]),
+        },
+        "done": _done,
+    }
+
+    connection = None
+
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        table_names = _table_names()
+        cursor.execute(
+            """
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = current_schema()
+              AND table_name = ANY(%s)
+            """,
+            (table_names,),
+        )
+        existing_tables = {row[0] for row in cursor.fetchall()}
+
+        index_defs = _index_defs()
+        cursor.execute(
+            """
+            SELECT indexname
+            FROM pg_indexes
+            WHERE schemaname = current_schema()
+              AND indexname = ANY(%s)
+            """,
+            ([name for name, _ in index_defs],),
+        )
+        existing_indexes = {row[0] for row in cursor.fetchall()}
+
+        cursor.close()
+
+        status["db_ok"] = True
+        status["tables"] = [
+            {"name": name, "exists": name in existing_tables}
+            for name in table_names
+        ]
+        status["indexes"] = [
+            {"name": name, "table": table, "exists": name in existing_indexes}
+            for name, table in index_defs
+        ]
+
+    except Exception as error:
+        status["db_error"] = str(error)
+
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+
+    finally:
+        if connection:
+            try:
+                connection.close()
+            except Exception:
+                pass
+
+    return status

@@ -19,6 +19,7 @@ from werkzeug.security import check_password_hash
 from db import get_connection
 from storage import upload_file
 from auth import generate_api_key, hash_api_key
+from schema import get_status, ensure_schema
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -1463,3 +1464,37 @@ def delete_api_key(key_id):
         safe_close(connection)
 
     return redirect(url_for("admin.api_keys_admin"))
+
+
+@admin_bp.get("/admin/schema-status")
+def schema_status():
+    if not admin_logged_in():
+        return redirect(url_for("admin.admin_login"))
+
+    return render_template(
+        "admin/schema_status.html",
+        status=get_status()
+    )
+
+
+@admin_bp.post("/admin/schema-status/run")
+def schema_status_run():
+    if not admin_logged_in():
+        return redirect(url_for("admin.admin_login"))
+
+    try:
+        ok = ensure_schema(force=True)
+
+        if ok:
+            flash("Schema imeendeshwa upya bila makosa.", "success")
+        else:
+            flash(
+                "Schema imeendeshwa, lakini baadhi ya statements zimeshindwa. "
+                "Angalia orodha ya makosa hapa chini.",
+                "error"
+            )
+
+    except Exception as error:
+        flash(f"Imeshindikana kuendesha schema: {error}", "error")
+
+    return redirect(url_for("admin.schema_status"))
