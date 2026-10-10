@@ -1031,3 +1031,339 @@ def quotes_write_import():
 
     except Exception as error:
         return jsonify({"ok": False, "error": f"Imeshindikana kuingiza: {error}"}), 500
+
+
+# ============================================================
+# DEVELOPERS (usimamizi wa developers na API keys zao)
+# ============================================================
+
+DEV_STATUSES = ["all", "active", "suspended"]
+KEY_RATE_MIN = 1
+KEY_RATE_MAX = 100000
+
+
+@panel_bp.get("/admin/developers")
+@admin_required
+def developers_page():
+    status = request.args.get("status", "all")
+    search = (request.args.get("q") or "").strip()
+    page = request.args.get("page", 1, type=int)
+
+    if status not in DEV_STATUSES:
+        status = "all"
+
+    where = []
+    params = []
+
+    if status != "all":
+        where.append("d.status = %s")
+        params.append(status)
+
+    if search:
+        pattern = like_param(search)
+        where.append(
+            "(LOWER(d.name) LIKE %s ESCAPE '\\' OR LOWER(d.email) LIKE %s ESCAPE '\\')"
+        )
+        params.extend([pattern, pattern])
+
+    where_sql = ("WHERE " + " AND ".join(where)) if where else ""
+
+    rows = []
+    counts = {}
+    totals = {"keys": 0, "requests": 0, "orphans": 0}
+    pager = paginate(0, 1)
+
+    try:
+        with db_cursor() as cursor:
+            cursor.execute("SELECT status, COUNT(*) FROM developers GROUP BY status")
+            counts = {row[0]: row[1] for row in cursor.fetchall()}
+
+            cursor.execute("SELECT COUNT(*), COALESCE(SUM(request_count), 0) FROM api_keys")
+            keys_total, requests_total = cursor.fetchone()
+            totals["keys"] = keys_total or 0
+            totals["requests"] = requests_total or 0
+
+            cursor.execute(
+                """
+                SELECT COUNT(*) FROM api_keys k
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM developers d WHERE d.email = k.owner_email
+                )
+                """
+            )
+            totals["orphans"] = cursor.fetchone()[0] or 0
+
+            cursor.execute(f"SELECT COUNT(*) FROM developers d {where_sql}", params)
+            pager = paginate(cursor.fetchone()[0], page)
+
+            cursor.execute(
+                f"""
+                SELECT
+                    d.id, d.name, d.email, d.created_at, d.status,
+                    (SELECT COUNT(*) FROM api_keys k WHERE k.owner_email = d.email),
+                    (SELECT COUNT(*) FROM api_keys k
+                      WHERE k.owner_email = d.email AND k.status = 'active'),
+                    (SELECT COALESCE(SUM(k.request_count), 0) FROM api_keys k
+                      WHERE k.owner_email = d.email),
+                    (SELECT MAX(k.last_used_at) FROM api_keys k
+                      WHERE k.owner_email = d.email)
+                FROM developers d
+                {where_sql}
+                ORDER BY d.created_at DESC, d.id DESC
+                LIMIT %s OFFSET %s
+                """,
+                params + [pager["per_page"], pager["offset"]],
+            )
+            rows = cursor.fetchall()
+
+    except Exception as error:
+        flash(
+            f"Imeshindikana kupakia developers: {error}. "
+            "Fungua Schema Status na uendeshe schema upya.",
+            "error",
+        )
+
+    counts["all"] = sum(counts.values())
+
+    return render_template(
+        "admin/panel_developers.html",
+        active="developers",
+        developers=rows,
+        counts=counts,
+        totals=totals,
+        statuses=DEV_STATUSES,
+        status=status,
+        search=search,
+        pager=pager,
+    )
+
+
+@panel_bp.get("/admin/developers/<int:dev_id>")
+@admin_required
+def developer_detail(dev_id):
+    developer = None
+    keys = []
+
+    try:
+        with db_cursor() as cursor:
+            cursor.execute(
+                "SELECT id, name, email, created_at, status FROM developers WHERE id = %s",
+                (dev_id,),
+            )
+            developer = cursor.fetchone()
+
+            if developer:
+                cursor.execute(
+                    """
+                    SELECT id, name, key_prefix, status, rate_limit,
+                           request_count, last_used_at, created_at
+                    FROM api_keys
+                    WHERE owner_email = %s
+                    ORDER BY id DESC
+                    """,
+                    (developer[2],),
+                )
+                keys = cursor.fetchall()
+
+    except Exception as error:
+        flash(f"Imeshindikana kupakia developer: {error}", "error")
+        return redirect(url_for("panel.developers_page"))
+
+    if not developer:
+        flash("Developer hajapatikana.", "error")
+        return redirect(url_for("panel.developers_page"))
+
+    active_keys = sum(1 for k in keys if k[3] == "active")
+    total_requests = sum((k[5] or 0) for k in keys)
+    last_used = max([k[6] for k in keys if k[6]], default=None, key=lambda v: str(v))
+
+    return render_template(
+        "admin/panel_developer.html",
+        active="developers",
+        dev=developer,
+        keys=keys,
+        active_keys=active_keys,
+        total_requests=total_requests,
+        last_used=last_used,
+        rate_min=KEY_RATE_MIN,
+        rate_max=KEY_RATE_MAX,
+    )
+
+
+@panel_bp.post("/admin/developers/<int:dev_id>/status")
+@admin_required
+@csrf_protected
+def developer_set_status(dev_id):
+    action = request.form.get("action", "")
+    back = safe_next(request.form.get("next")) or url_for("panel.developer_detail", dev_id=dev_id)
+
+    if action not in ("suspend", "reactivate"):
+        flash("Kitendo si sahihi.", "error")
+        return redirect(back)
+
+    disabled_keys = 0
+
+    try:
+        with db_cursor(commit=True) as cursor:
+            cursor.execute(
+                "SELECT name, email, status FROM developers WHERE id = %s", (dev_id,)
+            )
+            row = cursor.fetchone()
+
+            if not row:
+                flash("Developer hajapatikana.", "error")
+                return redirect(url_for("panel.developers_page"))
+
+            name, email, current = row
+
+            if action == "suspend":
+                if current != "active":
+                    flash(f"{name} ana status '{current}', kitendo hakiwezekani.", "error")
+                    return redirect(back)
+
+                cursor.execute(
+                    "UPDATE developers SET status = 'suspended' WHERE id = %s", (dev_id,)
+                )
+                # Zima API keys zake zote zinazofanya kazi (zinaweza kuwashwa tena moja moja)
+                cursor.execute(
+                    "UPDATE api_keys SET status = 'inactive' "
+                    "WHERE owner_email = %s AND status = 'active'",
+                    (email,),
+                )
+                disabled_keys = cursor.rowcount if cursor.rowcount and cursor.rowcount > 0 else 0
+
+            else:
+                if current != "suspended":
+                    flash(f"{name} ana status '{current}', kitendo hakiwezekani.", "error")
+                    return redirect(back)
+
+                cursor.execute(
+                    "UPDATE developers SET status = 'active' WHERE id = %s", (dev_id,)
+                )
+
+        guard.invalidate_developer(dev_id)
+
+        if action == "suspend":
+            audit("developer_suspend", "developer", dev_id, f"{email}, keys zilizozimwa: {disabled_keys}")
+            flash(
+                f"{name} amesimamishwa. API keys {disabled_keys} zimezimwa na ametolewa kwenye dashboard yake.",
+                "success",
+            )
+        else:
+            audit("developer_reactivate", "developer", dev_id, email)
+            flash(
+                f"{name} amerudishwa. API keys zake bado zimezimwa; washa kila moja ukipenda.",
+                "success",
+            )
+
+    except Exception as error:
+        flash(
+            f"Imeshindikana: {error}. "
+            "Fungua Schema Status ili kuhakikisha column ya 'status' ya developers ipo.",
+            "error",
+        )
+
+    return redirect(back)
+
+
+@panel_bp.post("/admin/developers/keys/<int:key_id>/action")
+@admin_required
+@csrf_protected
+def developer_key_action(key_id):
+    action = request.form.get("action", "")
+    back = safe_next(request.form.get("next")) or url_for("panel.developers_page")
+
+    if action not in ("enable", "disable", "revoke"):
+        flash("Kitendo si sahihi.", "error")
+        return redirect(back)
+
+    new_status = {"enable": "active", "disable": "inactive", "revoke": "revoked"}[action]
+
+    try:
+        with db_cursor(commit=True) as cursor:
+            cursor.execute(
+                """
+                SELECT k.status, k.name, d.status
+                FROM api_keys k
+                LEFT JOIN developers d ON d.email = k.owner_email
+                WHERE k.id = %s
+                """,
+                (key_id,),
+            )
+            row = cursor.fetchone()
+
+            if not row:
+                flash("API key haijapatikana.", "error")
+                return redirect(back)
+
+            current, key_name, dev_status = row
+
+            if action == "enable":
+                if current != "inactive":
+                    flash(
+                        "Key iliyofutwa (revoked) haiwezi kuwashwa tena."
+                        if current == "revoked" else "Key tayari inafanya kazi.",
+                        "error",
+                    )
+                    return redirect(back)
+
+                if dev_status == "suspended":
+                    flash("Developer amesimamishwa. Mrudishe kwanza kabla ya kuwasha key zake.", "error")
+                    return redirect(back)
+
+            elif action == "disable" and current != "active":
+                flash("Key hii haifanyi kazi tayari.", "error")
+                return redirect(back)
+
+            elif action == "revoke" and current == "revoked":
+                flash("Key hii tayari imefutwa.", "error")
+                return redirect(back)
+
+            cursor.execute(
+                "UPDATE api_keys SET status = %s WHERE id = %s", (new_status, key_id)
+            )
+
+        audit(f"key_{action}", "api_key", key_id, key_name)
+        flash(
+            {
+                "enable": "Key imewashwa.",
+                "disable": "Key imezimwa.",
+                "revoke": "Key imefutwa kabisa (haiwezi kurudishwa).",
+            }[action],
+            "success",
+        )
+
+    except Exception as error:
+        flash(f"Imeshindikana: {error}", "error")
+
+    return redirect(back)
+
+
+@panel_bp.post("/admin/developers/keys/<int:key_id>/limit")
+@admin_required
+@csrf_protected
+def developer_key_limit(key_id):
+    back = safe_next(request.form.get("next")) or url_for("panel.developers_page")
+    limit = request.form.get("rate_limit", type=int)
+
+    if limit is None or limit < KEY_RATE_MIN or limit > KEY_RATE_MAX:
+        flash(f"Limit lazima iwe kati ya {KEY_RATE_MIN} na {KEY_RATE_MAX} kwa dakika.", "error")
+        return redirect(back)
+
+    try:
+        with db_cursor(commit=True) as cursor:
+            cursor.execute(
+                "UPDATE api_keys SET rate_limit = %s WHERE id = %s", (limit, key_id)
+            )
+
+            if cursor.rowcount == 0:
+                flash("API key haijapatikana.", "error")
+                return redirect(back)
+
+        audit("key_limit", "api_key", key_id, f"{limit}/dakika")
+        flash(f"Limit imewekwa kuwa {limit} requests kwa dakika.", "success")
+
+    except Exception as error:
+        flash(f"Imeshindikana: {error}", "error")
+
+    return redirect(back)

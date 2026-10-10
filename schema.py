@@ -97,6 +97,7 @@ ALTERS = [
     "ALTER TABLE content_reports ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'open'",
     "ALTER TABLE content_reports ADD COLUMN IF NOT EXISTS resolution VARCHAR(30)",
     "ALTER TABLE content_reports ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ",
+    "ALTER TABLE developers ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'active'",
 ]
 
 # (table, column) zinazokaguliwa kwenye /admin/schema-status
@@ -104,6 +105,7 @@ COLUMNS = [
     ("content_reports", "status"),
     ("content_reports", "resolution"),
     ("content_reports", "resolved_at"),
+    ("developers", "status"),
 ]
 
 
@@ -131,6 +133,7 @@ INDEXES = [
     # Admin panel
     "CREATE INDEX IF NOT EXISTS idx_content_reports_status ON content_reports (status, created_at DESC)",
     "CREATE INDEX IF NOT EXISTS idx_audit_created ON admin_audit_log (created_at DESC)",
+    "CREATE INDEX IF NOT EXISTS idx_api_keys_owner ON api_keys (owner_email)",
     "CREATE INDEX IF NOT EXISTS idx_users_status ON users (status)",
     "CREATE INDEX IF NOT EXISTS idx_users_created ON users (created_at DESC)",
 
