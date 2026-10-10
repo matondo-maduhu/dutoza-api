@@ -374,7 +374,7 @@ def overview():
     chart_max = max([1] + [max(d["users"], d["content"]) for d in chart])
 
     return render_template(
-        "admin/panel/overview.html",
+        "admin/panel_overview.html",
         active="overview",
         stats=stats,
         chart=chart,
@@ -452,7 +452,7 @@ def users_page():
     counts["all"] = sum(counts.values())
 
     return render_template(
-        "admin/panel/users.html",
+        "admin/panel_users.html",
         active="users",
         users=rows,
         counts=counts,
@@ -593,7 +593,7 @@ def content_page():
         flash(f"Imeshindikana kupakia maudhui: {error}", "error")
 
     return render_template(
-        "admin/panel/content.html",
+        "admin/panel_content.html",
         active="content",
         items=items,
         ctype=ctype,
@@ -706,7 +706,7 @@ def reports_page():
         )
 
     return render_template(
-        "admin/panel/reports.html",
+        "admin/panel_reports.html",
         active="reports",
         reports=rows,
         counts=counts,
@@ -860,7 +860,7 @@ def quotes_page():
         flash(f"Imeshindikana kupakia quotes: {error}", "error")
 
     return render_template(
-        "admin/panel/quotes.html",
+        "admin/panel_quotes.html",
         active="quotes",
         tab=tab,
         categories=categories,
