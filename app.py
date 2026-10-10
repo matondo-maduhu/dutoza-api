@@ -13,8 +13,12 @@ from developers import developers_bp
 from user_auth import user_auth_bp
 from user_feed import user_feed_bp
 from user_music import user_music_bp
+from schema import ensure_schema
+from perf import init_compression
 
 app = Flask(__name__)
+
+init_compression(app)
 
 app.secret_key = os.getenv(
     "FLASK_SECRET_KEY",
@@ -40,6 +44,15 @@ app.register_blueprint(developers_bp)
 app.register_blueprint(user_auth_bp)
 app.register_blueprint(user_feed_bp)
 app.register_blueprint(user_music_bp)
+
+# Tengeneza tables/indexes MARA MOJA wakati app inaanza.
+# Kama DB haipatikani sasa, app bado inaanza; schema itajaribiwa tena
+# mara ya kwanza request inapohitaji (ensure_schema ni salama kuitwa tena).
+try:
+    ensure_schema()
+except Exception as error:
+    print(f"[startup] schema haikukamilika: {error}")
+
 
 @app.get("/developers")
 def developers():
@@ -67,5 +80,5 @@ if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=5000,
-        debug=True
+        debug=os.getenv("FLASK_DEBUG", "0") == "1"
     )

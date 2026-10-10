@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import (
     Blueprint,
     render_template,
@@ -10,6 +12,7 @@ from flask import (
 )
 
 from db import get_connection
+from schema import ensure_schema
 
 
 user_feed_bp = Blueprint("user_feed", __name__)
@@ -61,6 +64,46 @@ def feed():
     )
 
 
+FEED_PAGE_SIZE = 50
+
+NO_ENGAGEMENT = {
+    "likes_count": 0,
+    "is_liked": False,
+    "saves_count": 0,
+    "is_saved": False,
+    "shares_count": 0,
+}
+
+
+def parse_before(value):
+    """
+    Badilisha ?before=<ISO timestamp> kuwa datetime. Kama si sahihi,
+    rudisha None (feed itaanza kutoka juu kama kawaida).
+    """
+    if not value:
+        return None
+
+    try:
+        return datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except (ValueError, AttributeError):
+        return None
+
+
+def safe_engagement_map(cursor, content_type, ids, user_id):
+    """
+    Engagement ya vitu vyote kwa query MOJA. Kama imeshindikana,
+    rudisha {} (kila kitu kitaonyesha 0) badala ya kuvunja feed nzima.
+    """
+    try:
+        return engagement_batch(cursor, content_type, ids, user_id)
+    except Exception:
+        try:
+            cursor.connection.rollback()
+        except Exception:
+            pass
+        return {}
+
+
 @user_feed_bp.get("/api/user/posts")
 def get_posts():
     current_user_id = session.get("user_id")
@@ -70,6 +113,11 @@ def get_posts():
             "error": "Authentication required"
         }), 401
 
+    # Pagination (hiari - bila vigezo hivi feed inafanya kazi kama zamani)
+    limit = request.args.get("limit", type=int) or FEED_PAGE_SIZE
+    limit = max(1, min(limit, FEED_PAGE_SIZE))
+    before = parse_before(request.args.get("before"))
+
     for attempt in range(2):
         connection = None
 
@@ -77,10 +125,21 @@ def get_posts():
             connection = get_connection()
             cursor = connection.cursor()
 
+            ensure_engagement_tables(connection)
+
+            feed_items = []
+            stream_sizes = []
+
             # -------------------------------------------------
             # NORMAL POSTS
             # -------------------------------------------------
-            cursor.execute("""
+            before_sql = "AND p.created_at < %s" if before else ""
+            params = [current_user_id]
+            if before:
+                params.append(before)
+            params.append(limit)
+
+            cursor.execute(f"""
                 SELECT
                     p.id,
                     p.content,
@@ -91,7 +150,11 @@ def get_posts():
                     u.full_name,
                     u.username,
                     u.profile_image_url,
-                    COUNT(pl.id) AS likes_count,
+                    (
+                        SELECT COUNT(*)
+                        FROM post_likes pl
+                        WHERE pl.post_id = p.id
+                    ) AS likes_count,
                     EXISTS(
                         SELECT 1
                         FROM post_likes my_like
@@ -101,27 +164,15 @@ def get_posts():
                 FROM posts p
                 JOIN users u
                     ON u.id = p.user_id
-                LEFT JOIN post_likes pl
-                    ON pl.post_id = p.id
                 WHERE p.status = 'published'
                   AND u.status = 'active'
-                GROUP BY
-                    p.id,
-                    p.content,
-                    p.media_url,
-                    p.media_type,
-                    p.created_at,
-                    u.id,
-                    u.full_name,
-                    u.username,
-                    u.profile_image_url
+                  {before_sql}
                 ORDER BY p.created_at DESC
-                LIMIT 50
-            """, (current_user_id,))
+                LIMIT %s
+            """, params)
 
             post_rows = cursor.fetchall()
-
-            feed_items = []
+            stream_sizes.append(len(post_rows))
 
             for row in post_rows:
                 feed_items.append({
@@ -130,7 +181,7 @@ def get_posts():
                     "content": row[1],
                     "media_url": row[2],
                     "media_type": row[3],
-                    "created_at": row[4].isoformat(),
+                    "created_at": row[4].isoformat() if row[4] else None,
                     "likes_count": row[9],
                     "is_liked": bool(row[10]),
                     "user": {
@@ -144,7 +195,10 @@ def get_posts():
             # -------------------------------------------------
             # QUOTES
             # -------------------------------------------------
-            cursor.execute("""
+            before_sql = "AND q.created_at < %s" if before else ""
+            params = ([before] if before else []) + [limit]
+
+            cursor.execute(f"""
                 SELECT
                     q.id,
                     q.text,
@@ -163,31 +217,22 @@ def get_posts():
                 LEFT JOIN categories c
                     ON c.id = q.category_id
                 WHERE q.status = 'published'
+                  {before_sql}
                 ORDER BY q.created_at DESC
-                LIMIT 50
-            """)
+                LIMIT %s
+            """, params)
 
             quote_rows = cursor.fetchall()
+            stream_sizes.append(len(quote_rows))
 
-            try:
-                ensure_engagement_tables(connection)
-            except Exception:
-                pass
+            # Engagement ya quotes zote - query MOJA (zamani ilikuwa 5 kwa kila quote)
+            quote_eng = safe_engagement_map(
+                cursor, "quote", [r[0] for r in quote_rows], current_user_id
+            )
 
             for row in quote_rows:
-                eng = {
-                    "likes_count": 0,
-                    "is_liked": False,
-                    "saves_count": 0,
-                    "is_saved": False,
-                    "shares_count": 0,
-                }
-                try:
-                    eng = engagement_counts(
-                        cursor, "quote", row[0], current_user_id
-                    )
-                except Exception:
-                    pass
+                eng = quote_eng.get(row[0]) or NO_ENGAGEMENT
+
                 feed_items.append({
                     "type": "quote",
                     "id": row[0],
@@ -213,7 +258,10 @@ def get_posts():
             # -------------------------------------------------
             # MUSIC
             # -------------------------------------------------
-            cursor.execute("""
+            before_sql = "AND s.created_at < %s" if before else ""
+            params = ([before] if before else []) + [limit]
+
+            cursor.execute(f"""
                 SELECT
                     s.id,
                     s.title,
@@ -259,14 +307,22 @@ def get_posts():
 
                 WHERE s.status = 'published'
                   AND u.status = 'active'
+                  {before_sql}
 
                 ORDER BY s.created_at DESC
-                LIMIT 50
-            """)
+                LIMIT %s
+            """, params)
 
             music_rows = cursor.fetchall()
+            stream_sizes.append(len(music_rows))
+
+            music_eng = safe_engagement_map(
+                cursor, "music", [r[0] for r in music_rows], current_user_id
+            )
 
             for row in music_rows:
+                eng = music_eng.get(row[0]) or NO_ENGAGEMENT
+
                 feed_items.append({
                     "type": "music",
 
@@ -311,41 +367,39 @@ def get_posts():
                         "cover_url": row[26]
                     } if row[23] else None,
 
-                    "likes_count": 0,
-                    "is_liked": False,
-                    "saves_count": 0,
-                    "is_saved": False,
-                    "shares_count": 0,
+                    "likes_count": eng["likes_count"],
+                    "is_liked": eng["is_liked"],
+                    "saves_count": eng["saves_count"],
+                    "is_saved": eng["is_saved"],
+                    "shares_count": eng["shares_count"],
                 })
-                try:
-                    eng = engagement_counts(
-                        cursor, "music", row[0], current_user_id
-                    )
-                    feed_items[-1].update({
-                        "likes_count": eng["likes_count"],
-                        "is_liked": eng["is_liked"],
-                        "saves_count": eng["saves_count"],
-                        "is_saved": eng["is_saved"],
-                        "shares_count": eng["shares_count"],
-                    })
-                except Exception:
-                    pass
 
             cursor.close()
 
             # -------------------------------------------------
-            # MERGE POSTS + MUSIC BY CREATED TIME
+            # MERGE POSTS + QUOTES + MUSIC BY CREATED TIME
             # -------------------------------------------------
             feed_items.sort(
-                key=lambda item: item["created_at"],
+                key=lambda item: item["created_at"] or "",
                 reverse=True
             )
 
-            feed_items = feed_items[:50]
+            has_more = (
+                len(feed_items) > limit
+                or any(size >= limit for size in stream_sizes)
+            )
+
+            feed_items = feed_items[:limit]
+
+            next_before = (
+                feed_items[-1]["created_at"] if feed_items else None
+            )
 
             return jsonify({
                 "success": True,
-                "posts": feed_items
+                "posts": feed_items,
+                "has_more": has_more,
+                "next_before": next_before
             })
 
         except Exception as exc:
@@ -355,6 +409,8 @@ def get_posts():
 
         finally:
             close_connection(connection)
+
+
 @user_feed_bp.post("/api/user/posts/<int:post_id>/like")
 def like_post(post_id):
     current_user_id = session.get("user_id")
@@ -1585,32 +1641,9 @@ def unlike_comment(comment_id):
 # QUOTE / MUSIC OWNER ACTIONS + REPORT / INTEREST
 # ============================================================
 
-def ensure_report_tables(connection):
-    cursor = connection.cursor()
-    try:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS content_reports (
-                id SERIAL PRIMARY KEY,
-                reporter_id INTEGER NOT NULL,
-                content_type VARCHAR(20) NOT NULL,
-                content_id INTEGER NOT NULL,
-                reason TEXT,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-            )
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS content_interests (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER NOT NULL,
-                content_type VARCHAR(20) NOT NULL,
-                content_id INTEGER NOT NULL,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                UNIQUE (user_id, content_type, content_id)
-            )
-        """)
-        connection.commit()
-    finally:
-        cursor.close()
+def ensure_report_tables(connection=None):
+    """Tables sasa zinatengenezwa mara moja (schema.py), si kila request."""
+    ensure_schema()
 
 
 @user_feed_bp.delete("/api/user/quotes/<int:quote_id>")
@@ -1825,86 +1858,70 @@ def toggle_interest():
 # CONTENT ENGAGEMENT: like / save / share (quote + music)
 # ============================================================
 
-def ensure_engagement_tables(connection):
-    cursor = connection.cursor()
-    try:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS content_likes (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER NOT NULL,
-                content_type VARCHAR(20) NOT NULL,
-                content_id INTEGER NOT NULL,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                UNIQUE (user_id, content_type, content_id)
-            )
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS content_saves (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER NOT NULL,
-                content_type VARCHAR(20) NOT NULL,
-                content_id INTEGER NOT NULL,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                UNIQUE (user_id, content_type, content_id)
-            )
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS content_shares (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER,
-                content_type VARCHAR(20) NOT NULL,
-                content_id INTEGER NOT NULL,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-            )
-        """)
-        connection.commit()
-    finally:
-        cursor.close()
+def ensure_engagement_tables(connection=None):
+    """Tables sasa zinatengenezwa mara moja (schema.py), si kila request."""
+    ensure_schema()
+
+
+def engagement_batch(cursor, content_type, ids, user_id):
+    """
+    Likes/saves/shares za vitu VINGI kwa query MOJA.
+
+    Rudisha: {content_id: {likes_count, is_liked, saves_count,
+                           is_saved, shares_count}}
+    """
+    ids = [int(i) for i in ids if i is not None]
+
+    if not ids:
+        return {}
+
+    cursor.execute(
+        """
+        SELECT
+            t.id,
+            (SELECT COUNT(*) FROM content_likes l
+              WHERE l.content_type = %s AND l.content_id = t.id),
+            EXISTS(SELECT 1 FROM content_likes l
+              WHERE l.content_type = %s AND l.content_id = t.id
+                AND l.user_id = %s),
+            (SELECT COUNT(*) FROM content_saves sv
+              WHERE sv.content_type = %s AND sv.content_id = t.id),
+            EXISTS(SELECT 1 FROM content_saves sv
+              WHERE sv.content_type = %s AND sv.content_id = t.id
+                AND sv.user_id = %s),
+            (SELECT COUNT(*) FROM content_shares sh
+              WHERE sh.content_type = %s AND sh.content_id = t.id)
+        FROM unnest(%s::int[]) AS t(id)
+        """,
+        (
+            content_type,
+            content_type, user_id,
+            content_type,
+            content_type, user_id,
+            content_type,
+            ids,
+        ),
+    )
+
+    result = {}
+
+    for row in cursor.fetchall():
+        result[row[0]] = {
+            "likes_count": row[1],
+            "is_liked": bool(row[2]),
+            "saves_count": row[3],
+            "is_saved": bool(row[4]),
+            "shares_count": row[5],
+        }
+
+    return result
 
 
 def engagement_counts(cursor, content_type, content_id, user_id):
-    cursor.execute(
-        "SELECT COUNT(*) FROM content_likes WHERE content_type = %s AND content_id = %s",
-        (content_type, content_id),
-    )
-    likes = cursor.fetchone()[0]
-    cursor.execute(
-        """
-        SELECT EXISTS(
-            SELECT 1 FROM content_likes
-            WHERE content_type = %s AND content_id = %s AND user_id = %s
-        )
-        """,
-        (content_type, content_id, user_id),
-    )
-    is_liked = bool(cursor.fetchone()[0])
-    cursor.execute(
-        "SELECT COUNT(*) FROM content_saves WHERE content_type = %s AND content_id = %s",
-        (content_type, content_id),
-    )
-    saves = cursor.fetchone()[0]
-    cursor.execute(
-        """
-        SELECT EXISTS(
-            SELECT 1 FROM content_saves
-            WHERE content_type = %s AND content_id = %s AND user_id = %s
-        )
-        """,
-        (content_type, content_id, user_id),
-    )
-    is_saved = bool(cursor.fetchone()[0])
-    cursor.execute(
-        "SELECT COUNT(*) FROM content_shares WHERE content_type = %s AND content_id = %s",
-        (content_type, content_id),
-    )
-    shares = cursor.fetchone()[0]
-    return {
-        "likes_count": likes,
-        "is_liked": is_liked,
-        "saves_count": saves,
-        "is_saved": is_saved,
-        "shares_count": shares,
-    }
+    """Kitu kimoja - inatumia engagement_batch ili logic iwe sehemu moja."""
+    data = engagement_batch(cursor, content_type, [content_id], user_id)
+
+    return data.get(int(content_id)) or dict(NO_ENGAGEMENT)
 
 
 @user_feed_bp.post("/api/user/content/like")
@@ -2093,15 +2110,12 @@ def get_profile_posts():
             ORDER BY q.created_at DESC
             LIMIT 50
         """, (target_id,))
-        for row in cursor.fetchall():
-            eng = {
-                "likes_count": 0, "is_liked": False,
-                "saves_count": 0, "is_saved": False, "shares_count": 0,
-            }
-            try:
-                eng = engagement_counts(cursor, "quote", row[0], current_user_id)
-            except Exception:
-                pass
+        rows = cursor.fetchall()
+        eng_map = safe_engagement_map(
+            cursor, "quote", [r[0] for r in rows], current_user_id
+        )
+        for row in rows:
+            eng = eng_map.get(row[0]) or NO_ENGAGEMENT
             feed_items.append({
                 "type": "quote",
                 "id": row[0],
@@ -2136,15 +2150,12 @@ def get_profile_posts():
             ORDER BY s.created_at DESC
             LIMIT 50
         """, (target_id,))
-        for row in cursor.fetchall():
-            eng = {
-                "likes_count": 0, "is_liked": False,
-                "saves_count": 0, "is_saved": False, "shares_count": 0,
-            }
-            try:
-                eng = engagement_counts(cursor, "music", row[0], current_user_id)
-            except Exception:
-                pass
+        rows = cursor.fetchall()
+        eng_map = safe_engagement_map(
+            cursor, "music", [r[0] for r in rows], current_user_id
+        )
+        for row in rows:
+            eng = eng_map.get(row[0]) or NO_ENGAGEMENT
             feed_items.append({
                 "type": "music",
                 "id": row[0],
@@ -2223,15 +2234,12 @@ def user_search():
                 ORDER BY q.created_at DESC
                 LIMIT 40
             """, (like, like, like, like, like, like))
-            for row in cursor.fetchall():
-                eng = {
-                    "likes_count": 0, "is_liked": False,
-                    "saves_count": 0, "is_saved": False, "shares_count": 0,
-                }
-                try:
-                    eng = engagement_counts(cursor, "quote", row[0], current_user_id)
-                except Exception:
-                    pass
+            rows = cursor.fetchall()
+            eng_map = safe_engagement_map(
+                cursor, "quote", [r[0] for r in rows], current_user_id
+            )
+            for row in rows:
+                eng = eng_map.get(row[0]) or NO_ENGAGEMENT
                 feed_items.append({
                     "type": "quote",
                     "id": row[0],
@@ -2276,15 +2284,12 @@ def user_search():
                 ORDER BY s.created_at DESC
                 LIMIT 40
             """, (like, like, like, like, like, like, like))
-            for row in cursor.fetchall():
-                eng = {
-                    "likes_count": 0, "is_liked": False,
-                    "saves_count": 0, "is_saved": False, "shares_count": 0,
-                }
-                try:
-                    eng = engagement_counts(cursor, "music", row[0], current_user_id)
-                except Exception:
-                    pass
+            rows = cursor.fetchall()
+            eng_map = safe_engagement_map(
+                cursor, "music", [r[0] for r in rows], current_user_id
+            )
+            for row in rows:
+                eng = eng_map.get(row[0]) or NO_ENGAGEMENT
                 feed_items.append({
                     "type": "music",
                     "id": row[0],

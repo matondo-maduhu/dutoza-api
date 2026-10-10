@@ -9,10 +9,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-POOL_SIZE = 5
+# Ukubwa wa pool (unaweza kubadilisha kupitia .env: DB_POOL_SIZE=10)
+POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "10"))
 MAX_CONNECTION_RETRIES = 2
 RETRY_DELAY = 0.15
 
+# Connection iliyokaa bila kutumika zaidi ya sekunde hizi
+# ndiyo tu inayofanyiwa health-check (SELECT 1). Zilizotumika hivi karibuni
+# zinatumika moja kwa moja, hivyo tunaokoa round-trip kwa kila request.
+IDLE_CHECK_SECONDS = float(os.getenv("DB_IDLE_CHECK_SECONDS", "20"))
+
+# Pool inahifadhi tuple: (connection, wakati_ilipoachwa)
 _pool = queue.Queue(maxsize=POOL_SIZE)
 _pool_lock = threading.Lock()
 _pool_initialized = False
@@ -44,24 +51,24 @@ def _create_connection():
     )
 
 
-def _connection_is_alive(connection):
-    """
-    Health-check ya connection iliyokaa kwenye pool.
-    """
+def _safe_close(connection):
+    try:
+        connection.close()
+    except Exception:
+        pass
 
+
+def _connection_is_alive(connection):
+    """Health-check ya connection iliyokaa muda mrefu kwenye pool."""
     try:
         cursor = connection.cursor()
         cursor.execute("SELECT 1")
         cursor.fetchone()
         cursor.close()
+        connection.rollback()
         return True
-
     except Exception:
-        try:
-            connection.close()
-        except Exception:
-            pass
-
+        _safe_close(connection)
         return False
 
 
@@ -74,14 +81,7 @@ class PooledConnection:
         return getattr(self._connection, name)
 
     def close(self):
-        """
-        Rudisha connection kwenye pool.
-
-        Muhimu:
-        Hatufanyi SELECT 1 hapa kwa sababu hiyo ilikuwa
-        inaongeza query ya ziada kwa kila request.
-        """
-
+        """Rudisha connection kwenye pool (haifungi connection halisi)."""
         if self._returned:
             return
 
@@ -91,21 +91,17 @@ class PooledConnection:
             try:
                 self._connection.rollback()
             except Exception:
-                pass
+                # Connection imevunjika - usiirudishe kwenye pool.
+                _safe_close(self._connection)
+                return
 
-            _pool.put_nowait(self._connection)
+            _pool.put_nowait((self._connection, time.monotonic()))
 
         except queue.Full:
-            try:
-                self._connection.close()
-            except Exception:
-                pass
+            _safe_close(self._connection)
 
         except Exception:
-            try:
-                self._connection.close()
-            except Exception:
-                pass
+            _safe_close(self._connection)
 
 
 def _initialize_pool():
@@ -119,7 +115,7 @@ def _initialize_pool():
             return
 
         connection = _create_connection()
-        _pool.put(connection)
+        _pool.put((connection, time.monotonic()))
 
         _pool_initialized = True
 
@@ -127,7 +123,7 @@ def _initialize_pool():
 def get_connection():
     """
     Toa connection kutoka kwenye pool.
-    Pooled connections zinathibitishwa kabla ya kutumika.
+    Health-check hufanyika tu kama connection imekaa idle muda mrefu.
     """
 
     _initialize_pool()
@@ -135,47 +131,29 @@ def get_connection():
     last_error = None
 
     for attempt in range(MAX_CONNECTION_RETRIES + 1):
-        connection = None
-
+        # 1) Jaribu kutumia connection iliyopo kwenye pool
         try:
-            connection = _pool.get_nowait()
-
-            cursor = connection.cursor()
-            cursor.execute("SELECT 1")
-            cursor.fetchone()
-
-            return PooledConnection(connection)
-
+            connection, released_at = _pool.get_nowait()
         except queue.Empty:
-            try:
-                connection = _create_connection()
+            connection = None
+
+        if connection is not None:
+            idle_for = time.monotonic() - released_at
+
+            if idle_for < IDLE_CHECK_SECONDS or _connection_is_alive(connection):
                 return PooledConnection(connection)
 
-            except Exception as error:
-                last_error = error
+            # Connection mfu - endelea kutengeneza mpya hapa chini
 
-                if attempt < MAX_CONNECTION_RETRIES:
-                    time.sleep(RETRY_DELAY)
-                    continue
+        # 2) Hakuna connection nzuri kwenye pool - tengeneza mpya
+        try:
+            return PooledConnection(_create_connection())
 
-                raise last_error
+        except Exception as error:
+            last_error = error
 
-        except Exception:
-            if connection:
-                try:
-                    connection.close()
-                except Exception:
-                    pass
+            if attempt < MAX_CONNECTION_RETRIES:
+                time.sleep(RETRY_DELAY)
+                continue
 
-            try:
-                connection = _create_connection()
-                return PooledConnection(connection)
-
-            except Exception as error:
-                last_error = error
-
-                if attempt < MAX_CONNECTION_RETRIES:
-                    time.sleep(RETRY_DELAY)
-                    continue
-
-                raise last_error
+            raise last_error

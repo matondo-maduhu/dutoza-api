@@ -3,35 +3,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from db import get_connection
 from auth import generate_api_key, hash_api_key
+from schema import ensure_schema
 
 
 developers_bp = Blueprint("developers", __name__)
 
 
 def ensure_developers_table():
-    connection = None
-
-    try:
-        connection = get_connection()
-        cursor = connection.cursor()
-
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS developers (
-                id SERIAL PRIMARY KEY,
-                name VARCHAR(150) NOT NULL,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-            )
-            """
-        )
-
-        connection.commit()
-
-    finally:
-        if connection:
-            connection.close()
+    """Table sasa inatengenezwa mara moja (schema.py), si kila request."""
+    ensure_schema()
 
 
 @developers_bp.get("/developers/login")
