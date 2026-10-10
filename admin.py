@@ -90,6 +90,17 @@ def get_categories():
     raise last_error
 
 
+def _after_post(default_endpoint="admin.admin_dashboard"):
+    """Rudi kwenye ukurasa ulioombwa (next) kama ni wa ndani ya /admin."""
+    target = request.form.get("next", "")
+
+    if target.startswith("/admin") and not target.startswith("//"):
+        return redirect(target)
+
+    return redirect(url_for(default_endpoint))
+
+
+
 @admin_bp.route(
     "/admin/login",
     methods=["GET", "POST"]
@@ -149,73 +160,10 @@ def admin_login():
 
 @admin_bp.get("/admin")
 def admin_dashboard():
-
     if not admin_logged_in():
-        return redirect(
-            url_for("admin.admin_login")
-        )
+        return redirect(url_for("admin.admin_login"))
 
-    connection = None
-
-    try:
-        connection = get_connection()
-
-        cursor = connection.cursor()
-
-        cursor.execute("""
-            SELECT COUNT(*)
-            FROM quotes
-        """)
-
-        total_quotes = cursor.fetchone()[0]
-
-        cursor.execute("""
-            SELECT COUNT(*)
-            FROM categories
-        """)
-
-        total_categories = cursor.fetchone()[0]
-
-        cursor.execute("""
-            SELECT
-                q.id,
-                q.text,
-                q.author,
-                c.name,
-                q.language,
-                q.created_at
-            FROM quotes q
-            LEFT JOIN categories c
-                ON c.id = q.category_id
-            ORDER BY q.id DESC
-            LIMIT 20
-        """)
-
-        recent_quotes = cursor.fetchall()
-
-    except Exception as error:
-
-        flash(
-            f"Imeshindikana kupakia dashboard: {error}",
-            "error"
-        )
-
-        total_quotes = 0
-        total_categories = 0
-        recent_quotes = []
-
-    finally:
-        safe_close(connection)
-
-    categories = get_categories()
-
-    return render_template(
-        "admin/dashboard.html",
-        total_quotes=total_quotes,
-        total_categories=total_categories,
-        recent_quotes=recent_quotes,
-        categories=categories
-    )
+    return redirect(url_for("panel.overview"))
 
 
 @admin_bp.post("/admin/quotes/add")
@@ -252,9 +200,7 @@ def add_quote():
             "error"
         )
 
-        return redirect(
-            url_for("admin.admin_dashboard")
-        )
+        return _after_post()
 
     if language not in {"sw", "en"}:
         language = "sw"
@@ -318,9 +264,7 @@ def add_quote():
     finally:
         safe_close(connection)
 
-    return redirect(
-        url_for("admin.admin_dashboard")
-    )
+    return _after_post()
 
 
 @admin_bp.post("/admin/categories/add")
@@ -342,9 +286,7 @@ def add_category():
             "error"
         )
 
-        return redirect(
-            url_for("admin.admin_dashboard")
-        )
+        return _after_post()
 
     slug = slugify(name)
 
@@ -354,9 +296,7 @@ def add_category():
             "error"
         )
 
-        return redirect(
-            url_for("admin.admin_dashboard")
-        )
+        return _after_post()
 
     connection = None
 
@@ -410,9 +350,7 @@ def add_category():
     finally:
         safe_close(connection)
 
-    return redirect(
-        url_for("admin.admin_dashboard")
-    )
+    return _after_post()
 
 
 @admin_bp.route(
@@ -441,9 +379,7 @@ def bulk_upload():
             "error"
         )
 
-        return redirect(
-            url_for("admin.bulk_upload")
-        )
+        return _after_post("admin.bulk_upload")
 
     if not file.filename.lower().endswith(
         ".csv"
@@ -453,9 +389,7 @@ def bulk_upload():
             "error"
         )
 
-        return redirect(
-            url_for("admin.bulk_upload")
-        )
+        return _after_post("admin.bulk_upload")
 
     connection = None
 
@@ -768,9 +702,7 @@ def bulk_upload():
     finally:
         safe_close(connection)
 
-    return redirect(
-        url_for("admin.bulk_upload")
-    )
+    return _after_post("admin.bulk_upload")
 
 
 @admin_bp.get("/admin/logout")
@@ -1473,7 +1405,8 @@ def schema_status():
 
     return render_template(
         "admin/schema_status.html",
-        status=get_status()
+        status=get_status(),
+        active="schema"
     )
 
 

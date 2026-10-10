@@ -71,6 +71,16 @@ TABLES = [
     )
     """,
     """
+    CREATE TABLE IF NOT EXISTS admin_audit_log (
+        id SERIAL PRIMARY KEY,
+        action VARCHAR(40) NOT NULL,
+        target_type VARCHAR(20),
+        target_id INTEGER,
+        detail TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+    """,
+    """
     CREATE TABLE IF NOT EXISTS developers (
         id SERIAL PRIMARY KEY,
         name VARCHAR(150) NOT NULL,
@@ -79,6 +89,21 @@ TABLES = [
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
     """,
+]
+
+
+# Columns mpya (additive tu - hazibadilishi wala kufuta chochote)
+ALTERS = [
+    "ALTER TABLE content_reports ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'open'",
+    "ALTER TABLE content_reports ADD COLUMN IF NOT EXISTS resolution VARCHAR(30)",
+    "ALTER TABLE content_reports ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ",
+]
+
+# (table, column) zinazokaguliwa kwenye /admin/schema-status
+COLUMNS = [
+    ("content_reports", "status"),
+    ("content_reports", "resolution"),
+    ("content_reports", "resolved_at"),
 ]
 
 
@@ -102,6 +127,12 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_post_likes_post ON post_likes (post_id)",
     "CREATE INDEX IF NOT EXISTS idx_post_comments_post ON post_comments (post_id, created_at)",
     "CREATE INDEX IF NOT EXISTS idx_comment_likes_comment ON comment_likes (comment_id)",
+
+    # Admin panel
+    "CREATE INDEX IF NOT EXISTS idx_content_reports_status ON content_reports (status, created_at DESC)",
+    "CREATE INDEX IF NOT EXISTS idx_audit_created ON admin_audit_log (created_at DESC)",
+    "CREATE INDEX IF NOT EXISTS idx_users_status ON users (status)",
+    "CREATE INDEX IF NOT EXISTS idx_users_created ON users (created_at DESC)",
 
     # Notifications (zinaombwa kila sekunde 30 na kila mtumiaji)
     "CREATE INDEX IF NOT EXISTS idx_notifications_recipient_read ON notifications (recipient_id, is_read)",
@@ -152,7 +183,7 @@ def ensure_schema(force=False):
         if _done and not force:
             return True
 
-        statements = TABLES + INDEXES
+        statements = TABLES + ALTERS + INDEXES
         failed = _run(statements)
 
         _last_run["at"] = datetime.now(timezone.utc)
@@ -204,6 +235,7 @@ def get_status():
         "db_ok": False,
         "db_error": None,
         "tables": [],
+        "columns": [],
         "indexes": [],
         "last_run": {
             "at": _last_run["at"],
@@ -243,9 +275,24 @@ def get_status():
         )
         existing_indexes = {row[0] for row in cursor.fetchall()}
 
+        cursor.execute(
+            """
+            SELECT table_name, column_name
+            FROM information_schema.columns
+            WHERE table_schema = current_schema()
+              AND table_name = ANY(%s)
+            """,
+            (sorted({t for t, _ in COLUMNS}),),
+        )
+        existing_columns = {(row[0], row[1]) for row in cursor.fetchall()}
+
         cursor.close()
 
         status["db_ok"] = True
+        status["columns"] = [
+            {"table": t, "name": c, "exists": (t, c) in existing_columns}
+            for t, c in COLUMNS
+        ]
         status["tables"] = [
             {"name": name, "exists": name in existing_tables}
             for name in table_names

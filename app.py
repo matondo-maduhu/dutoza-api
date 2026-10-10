@@ -15,10 +15,13 @@ from user_feed import user_feed_bp
 from user_music import user_music_bp
 from schema import ensure_schema
 from perf import init_compression
+from guard import init_user_guard
+from admin_panel import panel_bp
 
 app = Flask(__name__)
 
 init_compression(app)
+init_user_guard(app)
 
 app.secret_key = os.getenv(
     "FLASK_SECRET_KEY",
@@ -40,6 +43,7 @@ app.register_blueprint(
 
 # Admin
 app.register_blueprint(admin_bp)
+app.register_blueprint(panel_bp)
 app.register_blueprint(developers_bp)
 app.register_blueprint(user_auth_bp)
 app.register_blueprint(user_feed_bp)
