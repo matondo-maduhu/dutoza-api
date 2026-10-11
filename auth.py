@@ -2,6 +2,7 @@ import hashlib
 import secrets
 from functools import wraps
 import datetime
+import time
 
 from flask import request, jsonify
 
@@ -10,6 +11,77 @@ from db import get_connection
 
 DEFAULT_RATE_LIMIT = 100
 RATE_LIMIT_WINDOW_SECONDS = 60
+
+
+# ------------------------------------------------------------
+# Scopes: key inaruhusiwa huduma gani (quotes / music)
+# ------------------------------------------------------------
+# Jina la blueprint -> scope inayohitajika. Blueprints zisizo hapa
+# hazihitaji scope.
+SCOPE_BY_BLUEPRINT = {
+    "quotes": "quotes",
+    "music": "music",
+}
+
+ALL_SCOPES = ("quotes", "music")
+SCOPE_CACHE_SECONDS = 30
+
+_scope_cache = {}  # key_id -> (expires_monotonic, frozenset(scopes))
+
+
+def invalidate_key_scopes(key_id):
+    """Futa cache ya scopes (admin akibadilisha scopes za key)."""
+    try:
+        _scope_cache.pop(int(key_id), None)
+    except (TypeError, ValueError):
+        pass
+
+
+def parse_scopes(value):
+    if not value:
+        return frozenset(ALL_SCOPES)
+
+    return frozenset(
+        part.strip() for part in str(value).split(",") if part.strip()
+    )
+
+
+def key_has_scope(cursor, key_id, scope):
+    """
+    True kama key inaruhusiwa scope hii.
+    Query hufanyika mara moja kila sekunde 30 kwa key. Kama column ya
+    scopes haipo bado (schema haijaendeshwa), tabia ya zamani inabaki:
+    key inaruhusiwa vyote.
+    """
+    now = time.monotonic()
+    cached = _scope_cache.get(key_id)
+
+    if cached and cached[0] > now:
+        return scope in cached[1]
+
+    try:
+        cursor.execute(
+            "SELECT scopes FROM api_keys WHERE id = %s",
+            (key_id,)
+        )
+        row = cursor.fetchone()
+        scopes = parse_scopes(row[0] if row else None)
+
+    except Exception:
+        # Transaction ya Postgres inaharibika baada ya kosa - irudishe
+        try:
+            cursor.connection.rollback()
+        except Exception:
+            pass
+
+        return True
+
+    if len(_scope_cache) > 5000:
+        _scope_cache.clear()
+
+    _scope_cache[key_id] = (now + SCOPE_CACHE_SECONDS, scopes)
+
+    return scope in scopes
 
 
 def generate_api_key():
@@ -196,11 +268,40 @@ def require_api_key(view_function):
             if status != "active":
                 connection.rollback()
 
+                messages = {
+                    "pending": (
+                        "API key hii inasubiri idhini ya administrator."
+                    ),
+                    "rejected": (
+                        "Ombi la API key hii lilikataliwa."
+                    ),
+                    "revoked": (
+                        "API key hii imefutwa."
+                    ),
+                }
+
                 return jsonify({
                     "success": False,
                     "error": "API key inactive",
-                    "message": (
+                    "message": messages.get(
+                        status,
                         "API key hii imezimwa na administrator."
+                    )
+                }), 403
+
+            required_scope = SCOPE_BY_BLUEPRINT.get(request.blueprint)
+
+            if required_scope and not key_has_scope(
+                cursor, key_id, required_scope
+            ):
+                connection.rollback()
+
+                return jsonify({
+                    "success": False,
+                    "error": "Scope not allowed",
+                    "message": (
+                        "API key hii haina ruhusa ya huduma hii. "
+                        f"Inahitaji ruhusa ya '{required_scope}'."
                     )
                 }), 403
 

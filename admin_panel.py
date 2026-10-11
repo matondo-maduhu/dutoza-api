@@ -32,6 +32,7 @@ from flask import (
 )
 
 import guard
+from auth import invalidate_key_scopes
 from admin import admin_logged_in, safe_close, slugify
 from db import get_connection
 
@@ -210,10 +211,43 @@ def invalidate_badge():
     _badge_cache["at"] = 0.0
 
 
+_pending_cache = {"at": 0.0, "value": 0}
+
+
+def pending_keys_count():
+    """Idadi ya maombi ya API keys yanayosubiri (cache ya sekunde 20)."""
+    now = time.monotonic()
+
+    if now - _pending_cache["at"] < 20:
+        return _pending_cache["value"]
+
+    value = 0
+
+    try:
+        with db_cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM api_keys WHERE status = 'pending'")
+            value = cursor.fetchone()[0]
+    except Exception:
+        value = 0
+
+    _pending_cache["at"] = now
+    _pending_cache["value"] = value
+
+    return value
+
+
+def invalidate_pending_badge():
+    _pending_cache["at"] = 0.0
+
+
 @panel_bp.app_context_processor
 def inject_panel_helpers():
     # Hizi ni functions - hazigusi DB mpaka template ya admin iziite
-    return {"panel_csrf": csrf_token, "panel_open_reports": open_reports_count}
+    return {
+        "panel_csrf": csrf_token,
+        "panel_open_reports": open_reports_count,
+        "panel_pending_keys": pending_keys_count,
+    }
 
 
 @panel_bp.app_template_filter("fmt_dt")
@@ -268,6 +302,7 @@ STATS = [
     ("plays_total", "SELECT COALESCE(SUM(play_count), 0) FROM songs"),
     ("likes_total", "SELECT COUNT(*) FROM content_likes"),
     ("reports_open", "SELECT COUNT(*) FROM content_reports WHERE status = 'open'"),
+    ("keys_pending", "SELECT COUNT(*) FROM api_keys WHERE status = 'pending'"),
     ("categories_total", "SELECT COUNT(*) FROM categories"),
     ("api_keys_total", "SELECT COUNT(*) FROM api_keys"),
     ("developers_total", "SELECT COUNT(*) FROM developers"),
@@ -1156,7 +1191,10 @@ def developer_detail(dev_id):
                 cursor.execute(
                     """
                     SELECT id, name, key_prefix, status, rate_limit,
-                           request_count, last_used_at, created_at
+                           request_count, last_used_at, created_at,
+                           scopes, purpose, project_type, website,
+                           expected_usage, terms_accepted_at,
+                           review_note, reviewed_at
                     FROM api_keys
                     WHERE owner_email = %s
                     ORDER BY id DESC
@@ -1301,8 +1339,11 @@ def developer_key_action(key_id):
             if action == "enable":
                 if current != "inactive":
                     flash(
-                        "Key iliyofutwa (revoked) haiwezi kuwashwa tena."
-                        if current == "revoked" else "Key tayari inafanya kazi.",
+                        {
+                            "revoked": "Key iliyofutwa (revoked) haiwezi kuwashwa tena.",
+                            "pending": "Key hii inasubiri idhini. Tumia 'Maombi ya Keys' kuidhinisha.",
+                            "rejected": "Ombi la key hii lilikataliwa. Developer atengeneze ombi jipya.",
+                        }.get(current, "Key tayari inafanya kazi."),
                         "error",
                     )
                     return redirect(back)
@@ -1362,6 +1403,226 @@ def developer_key_limit(key_id):
 
         audit("key_limit", "api_key", key_id, f"{limit}/dakika")
         flash(f"Limit imewekwa kuwa {limit} requests kwa dakika.", "success")
+
+    except Exception as error:
+        flash(f"Imeshindikana: {error}", "error")
+
+    return redirect(back)
+
+
+# ============================================================
+# MAOMBI YA API KEYS (idhini) + SCOPES
+# ============================================================
+
+SERVICE_TO_SCOPES = {"quotes": "quotes", "music": "music", "all": "quotes,music"}
+
+# Rate limit inayopendekezwa kulingana na matumizi anayotarajia developer
+RATE_SUGGESTION = {"low": 60, "medium": 120, "high": 300}
+DEFAULT_RATE_SUGGESTION = 100
+
+REQUEST_FILTERS = ["pending", "approved", "rejected", "all"]
+
+REQUEST_COLUMNS = """
+    k.id, k.name, k.scopes, k.status, k.purpose, k.project_type, k.website,
+    k.expected_usage, k.terms_accepted_at, k.created_at, k.reviewed_at,
+    k.review_note, k.rate_limit,
+    d.id, d.name, d.email, d.status
+"""
+
+REQUEST_CONDITIONS = {
+    "pending": "k.status = 'pending'",
+    "rejected": "k.status = 'rejected'",
+    "approved": "k.reviewed_at IS NOT NULL AND k.status NOT IN ('pending', 'rejected')",
+    "all": "k.purpose IS NOT NULL",
+}
+
+
+@panel_bp.get("/admin/key-requests")
+@admin_required
+def key_requests_page():
+    status = request.args.get("status", "pending")
+    page = request.args.get("page", 1, type=int)
+
+    if status not in REQUEST_FILTERS:
+        status = "pending"
+
+    rows = []
+    counts = {name: 0 for name in REQUEST_FILTERS}
+    pager = paginate(0, 1)
+
+    try:
+        with db_cursor() as cursor:
+            for name, condition in REQUEST_CONDITIONS.items():
+                cursor.execute(f"SELECT COUNT(*) FROM api_keys k WHERE {condition}")
+                counts[name] = cursor.fetchone()[0]
+
+            pager = paginate(counts[status], page)
+
+            cursor.execute(
+                f"""
+                SELECT {REQUEST_COLUMNS}
+                FROM api_keys k
+                LEFT JOIN developers d ON d.email = k.owner_email
+                WHERE {REQUEST_CONDITIONS[status]}
+                ORDER BY k.created_at DESC, k.id DESC
+                LIMIT %s OFFSET %s
+                """,
+                [pager["per_page"], pager["offset"]],
+            )
+            rows = cursor.fetchall()
+
+    except Exception as error:
+        flash(
+            f"Imeshindikana kupakia maombi: {error}. "
+            "Fungua Schema Status na uendeshe schema upya.",
+            "error",
+        )
+
+    return render_template(
+        "admin/panel_keyrequests.html",
+        active="keyrequests",
+        requests=rows,
+        counts=counts,
+        filters=REQUEST_FILTERS,
+        status=status,
+        pager=pager,
+        suggestions=RATE_SUGGESTION,
+        default_rate=DEFAULT_RATE_SUGGESTION,
+        rate_min=KEY_RATE_MIN,
+        rate_max=KEY_RATE_MAX,
+    )
+
+
+@panel_bp.post("/admin/key-requests/<int:key_id>/approve")
+@admin_required
+@csrf_protected
+def key_request_approve(key_id):
+    back = safe_next(request.form.get("next")) or url_for("panel.key_requests_page")
+    rate = request.form.get("rate_limit", type=int)
+
+    if rate is None or rate < KEY_RATE_MIN or rate > KEY_RATE_MAX:
+        flash(f"Limit lazima iwe kati ya {KEY_RATE_MIN} na {KEY_RATE_MAX} kwa dakika.", "error")
+        return redirect(back)
+
+    try:
+        with db_cursor(commit=True) as cursor:
+            cursor.execute(
+                """
+                SELECT k.status, k.name, d.status
+                FROM api_keys k
+                LEFT JOIN developers d ON d.email = k.owner_email
+                WHERE k.id = %s
+                """,
+                (key_id,),
+            )
+            row = cursor.fetchone()
+
+            if not row:
+                flash("Ombi halijapatikana.", "error")
+                return redirect(back)
+
+            current, key_name, dev_status = row
+
+            if current != "pending":
+                flash("Ombi hili tayari limeshughulikiwa.", "error")
+                return redirect(back)
+
+            if dev_status == "suspended":
+                flash("Developer amesimamishwa. Mrudishe kwanza kabla ya kuidhinisha.", "error")
+                return redirect(back)
+
+            cursor.execute(
+                """
+                UPDATE api_keys
+                SET status = 'active', rate_limit = %s,
+                    reviewed_at = CURRENT_TIMESTAMP, review_note = NULL
+                WHERE id = %s AND status = 'pending'
+                """,
+                (rate, key_id),
+            )
+
+        invalidate_pending_badge()
+        audit("key_approve", "api_key", key_id, f"{key_name}, limit {rate}/dakika")
+        flash(f"Ombi limeidhinishwa. Key '{key_name}' sasa inafanya kazi (limit {rate}/dakika).", "success")
+
+    except Exception as error:
+        flash(f"Imeshindikana: {error}", "error")
+
+    return redirect(back)
+
+
+@panel_bp.post("/admin/key-requests/<int:key_id>/reject")
+@admin_required
+@csrf_protected
+def key_request_reject(key_id):
+    back = safe_next(request.form.get("next")) or url_for("panel.key_requests_page")
+    note = (request.form.get("note") or "").strip()
+
+    if len(note) < 3 or len(note) > 300:
+        flash("Andika sababu ya kukataa (herufi 3 hadi 300) ili developer ajue.", "error")
+        return redirect(back)
+
+    try:
+        with db_cursor(commit=True) as cursor:
+            cursor.execute("SELECT status, name FROM api_keys WHERE id = %s", (key_id,))
+            row = cursor.fetchone()
+
+            if not row:
+                flash("Ombi halijapatikana.", "error")
+                return redirect(back)
+
+            current, key_name = row
+
+            if current != "pending":
+                flash("Ombi hili tayari limeshughulikiwa.", "error")
+                return redirect(back)
+
+            cursor.execute(
+                """
+                UPDATE api_keys
+                SET status = 'rejected', reviewed_at = CURRENT_TIMESTAMP, review_note = %s
+                WHERE id = %s AND status = 'pending'
+                """,
+                (note, key_id),
+            )
+
+        invalidate_pending_badge()
+        audit("key_reject", "api_key", key_id, f"{key_name}: {note}")
+        flash(f"Ombi la '{key_name}' limekataliwa. Developer ataona sababu kwenye dashboard yake.", "success")
+
+    except Exception as error:
+        flash(f"Imeshindikana: {error}", "error")
+
+    return redirect(back)
+
+
+@panel_bp.post("/admin/developers/keys/<int:key_id>/scopes")
+@admin_required
+@csrf_protected
+def developer_key_scopes(key_id):
+    back = safe_next(request.form.get("next")) or url_for("panel.developers_page")
+    service = request.form.get("service", "")
+
+    if service not in SERVICE_TO_SCOPES:
+        flash("Huduma si sahihi.", "error")
+        return redirect(back)
+
+    scopes = SERVICE_TO_SCOPES[service]
+
+    try:
+        with db_cursor(commit=True) as cursor:
+            cursor.execute(
+                "UPDATE api_keys SET scopes = %s WHERE id = %s AND status != 'revoked'",
+                (scopes, key_id),
+            )
+
+            if cursor.rowcount == 0:
+                flash("API key haijapatikana au imefutwa.", "error")
+                return redirect(back)
+
+        invalidate_key_scopes(key_id)
+        audit("key_scopes", "api_key", key_id, scopes)
+        flash("Huduma za key zimebadilishwa.", "success")
 
     except Exception as error:
         flash(f"Imeshindikana: {error}", "error")

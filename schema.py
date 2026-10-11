@@ -98,6 +98,17 @@ ALTERS = [
     "ALTER TABLE content_reports ADD COLUMN IF NOT EXISTS resolution VARCHAR(30)",
     "ALTER TABLE content_reports ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ",
     "ALTER TABLE developers ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'active'",
+
+    # API key scopes + maombi ya keys. Keys zilizopo zinapata scope ya "yote"
+    # (quotes,music) kupitia DEFAULT, kwa hiyo hakuna kinachovunjika.
+    "ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS scopes VARCHAR(40) NOT NULL DEFAULT 'quotes,music'",
+    "ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS purpose TEXT",
+    "ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS project_type VARCHAR(30)",
+    "ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS website VARCHAR(255)",
+    "ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS expected_usage VARCHAR(20)",
+    "ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ",
+    "ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ",
+    "ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS review_note TEXT",
 ]
 
 # (table, column) zinazokaguliwa kwenye /admin/schema-status
@@ -106,6 +117,14 @@ COLUMNS = [
     ("content_reports", "resolution"),
     ("content_reports", "resolved_at"),
     ("developers", "status"),
+    ("api_keys", "scopes"),
+    ("api_keys", "purpose"),
+    ("api_keys", "project_type"),
+    ("api_keys", "website"),
+    ("api_keys", "expected_usage"),
+    ("api_keys", "terms_accepted_at"),
+    ("api_keys", "reviewed_at"),
+    ("api_keys", "review_note"),
 ]
 
 
@@ -134,6 +153,7 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_content_reports_status ON content_reports (status, created_at DESC)",
     "CREATE INDEX IF NOT EXISTS idx_audit_created ON admin_audit_log (created_at DESC)",
     "CREATE INDEX IF NOT EXISTS idx_api_keys_owner ON api_keys (owner_email)",
+    "CREATE INDEX IF NOT EXISTS idx_api_keys_status ON api_keys (status)",
     "CREATE INDEX IF NOT EXISTS idx_users_status ON users (status)",
     "CREATE INDEX IF NOT EXISTS idx_users_created ON users (created_at DESC)",
 
