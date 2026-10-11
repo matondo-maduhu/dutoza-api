@@ -51,6 +51,29 @@ th { color: var(--muted); font-weight: 700; background: #f8fafc; }
   background: #dcfce7; color: #166534; font-size: 11px; font-weight: 800;
 }
 .status.revoked { background: #fee2e2; color: #991b1b; }
+.status.pending { background: #fef3c7; color: #92400e; }
+.status.inactive { background: #e2e8f0; color: #475569; }
+.svc { display: inline-block; padding: 3px 8px; border-radius: 6px; background: #eef2ff; color: #3730a3; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.note { margin-top: 5px; font-size: 12px; color: #991b1b; white-space: normal; max-width: 240px; }
+.pending-box { margin-bottom: 16px; padding: 13px 16px; border-radius: 12px; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 14px; }
+.key-form { display: grid; gap: 14px; }
+.key-form label { display: block; font-size: 13px; font-weight: 700; color: #334155; }
+.key-form input[type=text], .key-form input[type=url], .key-form select, .key-form textarea {
+  display: block; width: 100%; margin-top: 6px; padding: 11px 12px; border: 1px solid var(--line);
+  border-radius: 10px; font-size: 14px; font-family: inherit; background: #fff; font-weight: 400;
+}
+.key-form textarea { min-height: 84px; resize: vertical; }
+.key-form fieldset { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px 14px; margin: 0; }
+.key-form legend { font-size: 13px; font-weight: 700; color: #334155; padding: 0 6px; }
+.radio-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; font-weight: 400 !important; cursor: pointer; }
+.radio-row input { margin-top: 3px; }
+.radio-row b { display: block; font-size: 14px; color: #0f172a; }
+.radio-row span { font-size: 12px; color: var(--muted); }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.check-row { display: flex !important; gap: 10px; align-items: flex-start; font-weight: 400 !important; }
+.check-row input { margin-top: 3px; }
+.hint { font-weight: 400; color: var(--muted); }
+@media (max-width: 750px) { .two-col { grid-template-columns: 1fr; } }
 .create-key { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .create-key input {
   flex: 1; min-width: 200px; padding: 11px 13px;
@@ -166,17 +189,72 @@ th { color: var(--muted); font-weight: 700; background: #f8fafc; }
   </div>
   {% endif %}
 
+  {% set pending_n = namespace(value=0) %}
+  {% for key in api_keys %}{% if key[3] == "pending" %}{% set pending_n.value = pending_n.value + 1 %}{% endif %}{% endfor %}
+  {% if pending_n.value %}
+  <div class="pending-box">
+    <strong>{{ pending_n.value }} key request{{ "s" if pending_n.value != 1 else "" }} waiting for approval.</strong>
+    An administrator will review {{ "them" if pending_n.value != 1 else "it" }}. The key starts working as soon as it is approved.
+  </div>
+  {% endif %}
+
   <div class="section">
     <div class="section-head">
       <h2>Create New API Key</h2>
-      <p>Generate another API key for your projects.</p>
+      <p>Tell us how you will use the API. Quotes keys work immediately. Music keys are reviewed by an administrator first.</p>
     </div>
     <div class="section-body">
-      <form method="POST" action="{{ url_for('developers.create_api_key') }}" class="create-key">
-        <input type="text" name="name" maxlength="150" placeholder="API key name e.g. My Website" autocomplete="off">
-        <button class="btn btn-primary" type="submit">+ Create New API Key</button>
+      <form method="POST" action="{{ url_for('developers.create_api_key') }}" class="key-form">
+
+        <label>Key name
+          <input type="text" name="name" maxlength="150" placeholder="e.g. My App - Production" autocomplete="off">
+        </label>
+
+        <fieldset>
+          <legend>Which service do you need? *</legend>
+          <label class="radio-row"><input type="radio" name="service" value="quotes" required checked>
+            <div><b>Quotes</b><span>Works immediately after creation.</span></div></label>
+          <label class="radio-row"><input type="radio" name="service" value="music">
+            <div><b>Music</b><span>Needs administrator approval before it works.</span></div></label>
+          <label class="radio-row"><input type="radio" name="service" value="all">
+            <div><b>Quotes + Music</b><span>Needs administrator approval before it works.</span></div></label>
+        </fieldset>
+
+        <label>How will you use the API? *
+          <textarea name="purpose" required minlength="10" maxlength="500" placeholder="Briefly describe your project and what you will do with the data."></textarea>
+        </label>
+
+        <div class="two-col">
+          <label>Project type *
+            <select name="project_type" required>
+              <option value="">Choose...</option>
+              <option value="mobile">Mobile app</option>
+              <option value="website">Website</option>
+              <option value="backend">Backend / Server</option>
+              <option value="learning">Learning / Personal</option>
+            </select>
+          </label>
+          <label>Expected requests per day <span class="hint">(optional)</span>
+            <select name="expected_usage">
+              <option value="">Not sure</option>
+              <option value="low">Under 1,000</option>
+              <option value="medium">1,000 - 10,000</option>
+              <option value="high">Over 10,000</option>
+            </select>
+          </label>
+        </div>
+
+        <label>Website or app link <span class="hint">(optional)</span>
+          <input type="url" name="website" maxlength="255" placeholder="https://example.com">
+        </label>
+
+        <label class="check-row">
+          <input type="checkbox" name="accept_terms" value="yes" required>
+          <span>I agree not to resell or redistribute the content, to credit Dutoza where required, and to keep my API key private.</span>
+        </label>
+
+        <div><button class="btn btn-primary" type="submit">+ Create API Key</button></div>
       </form>
-      <div class="create-help">Leave the name empty to use "Developer API Key".</div>
     </div>
   </div>
 
@@ -191,6 +269,7 @@ th { color: var(--muted); font-weight: 700; background: #f8fafc; }
         <thead>
           <tr>
             <th>Name</th>
+            <th>Service</th>
             <th>Key</th>
             <th>Status</th>
             <th>Requests</th>
@@ -204,22 +283,21 @@ th { color: var(--muted); font-weight: 700; background: #f8fafc; }
           {% for key in api_keys %}
           <tr>
             <td>{{ key[1] }}</td>
+            <td><span class="svc">{{ "Quotes + Music" if key[8] == "quotes,music" else "Music" if key[8] == "music" else "Quotes" }}</span></td>
             <td><code>{{ key[2] }}••••••••</code></td>
             <td>
-              {% if key[3] == "active" %}
-              <span class="status">ACTIVE</span>
-              {% else %}
-              <span class="status revoked">REVOKED</span>
-              {% endif %}
+              {% set st = key[3] %}
+              <span class="status {{ 'revoked' if st in ('revoked', 'rejected') else 'pending' if st == 'pending' else 'inactive' if st == 'inactive' else '' }}">{{ {"active": "ACTIVE", "pending": "PENDING APPROVAL", "rejected": "REJECTED", "revoked": "REVOKED", "inactive": "DISABLED"}.get(st, st | upper) }}</span>
+              {% if st == "rejected" and key[9] %}<div class="note">Reason: {{ key[9] }}</div>{% endif %}
             </td>
             <td>{{ key[6] or 0 }}</td>
             <td>{{ key[7] }} / min</td>
             <td>{{ key[4] or "Never" }}</td>
             <td>{{ key[5] }}</td>
             <td>
-              {% if key[3] == "active" %}
-              <form method="POST" action="{{ url_for('developers.revoke_api_key', key_id=key[0]) }}" onsubmit="return confirm('Revoke this API key?');" style="margin:0;">
-                <button class="btn btn-danger" type="submit">Revoke</button>
+              {% if key[3] == "active" or key[3] == "pending" %}
+              <form method="POST" action="{{ url_for('developers.revoke_api_key', key_id=key[0]) }}" onsubmit="return confirm('{{ 'Revoke this API key?' if key[3] == 'active' else 'Cancel this request?' }}');" style="margin:0;">
+                <button class="btn btn-danger" type="submit">{{ "Revoke" if key[3] == "active" else "Cancel" }}</button>
               </form>
               {% else %}
               <span style="color:#94a3b8;font-size:12px;font-weight:700;">Disabled</span>
