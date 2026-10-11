@@ -19,6 +19,12 @@
   </a>
 {% endif %}
 
+{% if stats.keys_pending %}
+  <a href="{{ url_for('panel.key_requests_page') }}" class="flash" style="display:block;color:inherit;background:var(--amber-soft);color:var(--amber-text)">
+    📝 Kuna maombi <b>{{ stats.keys_pending }}</b> ya API keys yanayosubiri idhini yako. Bonyeza kuyakagua →
+  </a>
+{% endif %}
+
 <div class="grid cols-3">
   <div class="card stat">
     <div class="glyph g-indigo">👥</div>

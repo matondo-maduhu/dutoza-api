@@ -288,6 +288,11 @@ table.rtable { width: 100%; border-collapse: collapse; }
 
     <div class="nav-title">Mfumo</div>
     <a href="{{ url_for('panel.developers_page') }}" class="{{ 'active' if active == 'developers' }}"><span class="ico">🧑‍💻</span>Developers</a>
+    <a href="{{ url_for('panel.key_requests_page') }}" class="{{ 'active' if active == 'keyrequests' }}">
+      <span class="ico">📝</span>Maombi ya Keys
+      {% set pending_n = panel_pending_keys() %}
+      {% if pending_n %}<span class="count">{{ pending_n }}</span>{% endif %}
+    </a>
     <a href="/admin/api-keys" class="{{ 'active' if active == 'apikeys' }}"><span class="ico">🔑</span>API Keys</a>
     <a href="{{ url_for('admin.schema_status') }}" class="{{ 'active' if active == 'schema' }}"><span class="ico">🛠️</span>Schema Status</a>
   </nav>

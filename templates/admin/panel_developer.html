@@ -4,6 +4,8 @@
 
 {% block content %}
 {% set back_here = request.path %}
+{% set project_labels = {'mobile': 'Mobile app', 'website': 'Website', 'backend': 'Backend / Server', 'learning': 'Kujifunza / Binafsi'} %}
+{% set usage_labels = {'low': 'Chini ya 1,000/siku', 'medium': '1,000–10,000/siku', 'high': 'Zaidi ya 10,000/siku'} %}
 <a class="small" href="{{ url_for('panel.developers_page') }}">← Developers wote</a>
 
 <div class="page-head mt">
@@ -49,13 +51,36 @@
   {% if keys %}
   <div class="table-wrap">
     <table class="rtable">
-      <thead><tr><th>Jina</th><th>Key</th><th>Status</th><th>Limit / dakika</th><th>Requests</th><th>Mwisho</th><th></th></tr></thead>
+      <thead><tr><th>Jina</th><th>Key</th><th>Status</th><th>Huduma</th><th>Limit / dakika</th><th>Requests</th><th>Mwisho</th><th></th></tr></thead>
       <tbody>
       {% for k in keys %}
         <tr>
-          <td data-label="Jina"><b>{{ k[1] }}</b><div class="small muted">{{ k[7] | fmt_dt('%d %b %Y') }}</div></td>
+          <td data-label="Jina"><b>{{ k[1] }}</b><div class="small muted">{{ k[7] | fmt_dt('%d %b %Y') }}</div>
+            {% if k[9] %}
+              <details class="small" style="margin-top:6px"><summary style="cursor:pointer;color:var(--primary)">Maelezo ya ombi</summary>
+                <div style="margin-top:6px;max-width:320px;white-space:pre-wrap">{{ k[9] }}</div>
+                <div class="muted" style="margin-top:4px">{{ project_labels.get(k[10], k[10] or '') }}{% if k[12] %} · {{ usage_labels.get(k[12], '') }}{% endif %}</div>
+                {% if k[11] and k[11].lower().startswith(('http://', 'https://')) %}<div><a href="{{ k[11] }}" target="_blank" rel="noopener noreferrer nofollow">{{ k[11] | truncate(38) }}</a></div>{% endif %}
+                {% if k[14] %}<div style="color:var(--red-text)">Sababu ya kukataa: {{ k[14] }}</div>{% endif %}
+              </details>
+            {% endif %}
+          </td>
           <td data-label="Key"><code>{{ k[2] }}…</code></td>
-          <td data-label="Status"><span class="badge {{ 'green' if k[3] == 'active' else 'amber' if k[3] == 'inactive' else 'gray' }}">{{ {'active':'inafanya kazi','inactive':'imezimwa','revoked':'imefutwa'}.get(k[3], k[3]) }}</span></td>
+          <td data-label="Status"><span class="badge {{ 'green' if k[3] == 'active' else 'amber' if k[3] in ('inactive', 'pending') else 'red' if k[3] == 'rejected' else 'gray' }}">{{ {'active':'inafanya kazi','inactive':'imezimwa','pending':'inasubiri idhini','rejected':'imekataliwa','revoked':'imefutwa'}.get(k[3], k[3]) }}</span></td>
+          <td data-label="Huduma">
+            {% if k[3] != 'revoked' %}
+            <form class="inline" method="post" action="{{ url_for('panel.developer_key_scopes', key_id=k[0]) }}" style="display:flex;gap:6px;align-items:center">
+              <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
+              <input type="hidden" name="next" value="{{ back_here }}">
+              <select name="service" style="width:auto;padding:6px 8px">
+                <option value="quotes" {{ 'selected' if k[8] == 'quotes' }}>Quotes</option>
+                <option value="music" {{ 'selected' if k[8] == 'music' }}>Muziki</option>
+                <option value="all" {{ 'selected' if k[8] not in ('quotes', 'music') }}>Zote</option>
+              </select>
+              <button class="btn ghost sm" type="submit">Hifadhi</button>
+            </form>
+            {% else %}{{ 'Zote' if k[8] not in ('quotes', 'music') else k[8] }}{% endif %}
+          </td>
           <td data-label="Limit / dakika">
             {% if k[3] != 'revoked' %}
             <form class="inline" method="post" action="{{ url_for('panel.developer_key_limit', key_id=k[0]) }}" style="display:flex;gap:6px;align-items:center">
@@ -70,7 +95,9 @@
           <td data-label="Mwisho">{{ k[6] | fmt_dt('%d %b %Y') if k[6] else '-' }}</td>
           <td class="nolabel">
             <div class="btn-row">
-              {% if k[3] == 'active' %}
+              {% if k[3] == 'pending' %}
+                <a class="btn sm" href="{{ url_for('panel.key_requests_page') }}#req-{{ k[0] }}">Kagua ombi →</a>
+              {% elif k[3] == 'active' %}
                 <form class="inline" method="post" action="{{ url_for('panel.developer_key_action', key_id=k[0]) }}">
                   <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}"><input type="hidden" name="next" value="{{ back_here }}">
                   <input type="hidden" name="action" value="disable"><button class="btn amber sm" type="submit">Zima</button>

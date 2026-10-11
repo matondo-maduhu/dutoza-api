@@ -1,0 +1,83 @@
+{% extends "admin/panel_base.html" %}
+{% block title %}Maombi ya Keys{% endblock %}
+{% block topbar_title %}Maombi ya Keys{% endblock %}
+
+{% block content %}
+{% set project_labels = {'mobile': 'Mobile app', 'website': 'Website', 'backend': 'Backend / Server', 'learning': 'Kujifunza / Binafsi'} %}
+{% set usage_labels = {'low': 'Chini ya 1,000 kwa siku', 'medium': '1,000 – 10,000 kwa siku', 'high': 'Zaidi ya 10,000 kwa siku'} %}
+
+<div class="page-head">
+  <div><h1>Maombi ya API Keys</h1><p>Keys za Muziki (na Zote) zinasubiri idhini yako. Soma maelezo, kisha idhinisha au kataa.</p></div>
+</div>
+
+<div class="pills">
+  {% for f in filters %}
+    <a class="pill {{ 'active' if f == status }}" href="{{ page_url(status=f, page=None) }}">
+      {{ {'pending':'Yanayosubiri','approved':'Yaliyoidhinishwa','rejected':'Yaliyokataliwa','all':'Yote'}[f] }}<span class="n">{{ counts[f] }}</span>
+    </a>
+  {% endfor %}
+</div>
+
+{% if requests %}
+  {% for r in requests %}
+  <div class="card" id="req-{{ r[0] }}">
+    <div class="card-title">
+      <span>🔑 {{ r[1] }}
+        <span class="badge indigo" style="margin-left:6px">{{ 'Quotes + Muziki' if r[2] == 'quotes,music' else 'Muziki' if r[2] == 'music' else 'Quotes' }}</span></span>
+      <span>
+        {% if r[3] == 'pending' %}<span class="badge amber">Inasubiri</span>
+        {% elif r[3] == 'rejected' %}<span class="badge red">Imekataliwa</span>
+        {% else %}<span class="badge green">Imeidhinishwa</span>{% endif %}
+      </span>
+    </div>
+
+    <div class="grid cols-3" style="gap:12px;margin-bottom:12px">
+      <div><div class="small muted">Developer</div>
+        {% if r[13] %}<b><a href="{{ url_for('panel.developer_detail', dev_id=r[13]) }}">{{ r[14] }}</a></b>
+          {% if r[16] == 'suspended' %}<span class="badge red">amesimamishwa</span>{% endif %}
+          <div class="small muted">{{ r[15] }}</div>
+        {% else %}<span class="muted">Haijulikani</span>{% endif %}</div>
+      <div><div class="small muted">Aina ya mradi</div><b>{{ project_labels.get(r[5], r[5] or '-') }}</b></div>
+      <div><div class="small muted">Matumizi yanayotarajiwa</div><b>{{ usage_labels.get(r[7], 'Hajui') }}</b></div>
+      <div><div class="small muted">Website / app</div>
+        {% if r[6] and r[6].lower().startswith(('http://', 'https://')) %}
+          <b><a href="{{ r[6] }}" target="_blank" rel="noopener noreferrer nofollow">{{ r[6] | truncate(40) }}</a></b>
+        {% else %}<span class="muted">Hakuna</span>{% endif %}</div>
+      <div><div class="small muted">Aliomba</div><b>{{ r[9] | fmt_dt }}</b></div>
+      <div><div class="small muted">Alikubali masharti</div><b>{{ 'Ndiyo · ' ~ (r[8] | fmt_dt('%d %b %Y')) if r[8] else 'Hapana' }}</b></div>
+    </div>
+
+    <div class="card" style="box-shadow:none;background:var(--input)">
+      <div class="small muted">Anavyokusudia kutumia API</div>
+      <div style="margin-top:6px;white-space:pre-wrap">{{ r[4] or '(hakuna maelezo)' }}</div>
+    </div>
+
+    {% if r[3] == 'pending' %}
+    <div class="grid cols-2 mt" style="gap:12px">
+      <form method="post" action="{{ url_for('panel.key_request_approve', key_id=r[0]) }}" class="card" style="box-shadow:none">
+        <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
+        <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+        <div class="field" style="margin-bottom:10px"><label>Limit ya requests kwa dakika (inayopendekezwa kulingana na matumizi yake)</label>
+          <input type="number" name="rate_limit" value="{{ suggestions.get(r[7], default_rate) }}" min="{{ rate_min }}" max="{{ rate_max }}" required></div>
+        <button class="btn green" type="submit">✓ Idhinisha</button>
+      </form>
+
+      <form method="post" action="{{ url_for('panel.key_request_reject', key_id=r[0]) }}" class="card" style="box-shadow:none"
+            data-confirm="Kataa ombi hili? Developer ataona sababu utakayoandika.">
+        <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
+        <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+        <div class="field" style="margin-bottom:10px"><label>Sababu ya kukataa (developer ataiona)</label>
+          <input type="text" name="note" minlength="3" maxlength="300" placeholder="mfano: Tafadhali eleza zaidi matumizi ya muziki" required></div>
+        <button class="btn red" type="submit">✕ Kataa</button>
+      </form>
+    </div>
+    {% elif r[10] %}
+      <div class="small muted mt">Ilishughulikiwa {{ r[10] | fmt_dt }}{% if r[11] %} · sababu: <b>{{ r[11] }}</b>{% endif %}{% if r[3] != 'rejected' %} · limit {{ r[12] }}/dakika{% endif %}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% include "admin/panel_pager.html" %}
+{% else %}
+  <div class="card"><div class="empty"><div class="big">🎉</div>Hakuna maombi hapa.</div></div>
+{% endif %}
+{% endblock %}
