@@ -1,343 +1,81 @@
-{% extends "developers/base.html" %}
-{% block title %}Developer Dashboard — Incredibles API{% endblock %}
+{% extends "developers/portal_base.html" %}
+{% from "developers/_icons.html" import icon %}
+{% block page_title %}Dashboard{% endblock %}
 
-{% block extra_css %}
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-  margin-bottom: 18px;
-}
-.card {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: 0 2px 10px rgba(15,23,42,.04);
-}
-.card h3 { margin: 0 0 6px; font-size: 12px; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: .3px; }
-.big { font-size: 22px; font-weight: 900; color: var(--ink); }
-.page-title { margin: 0; font-size: 24px; font-weight: 900; }
-.subtitle { color: var(--muted); margin: 6px 0 20px; font-size: 14px; }
-.section {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  margin-bottom: 16px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(15,23,42,.04);
-}
-.section-head { padding: 16px 18px; border-bottom: 1px solid var(--line); }
-.section-head h2 { margin: 0; font-size: 16px; font-weight: 800; }
-.section-head p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
-.section-body { padding: 16px 18px; }
-.key-box {
-  background: #0f172a; color: #fff; border-radius: 12px; padding: 14px;
-}
-.key-label { font-size: 11px; color: #94a3b8; margin-bottom: 8px; font-weight: 700; letter-spacing: .4px; }
-.key-value { display: flex; gap: 10px; align-items: center; }
-.key-value code { flex: 1; word-break: break-all; font-family: ui-monospace, monospace; font-size: 13px; }
-.warning {
-  margin-top: 12px; color: #92400e; background: #fffbeb;
-  border: 1px solid #fde68a; padding: 11px; border-radius: 10px; font-size: 13px;
-}
-table { width: 100%; border-collapse: collapse; }
-th, td {
-  text-align: left; padding: 12px 10px; border-bottom: 1px solid #eef2f7; font-size: 13px;
-}
-th { color: var(--muted); font-weight: 700; background: #f8fafc; }
-.status {
-  display: inline-block; padding: 4px 8px; border-radius: 999px;
-  background: #dcfce7; color: #166534; font-size: 11px; font-weight: 800;
-}
-.status.revoked { background: #fee2e2; color: #991b1b; }
-.status.pending { background: #fef3c7; color: #92400e; }
-.status.inactive { background: #e2e8f0; color: #475569; }
-.svc { display: inline-block; padding: 3px 8px; border-radius: 6px; background: #eef2ff; color: #3730a3; font-size: 11px; font-weight: 800; white-space: nowrap; }
-.note { margin-top: 5px; font-size: 12px; color: #991b1b; white-space: normal; max-width: 240px; }
-.pending-box { margin-bottom: 16px; padding: 13px 16px; border-radius: 12px; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 14px; }
-.key-form { display: grid; gap: 14px; }
-.key-form label { display: block; font-size: 13px; font-weight: 700; color: #334155; }
-.key-form input[type=text], .key-form input[type=url], .key-form select, .key-form textarea {
-  display: block; width: 100%; margin-top: 6px; padding: 11px 12px; border: 1px solid var(--line);
-  border-radius: 10px; font-size: 14px; font-family: inherit; background: #fff; font-weight: 400;
-}
-.key-form textarea { min-height: 84px; resize: vertical; }
-.key-form fieldset { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px 14px; margin: 0; }
-.key-form legend { font-size: 13px; font-weight: 700; color: #334155; padding: 0 6px; }
-.radio-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; font-weight: 400 !important; cursor: pointer; }
-.radio-row input { margin-top: 3px; }
-.radio-row b { display: block; font-size: 14px; color: #0f172a; }
-.radio-row span { font-size: 12px; color: var(--muted); }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.check-row { display: flex !important; gap: 10px; align-items: flex-start; font-weight: 400 !important; }
-.check-row input { margin-top: 3px; }
-.hint { font-weight: 400; color: var(--muted); }
-@media (max-width: 750px) { .two-col { grid-template-columns: 1fr; } }
-.create-key { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.create-key input {
-  flex: 1; min-width: 200px; padding: 11px 13px;
-  border: 1.5px solid #e2e8f0; border-radius: 11px; font-size: 14px; font-family: inherit; outline: none;
-}
-.create-key input:focus { border-color: var(--brand-green); }
-.create-help { margin-top: 10px; color: var(--muted); font-size: 13px; }
-.actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.empty { color: var(--muted); font-size: 14px; }
-.user-chip {
-  font-size: 13px; color: #475569; font-weight: 600;
-  max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-@media (max-width: 750px) {
-  .user-chip { display: none; }
-  table { display: block; overflow-x: auto; white-space: nowrap; }
-  .create-key input, .create-key .btn { width: 100%; }
-}
-{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Welcome back, {{ (developer[1] or 'there').split(' ')[0] }} 👋</h1>
+  <p>Here is an overview of your API access.</p>
+</div>
 
-{% block body %}
-<header class="dev-top">
-  <div class="dev-top-left">
-    <div class="brand-mark">I</div>
-    <a href="/developers" class="brand-text">Incredibles</a>
-  </div>
-  <div class="dev-top-right">
-    <a class="nav-link" href="/developers">Docs</a>
-    <a class="nav-link active" href="/developers/dashboard">Dashboard</a>
-    <span class="user-chip">{{ developer[1] }}</span>
-    <form method="POST" action="/developers/logout" style="margin:0;">
-      <button class="btn btn-secondary" type="submit">Log out</button>
-    </form>
-  </div>
-</header>
+{% if stats.pending %}
+<div class="pending-box">
+  <strong>{{ stats.pending }} key request{{ "s" if stats.pending != 1 else "" }} waiting for approval.</strong>
+  An administrator will review {{ "them" if stats.pending != 1 else "it" }}. The key starts working as soon as it is approved.
+  <a href="{{ url_for('developers.keys_page') }}">View keys</a>
+</div>
+{% endif %}
 
-<main class="page">
-  <h1 class="page-title">Developer Dashboard</h1>
-  <div class="subtitle">Manage your API keys and monitor usage.</div>
+<div class="grid-stats">
+  <div class="stat-card"><div class="stat-ico ic-purple">{{ icon('key') }}</div><div><div class="v">{{ stats.total }}</div><div class="l">API keys</div></div></div>
+  <div class="stat-card"><div class="stat-ico ic-green">{{ icon('check') }}</div><div><div class="v">{{ stats.active }}</div><div class="l">Active keys</div></div></div>
+  <div class="stat-card"><div class="stat-ico ic-amber">{{ icon('clock') }}</div><div><div class="v">{{ stats.pending }}</div><div class="l">Awaiting approval</div></div></div>
+  <div class="stat-card"><div class="stat-ico ic-blue">{{ icon('trend') }}</div><div><div class="v">{{ '{:,}'.format(stats.requests) }}</div><div class="l">Total requests</div></div></div>
+</div>
 
-  {% with messages = get_flashed_messages() %}
-  {% if messages %}
-  {% for message in messages %}
-  <div class="flash">{{ message }}</div>
-  {% endfor %}
-  {% endif %}
-  {% endwith %}
-
-  <div class="grid">
-    <div class="card">
-      <h3>Developer</h3>
-      <div class="big">{{ developer[1] }}</div>
-    </div>
-    <div class="card">
-      <h3>API Keys</h3>
-      <div class="big">{{ api_keys|length }}</div>
-    </div>
-    <div class="card">
-      <h3>Total Requests</h3>
-      <div class="big">
-        {% set total_requests = namespace(value=0) %}
-        {% for key in api_keys %}
-        {% set total_requests.value = total_requests.value + (key[6] or 0) %}
-        {% endfor %}
-        {{ total_requests.value }}
-      </div>
-    </div>
-    <div class="card">
-      <h3>Active Keys</h3>
-      <div class="big">
-        {% set active_keys = namespace(value=0) %}
-        {% for key in api_keys %}
-        {% if key[3] == "active" %}
-        {% set active_keys.value = active_keys.value + 1 %}
-        {% endif %}
-        {% endfor %}
-        {{ active_keys.value }}
-      </div>
-    </div>
-    <div class="card">
-      <h3>Revoked Keys</h3>
-      <div class="big">
-        {% set revoked_keys = namespace(value=0) %}
-        {% for key in api_keys %}
-        {% if key[3] == "revoked" %}
-        {% set revoked_keys.value = revoked_keys.value + 1 %}
-        {% endif %}
-        {% endfor %}
-        {{ revoked_keys.value }}
-      </div>
+{% if not api_keys %}
+<div class="section">
+  <div class="section-head"><h2>Get started</h2><p>You are three steps away from your first request.</p></div>
+  <div class="section-body">
+    <ol style="margin:0 0 16px;padding-left:20px;line-height:1.9;font-size:14px">
+      <li><b>Create your first API key.</b> Quotes keys work immediately.</li>
+      <li><b>Read the documentation</b> to see the available endpoints.</li>
+      <li><b>Send your first request</b> using your key as a Bearer token.</li>
+    </ol>
+    <div class="actions">
+      <a class="btn btn-primary" href="{{ url_for('developers.keys_page') }}#create">{{ icon('plus') }} Create API key</a>
+      <a class="btn btn-secondary" href="/developers">{{ icon('book') }} Read the docs</a>
     </div>
   </div>
-
-  {% if new_api_key %}
-  <div class="section">
-    <div class="section-head">
-      <h2>Your new API key</h2>
-      <p>This key is displayed only once.</p>
-    </div>
-    <div class="section-body">
-      <div class="key-box">
-        <div class="key-label">API KEY</div>
-        <div class="key-value">
-          <code id="newKey">{{ new_api_key }}</code>
-          <button class="btn btn-primary" onclick="copyKey()" type="button">Copy</button>
+</div>
+{% else %}
+<div class="section">
+  <div class="section-head">
+    <h2>Your keys</h2>
+    <p>{% if stats.last_used %}Last used {{ stats.last_used | fmt_dt('%d %b %Y, %H:%M') }}.{% else %}No requests made yet.{% endif %}</p>
+  </div>
+  <div class="section-body" style="padding-top:6px;padding-bottom:6px">
+    {% for key in api_keys[:5] %}
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 0;{% if not loop.last %}border-bottom:1px solid #f1f5f9;{% endif %}">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ key[1] }}</div>
+        <div class="muted" style="font-size:12px">
+          <span class="svc">{{ "Quotes + Music" if key[8] == "quotes,music" else "Music" if key[8] == "music" else "Quotes" }}</span>
+          · {{ '{:,}'.format(key[6] or 0) }} requests
         </div>
       </div>
-      <div class="warning">
-        <strong>Important:</strong>
-        Save this API key somewhere secure. You will not be able to view the full key again after leaving this page.
-      </div>
+      {% set st = key[3] %}
+      <span class="status {{ 'revoked' if st in ('revoked', 'rejected') else 'pending' if st == 'pending' else 'inactive' if st == 'inactive' else '' }}">{{ {"active": "ACTIVE", "pending": "PENDING", "rejected": "REJECTED", "revoked": "REVOKED", "inactive": "DISABLED"}.get(st, st | upper) }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="section-body" style="border-top:1px solid var(--line)">
+    <div class="actions">
+      <a class="btn btn-primary" href="{{ url_for('developers.keys_page') }}#create">{{ icon('plus') }} New key</a>
+      <a class="btn btn-secondary" href="{{ url_for('developers.keys_page') }}">Manage keys</a>
     </div>
   </div>
-  {% endif %}
+</div>
+{% endif %}
 
-  {% set pending_n = namespace(value=0) %}
-  {% for key in api_keys %}{% if key[3] == "pending" %}{% set pending_n.value = pending_n.value + 1 %}{% endif %}{% endfor %}
-  {% if pending_n.value %}
-  <div class="pending-box">
-    <strong>{{ pending_n.value }} key request{{ "s" if pending_n.value != 1 else "" }} waiting for approval.</strong>
-    An administrator will review {{ "them" if pending_n.value != 1 else "it" }}. The key starts working as soon as it is approved.
-  </div>
-  {% endif %}
-
-  <div class="section">
-    <div class="section-head">
-      <h2>Create New API Key</h2>
-      <p>Tell us how you will use the API. Quotes keys work immediately. Music keys are reviewed by an administrator first.</p>
-    </div>
-    <div class="section-body">
-      <form method="POST" action="{{ url_for('developers.create_api_key') }}" class="key-form">
-
-        <label>Key name
-          <input type="text" name="name" maxlength="150" placeholder="e.g. My App - Production" autocomplete="off">
-        </label>
-
-        <fieldset>
-          <legend>Which service do you need? *</legend>
-          <label class="radio-row"><input type="radio" name="service" value="quotes" required checked>
-            <div><b>Quotes</b><span>Works immediately after creation.</span></div></label>
-          <label class="radio-row"><input type="radio" name="service" value="music">
-            <div><b>Music</b><span>Needs administrator approval before it works.</span></div></label>
-          <label class="radio-row"><input type="radio" name="service" value="all">
-            <div><b>Quotes + Music</b><span>Needs administrator approval before it works.</span></div></label>
-        </fieldset>
-
-        <label>How will you use the API? *
-          <textarea name="purpose" required minlength="10" maxlength="500" placeholder="Briefly describe your project and what you will do with the data."></textarea>
-        </label>
-
-        <div class="two-col">
-          <label>Project type *
-            <select name="project_type" required>
-              <option value="">Choose...</option>
-              <option value="mobile">Mobile app</option>
-              <option value="website">Website</option>
-              <option value="backend">Backend / Server</option>
-              <option value="learning">Learning / Personal</option>
-            </select>
-          </label>
-          <label>Expected requests per day <span class="hint">(optional)</span>
-            <select name="expected_usage">
-              <option value="">Not sure</option>
-              <option value="low">Under 1,000</option>
-              <option value="medium">1,000 - 10,000</option>
-              <option value="high">Over 10,000</option>
-            </select>
-          </label>
-        </div>
-
-        <label>Website or app link <span class="hint">(optional)</span>
-          <input type="url" name="website" maxlength="255" placeholder="https://example.com">
-        </label>
-
-        <label class="check-row">
-          <input type="checkbox" name="accept_terms" value="yes" required>
-          <span>I agree not to resell or redistribute the content, to credit Dutoza where required, and to keep my API key private.</span>
-        </label>
-
-        <div><button class="btn btn-primary" type="submit">+ Create API Key</button></div>
-      </form>
+<div class="section">
+  <div class="section-head"><h2>Resources</h2><p>Continue building with the Incredibles API.</p></div>
+  <div class="section-body">
+    <div class="actions">
+      <a class="btn btn-secondary" href="/developers">{{ icon('book') }} API Documentation</a>
+      <a class="btn btn-secondary" href="/api">{{ icon('activity') }} API Status</a>
+      <a class="btn btn-secondary" href="{{ url_for('developers.profile') }}">{{ icon('user') }} Edit profile</a>
     </div>
   </div>
-
-  <div class="section">
-    <div class="section-head">
-      <h2>API Keys</h2>
-      <p>Keys associated with your developer account.</p>
-    </div>
-    <div class="section-body">
-      {% if api_keys %}
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Service</th>
-            <th>Key</th>
-            <th>Status</th>
-            <th>Requests</th>
-            <th>Rate limit</th>
-            <th>Last used</th>
-            <th>Created</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for key in api_keys %}
-          <tr>
-            <td>{{ key[1] }}</td>
-            <td><span class="svc">{{ "Quotes + Music" if key[8] == "quotes,music" else "Music" if key[8] == "music" else "Quotes" }}</span></td>
-            <td><code>{{ key[2] }}••••••••</code></td>
-            <td>
-              {% set st = key[3] %}
-              <span class="status {{ 'revoked' if st in ('revoked', 'rejected') else 'pending' if st == 'pending' else 'inactive' if st == 'inactive' else '' }}">{{ {"active": "ACTIVE", "pending": "PENDING APPROVAL", "rejected": "REJECTED", "revoked": "REVOKED", "inactive": "DISABLED"}.get(st, st | upper) }}</span>
-              {% if st == "rejected" and key[9] %}<div class="note">Reason: {{ key[9] }}</div>{% endif %}
-            </td>
-            <td>{{ key[6] or 0 }}</td>
-            <td>{{ key[7] }} / min</td>
-            <td>{{ key[4] or "Never" }}</td>
-            <td>{{ key[5] }}</td>
-            <td>
-              {% if key[3] == "active" or key[3] == "pending" %}
-              <form method="POST" action="{{ url_for('developers.revoke_api_key', key_id=key[0]) }}" onsubmit="return confirm('{{ 'Revoke this API key?' if key[3] == 'active' else 'Cancel this request?' }}');" style="margin:0;">
-                <button class="btn btn-danger" type="submit">{{ "Revoke" if key[3] == "active" else "Cancel" }}</button>
-              </form>
-              {% else %}
-              <span style="color:#94a3b8;font-size:12px;font-weight:700;">Disabled</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% else %}
-      <div class="empty">No API keys found.</div>
-      {% endif %}
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-head">
-      <h2>Developer Resources</h2>
-      <p>Continue building with the Incredibles API.</p>
-    </div>
-    <div class="section-body">
-      <div class="actions">
-        <a class="btn btn-primary" href="/developers">API Documentation</a>
-        <a class="btn btn-secondary" href="/api">API Status</a>
-      </div>
-    </div>
-  </div>
-</main>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-function copyKey() {
-  var key = document.getElementById("newKey");
-  if (!key) return;
-  navigator.clipboard.writeText(key.textContent).then(function () {
-    alert("API key copied.");
-  }).catch(function () {
-    alert(key.textContent);
-  });
-}
-</script>
+</div>
 {% endblock %}

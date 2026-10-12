@@ -1,0 +1,25 @@
+{# Bottom navigation ya developer (inaonekana kwenye simu). Inatumika na portal na docs.
+   Inahitaji variable: nav_active = dashboard | keys | docs | profile | settings #}
+{% from "developers/_icons.html" import icon %}
+<style>
+.bn { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; background: #fff;
+  border-top: 1px solid #e5e7eb; padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -8px 26px rgba(15,23,42,.07); }
+.bn-in { display: grid; grid-template-columns: repeat(5, 1fr); max-width: 560px; margin: 0 auto; }
+.bn a { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 2px 5px;
+  color: #64748b; font-size: 11px; font-weight: 700; border-radius: 12px; position: relative; text-decoration: none; }
+.bn a .ic { width: 22px; height: 22px; }
+.bn a.on { color: #0d7a28; }
+.bn a.on::before { content: ""; position: absolute; top: -7px; width: 30px; height: 3px;
+  border-radius: 0 0 4px 4px; background: #1EB53A; }
+@media (max-width: 760px) { .bn { display: block; } body { padding-bottom: 78px; } }
+</style>
+<nav class="bn" aria-label="Main navigation">
+  <div class="bn-in">
+    <a href="{{ url_for('developers.dashboard') }}" class="{{ 'on' if nav_active == 'dashboard' }}">{{ icon('grid') }}Dashboard</a>
+    <a href="{{ url_for('developers.keys_page') }}" class="{{ 'on' if nav_active == 'keys' }}">{{ icon('key') }}Keys</a>
+    <a href="/developers" class="{{ 'on' if nav_active == 'docs' }}">{{ icon('book') }}Docs</a>
+    <a href="{{ url_for('developers.profile') }}" class="{{ 'on' if nav_active == 'profile' }}">{{ icon('user') }}Profile</a>
+    <a href="{{ url_for('developers.settings') }}" class="{{ 'on' if nav_active == 'settings' }}">{{ icon('gear') }}Settings</a>
+  </div>
+</nav>

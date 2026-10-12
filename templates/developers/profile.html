@@ -1,0 +1,84 @@
+{% extends "developers/portal_base.html" %}
+{% from "developers/_icons.html" import icon %}
+{% block page_title %}Profile{% endblock %}
+
+{% block page_css %}
+.hero { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; padding: 22px; }
+.avatar-lg { width: 76px; height: 76px; border-radius: 50%; background: linear-gradient(135deg, var(--brand-green), var(--brand-blue) 55%, var(--brand-purple)); color: #fff; display: grid; place-items: center; font-size: 30px; font-weight: 900; flex-shrink: 0; }
+.hero h1 { margin: 0; font-size: 22px; font-weight: 900; }
+.hero .mail { color: var(--muted); font-size: 14px; margin-top: 2px; word-break: break-all; }
+.chip .ic { width: 14px; height: 14px; vertical-align: 0; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.chip { display: inline-flex; gap: 6px; align-items: center; background: #f1f5f9; color: #334155; border-radius: 999px; padding: 5px 11px; font-size: 12px; font-weight: 800; }
+.chip.ok { background: #dcfce7; color: #166534; } .chip.bad { background: #fee2e2; color: #991b1b; }
+.mini-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+.mini-stats div { background: #f8fafc; border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: center; }
+.mini-stats b { display: block; font-size: 20px; font-weight: 900; }
+.mini-stats span { font-size: 12px; color: var(--muted); font-weight: 700; }
+{% endblock %}
+
+{% block content %}
+<div class="page-head"><h1>Profile</h1><p>Your public details as a developer.</p></div>
+
+{% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+
+<div class="section">
+  <div class="hero">
+    <div class="avatar-lg">{{ ((profile[1] or profile[2] or '?')[:1]) | upper }}</div>
+    <div style="flex:1;min-width:200px">
+      <h1>{{ profile[1] }}</h1>
+      <div class="mail">{{ profile[2] }}</div>
+      <div class="chips">
+        <span class="chip {{ 'ok' if profile[4] == 'active' else 'bad' }}">{{ icon('check') }}{{ 'Active account' if profile[4] == 'active' else 'Suspended' }}</span>
+        <span class="chip">{{ icon('calendar') }}Joined {{ profile[3] | fmt_dt('%d %b %Y') }}</span>
+        {% if profile[5] %}<span class="chip">{{ icon('briefcase') }}{{ profile[5] }}</span>{% endif %}
+        {% if profile[7] %}<span class="chip">{{ icon('pin') }}{{ profile[7] }}</span>{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="section-body" style="padding-top:0">
+    <div class="mini-stats">
+      <div><b>{{ stats.total }}</b><span>API keys</span></div>
+      <div><b>{{ stats.active }}</b><span>Active</span></div>
+      <div><b>{{ '{:,}'.format(stats.requests) }}</b><span>Requests</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head"><h2>Edit profile</h2><p>Keep your details up to date.</p></div>
+  <div class="section-body">
+    <form method="POST" action="{{ url_for('developers.profile_post') }}" class="fm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+      <label>Full name *
+        <input type="text" name="name" value="{{ form.name }}" minlength="{{ limits.name[0] }}" maxlength="{{ limits.name[1] }}" required autocomplete="name">
+      </label>
+
+      <label>Email
+        <input type="email" value="{{ profile[2] }}" readonly>
+        <div class="help">Email cannot be changed because your API keys are linked to it.</div>
+      </label>
+
+      <div class="two-col">
+        <label>Company / Organization <span class="hint">(optional)</span>
+          <input type="text" name="company" value="{{ form.company }}" maxlength="{{ limits.company[1] }}" autocomplete="organization">
+        </label>
+        <label>Country <span class="hint">(optional)</span>
+          <input type="text" name="country" value="{{ form.country }}" maxlength="{{ limits.country[1] }}" autocomplete="country-name">
+        </label>
+      </div>
+
+      <label>Website <span class="hint">(optional)</span>
+        <input type="url" name="website" value="{{ form.website }}" maxlength="{{ limits.website[1] }}" placeholder="https://example.com">
+      </label>
+
+      <label>About you <span class="hint">(optional, max {{ limits.bio[1] }} characters)</span>
+        <textarea name="bio" maxlength="{{ limits.bio[1] }}" placeholder="A short note about you or your project.">{{ form.bio }}</textarea>
+      </label>
+
+      <div><button class="btn btn-primary" type="submit">{{ icon('save') }} Save changes</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

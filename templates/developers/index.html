@@ -453,8 +453,12 @@ table.ref td { color: #475569; }
   </a>
   <div class="top-actions">
     <button type="button" class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    {% if developer_logged_in %}
+    <a class="btn-green" href="/developers/dashboard">Dashboard</a>
+    {% else %}
     <a class="btn-ghost" href="/developers/login">Login</a>
     <a class="btn-green" href="/developers/register">Get API Key</a>
+    {% endif %}
     <div class="online"><span class="dot"></span> Online</div>
   </div>
 </header>
@@ -479,7 +483,13 @@ table.ref td { color: #475569; }
 
     <h5>Account</h5>
     <a href="/developers/dashboard">Dashboard</a>
+    {% if developer_logged_in %}
+    <a href="/developers/keys">API Keys</a>
+    <a href="/developers/profile">Profile</a>
+    <a href="/developers/settings">Settings</a>
+    {% else %}
     <a href="/developers/register">Create account</a>
+    {% endif %}
   </aside>
 
   <main class="main">
@@ -781,5 +791,6 @@ function oneQuote() {
   .catch(function (err) { showResult("quoteOneResult", { error: String(err) }); });
 }
 </script>
+{% if developer_logged_in %}{% include "developers/_bottom_nav.html" %}{% endif %}
 </body>
 </html>

@@ -1,0 +1,149 @@
+{% extends "developers/portal_base.html" %}
+{% from "developers/_icons.html" import icon %}
+{% block page_title %}API Keys{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>API Keys</h1>
+  <p>Create keys, check their status and revoke the ones you no longer need.</p>
+</div>
+
+{% if new_api_key %}
+<div class="section">
+  <div class="section-head"><h2>Your new API key</h2><p>This key is displayed only once.</p></div>
+  <div class="section-body">
+    <div class="key-box">
+      <div class="key-label">API KEY</div>
+      <div class="key-value">
+        <code id="newKey">{{ new_api_key }}</code>
+        <button class="btn btn-primary" onclick="copyKey()" type="button">Copy</button>
+      </div>
+    </div>
+    <div class="warning">
+      <strong>Important:</strong>
+      Save this API key somewhere secure. You will not be able to view the full key again after leaving this page.
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if stats.pending %}
+<div class="pending-box">
+  <strong>{{ stats.pending }} key request{{ "s" if stats.pending != 1 else "" }} waiting for approval.</strong>
+  An administrator will review {{ "them" if stats.pending != 1 else "it" }}. The key starts working as soon as it is approved.
+</div>
+{% endif %}
+
+<div class="section" id="keys">
+  <div class="section-head"><h2>Your API keys</h2><p>Full keys are never shown again after creation.</p></div>
+  <div class="section-body">
+    {% if api_keys %}
+    <div class="table-wrap">
+      <table class="keys">
+        <thead><tr><th>Name</th><th>Service</th><th>Key</th><th>Status</th><th>Requests</th><th>Limit</th><th>Last used</th><th></th></tr></thead>
+        <tbody>
+        {% for key in api_keys %}
+          <tr>
+            <td data-label="Name"><b>{{ key[1] }}</b></td>
+            <td data-label="Service"><span class="svc">{{ "Quotes + Music" if key[8] == "quotes,music" else "Music" if key[8] == "music" else "Quotes" }}</span></td>
+            <td data-label="Key"><code>{{ key[2] }}••••••••</code></td>
+            <td data-label="Status">
+              {% set st = key[3] %}
+              <span class="status {{ 'revoked' if st in ('revoked', 'rejected') else 'pending' if st == 'pending' else 'inactive' if st == 'inactive' else '' }}">{{ {"active": "ACTIVE", "pending": "PENDING APPROVAL", "rejected": "REJECTED", "revoked": "REVOKED", "inactive": "DISABLED"}.get(st, st | upper) }}</span>
+              {% if st == "rejected" and key[9] %}<div class="note">Reason: {{ key[9] }}</div>{% endif %}
+            </td>
+            <td data-label="Requests">{{ '{:,}'.format(key[6] or 0) }}</td>
+            <td data-label="Limit">{{ key[7] or 100 }}/min</td>
+            <td data-label="Last used">{{ key[4] | fmt_dt('%d %b %Y') if key[4] else 'Never' }}</td>
+            <td class="nolabel">
+              {% if key[3] == "active" or key[3] == "pending" %}
+              <form class="plain" method="POST" action="{{ url_for('developers.revoke_api_key', key_id=key[0]) }}" onsubmit="return confirm('{{ 'Revoke this API key?' if key[3] == 'active' else 'Cancel this request?' }}');">
+                <button class="btn btn-danger" type="submit">{{ "Revoke" if key[3] == "active" else "Cancel" }}</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty">No API keys found. Create your first one below.</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="section" id="create">
+  <div class="section-head">
+    <h2>Create New API Key</h2>
+    <p>Tell us how you will use the API. Quotes keys work immediately. Music keys are reviewed by an administrator first.</p>
+  </div>
+  <div class="section-body">
+    <form method="POST" action="{{ url_for('developers.create_api_key') }}" class="fm">
+
+      <label>Key name
+        <input type="text" name="name" maxlength="150" placeholder="e.g. My App - Production" autocomplete="off">
+      </label>
+
+      <fieldset>
+        <legend>Which service do you need? *</legend>
+        <label class="radio-row"><input type="radio" name="service" value="quotes" required checked>
+          <div><b>Quotes</b><span>Works immediately after creation.</span></div></label>
+        <label class="radio-row"><input type="radio" name="service" value="music">
+          <div><b>Music</b><span>Needs administrator approval before it works.</span></div></label>
+        <label class="radio-row"><input type="radio" name="service" value="all">
+          <div><b>Quotes + Music</b><span>Needs administrator approval before it works.</span></div></label>
+      </fieldset>
+
+      <label>How will you use the API? *
+        <textarea name="purpose" required minlength="10" maxlength="500" placeholder="Briefly describe your project and what you will do with the data."></textarea>
+      </label>
+
+      <div class="two-col">
+        <label>Project type *
+          <select name="project_type" required>
+            <option value="">Choose...</option>
+            <option value="mobile">Mobile app</option>
+            <option value="website">Website</option>
+            <option value="backend">Backend / Server</option>
+            <option value="learning">Learning / Personal</option>
+          </select>
+        </label>
+        <label>Expected requests per day <span class="hint">(optional)</span>
+          <select name="expected_usage">
+            <option value="">Not sure</option>
+            <option value="low">Under 1,000</option>
+            <option value="medium">1,000 - 10,000</option>
+            <option value="high">Over 10,000</option>
+          </select>
+        </label>
+      </div>
+
+      <label>Website or app link <span class="hint">(optional)</span>
+        <input type="url" name="website" maxlength="255" placeholder="https://example.com">
+      </label>
+
+      <label class="check-row">
+        <input type="checkbox" name="accept_terms" value="yes" required>
+        <span>I agree not to resell or redistribute the content, to credit Dutoza where required, and to keep my API key private.</span>
+      </label>
+
+      <div><button class="btn btn-primary" type="submit">{{ icon('plus') }} Create API Key</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyKey() {
+  var key = document.getElementById("newKey");
+  if (!key) return;
+  navigator.clipboard.writeText(key.textContent).then(function () {
+    alert("API key copied.");
+  }).catch(function () {
+    alert(key.textContent);
+  });
+}
+</script>
+{% endblock %}

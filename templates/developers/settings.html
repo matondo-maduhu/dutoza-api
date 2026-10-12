@@ -1,0 +1,55 @@
+{% extends "developers/portal_base.html" %}
+{% from "developers/_icons.html" import icon %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="page-head"><h1>Settings</h1><p>Manage your account security.</p></div>
+
+{% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+
+<div class="section">
+  <div class="section-head"><h2>Account</h2><p>Your sign-in details.</p></div>
+  <div class="section-body">
+    <div class="fm">
+      <label>Email
+        <input type="email" value="{{ developer[2] }}" readonly>
+      </label>
+      <label>Member since
+        <input type="text" value="{{ developer[3] | fmt_dt('%d %b %Y') }}" readonly>
+      </label>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head"><h2>Change password</h2><p>Use at least {{ password_min }} characters.</p></div>
+  <div class="section-body">
+    <form method="POST" action="{{ url_for('developers.change_password') }}" class="fm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label>Current password
+        <input type="password" name="current_password" autocomplete="current-password" required>
+      </label>
+      <div class="two-col">
+        <label>New password
+          <input type="password" name="new_password" minlength="{{ password_min }}" autocomplete="new-password" required>
+        </label>
+        <label>Confirm new password
+          <input type="password" name="confirm_password" minlength="{{ password_min }}" autocomplete="new-password" required>
+        </label>
+      </div>
+      <div><button class="btn btn-primary" type="submit">{{ icon('lock') }} Update password</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-head"><h2>Session</h2><p>Sign out of this device.</p></div>
+  <div class="section-body">
+    <form class="plain" method="POST" action="{{ url_for('developers.logout') }}">
+      <button class="btn btn-danger" type="submit">{{ icon('logout') }} Log out</button>
+    </form>
+  </div>
+</div>
+
+<p class="muted" style="text-align:center;font-size:13px;margin-top:6px">More settings are coming soon.</p>
+{% endblock %}
