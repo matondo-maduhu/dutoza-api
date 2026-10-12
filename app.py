@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 # Load .env BEFORE importing modules
 load_dotenv()
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, session
 from music import music_bp
 from quotes import quotes_bp
 from admin import admin_bp
@@ -60,7 +60,11 @@ except Exception as error:
 
 @app.get("/developers")
 def developers():
-    return render_template("developers/index.html")
+    return render_template(
+        "developers/index.html",
+        developer_logged_in=bool(session.get("developer_id")),
+        nav_active="docs"
+    )
 
 @app.get("/")
 def home():

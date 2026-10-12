@@ -182,7 +182,7 @@ def audit(action, target_type=None, target_id=None, detail=None):
         pass
 
 
-_badge_cache = {"at": 0.0, "value": 0}
+_badge_cache = {"at": float("-inf"), "value": 0}
 
 
 def open_reports_count():
@@ -208,10 +208,10 @@ def open_reports_count():
 
 
 def invalidate_badge():
-    _badge_cache["at"] = 0.0
+    _badge_cache["at"] = float("-inf")
 
 
-_pending_cache = {"at": 0.0, "value": 0}
+_pending_cache = {"at": float("-inf"), "value": 0}
 
 
 def pending_keys_count():
@@ -237,7 +237,7 @@ def pending_keys_count():
 
 
 def invalidate_pending_badge():
-    _pending_cache["at"] = 0.0
+    _pending_cache["at"] = float("-inf")
 
 
 @panel_bp.app_context_processor

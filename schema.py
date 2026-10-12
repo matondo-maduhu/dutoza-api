@@ -99,6 +99,12 @@ ALTERS = [
     "ALTER TABLE content_reports ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ",
     "ALTER TABLE developers ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'active'",
 
+    # Profile ya developer
+    "ALTER TABLE developers ADD COLUMN IF NOT EXISTS company VARCHAR(150)",
+    "ALTER TABLE developers ADD COLUMN IF NOT EXISTS website VARCHAR(255)",
+    "ALTER TABLE developers ADD COLUMN IF NOT EXISTS country VARCHAR(80)",
+    "ALTER TABLE developers ADD COLUMN IF NOT EXISTS bio VARCHAR(300)",
+
     # API key scopes + maombi ya keys. Keys zilizopo zinapata scope ya "yote"
     # (quotes,music) kupitia DEFAULT, kwa hiyo hakuna kinachovunjika.
     "ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS scopes VARCHAR(40) NOT NULL DEFAULT 'quotes,music'",
@@ -117,6 +123,10 @@ COLUMNS = [
     ("content_reports", "resolution"),
     ("content_reports", "resolved_at"),
     ("developers", "status"),
+    ("developers", "company"),
+    ("developers", "website"),
+    ("developers", "country"),
+    ("developers", "bio"),
     ("api_keys", "scopes"),
     ("api_keys", "purpose"),
     ("api_keys", "project_type"),
