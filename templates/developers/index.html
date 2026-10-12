@@ -441,6 +441,100 @@ table.ref td { color: #475569; }
   .row input, .btn-try { width: 100%; }
   .top-actions a { padding: 7px 10px; font-size: 12px; }
 }
+
+/* ---------- Getting Started (accordion) ---------- */
+.steps { display: grid; gap: 12px; }
+.step { background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 2px 10px rgba(15,23,42,.04); overflow: hidden; scroll-margin-top: 80px; }
+.step[open] { border-color: #86efac; box-shadow: 0 6px 22px rgba(30,181,58,.10); }
+.step > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 14px; padding: 16px 18px; -webkit-tap-highlight-color: transparent; }
+.step > summary::-webkit-details-marker { display: none; }
+.step > summary:hover { background: #fafafa; }
+.step > summary:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
+.step .num { flex-shrink: 0; transition: background .2s, color .2s; }
+.step[open] .num { background: var(--green); color: #fff; }
+.st-text { flex: 1; min-width: 0; }
+.st-text b { display: block; font-size: 16px; }
+.st-text small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+.chev { width: 9px; height: 9px; border-right: 2.5px solid #94a3b8; border-bottom: 2.5px solid #94a3b8; transform: rotate(45deg); transition: transform .2s; margin: 0 6px 4px 0; flex-shrink: 0; }
+.step[open] .chev { transform: rotate(-135deg); margin-bottom: 0; margin-top: 4px; }
+.step-body { padding: 4px 18px 20px; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.65; }
+.step-body h4 { margin: 22px 0 8px; font-size: 14px; }
+.step-body p { margin: 10px 0; color: #334155; }
+.step-body p.small { font-size: 13px; color: var(--muted); }
+.step-body code { background: #f1f5f9; padding: 1px 6px; border-radius: 6px; font-size: 12.5px; }
+.step-body .code { margin: 10px 0; }
+.step-body .code code { background: none; padding: 0; }
+.step-body table.ref { margin: 8px 0; font-size: 13.5px; }
+.tbl-scroll { overflow-x: auto; margin: 4px 0; }
+.tbl-scroll table.ref { min-width: 480px; }
+.flow { margin: 14px 0 0; padding: 0; list-style: none; counter-reset: f; }
+.flow li { position: relative; padding: 0 0 14px 40px; counter-increment: f; }
+.flow li::before { content: counter(f); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: #e8f8ec; color: #0d7a28; font-weight: 900; font-size: 12px; display: grid; place-items: center; }
+.flow li:not(:last-child)::after { content: ""; position: absolute; left: 12px; top: 30px; bottom: 2px; width: 2px; background: #e2e8f0; }
+.note-box { margin: 16px 0; padding: 12px 16px; border-radius: 12px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; font-size: 13.5px; }
+.note-box ul { margin: 8px 0 0; padding-left: 18px; }
+.note-box code { background: #dbeafe; }
+.bul { margin: 6px 0; padding-left: 20px; }
+.bul li { margin: 5px 0; }
+.pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 800; margin-right: 4px; }
+.pill.ok { background: #dcfce7; color: #166534; } .pill.wait { background: #fef3c7; color: #92400e; } .pill.bad { background: #fee2e2; color: #991b1b; }
+.cta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.cta { display: inline-block; padding: 10px 16px; border-radius: 12px; font-weight: 800; font-size: 14px; }
+.cta.primary { background: var(--green); color: #fff; }
+.cta.primary:hover { background: var(--green-dark); }
+.cta.ghost { border: 1px solid var(--line); color: var(--ink); background: #fff; }
+.cta.ghost:hover { background: #f8fafc; }
+.lang-tabs { display: flex; gap: 6px; margin: 4px 0 0; flex-wrap: wrap; }
+.lang-tabs button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 14px; font-weight: 800; font-size: 12px; cursor: pointer; color: #475569; font-family: inherit; }
+.lang-tabs button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.lang-panel { display: none; }
+.lang-panel.on { display: block; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mini { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: #fafafa; }
+.mini .muted { font-size: 12px; }
+.eps { list-style: none; margin: 8px 0 0; padding: 0; }
+.eps li { margin: 7px 0; font-size: 13px; display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.m { display: inline-block; min-width: 40px; text-align: center; border-radius: 6px; padding: 1px 6px; font-size: 10.5px; font-weight: 900; }
+.m.get { background: #dcfce7; color: #166534; } .m.post { background: #dbeafe; color: #1e40af; }
+@media (max-width: 760px) {
+  .two { grid-template-columns: 1fr; }
+  .step > summary { padding: 14px; gap: 12px; }
+  .step-body { padding: 2px 14px 18px; }
+  .st-text b { font-size: 15px; }
+}
+
+/* ---------- Header kwenye simu ndogo: usigongane ---------- */
+.brand { min-width: 0; }
+@media (max-width: 480px) {
+  .top { padding: 0 12px; gap: 8px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 18px; }
+  .top-actions { gap: 6px; }
+  .btn-ghost { display: none; }
+}
+
+/* ---------- Marekebisho: viungo na majedwali kwenye simu ---------- */
+.step-body a:not(.cta) { color: #0d7a28; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.cta { text-decoration: none; }
+@media (max-width: 760px) {
+  .tbl-scroll table.ref { min-width: 0; table-layout: auto; }
+  .step-body table.ref th, .step-body table.ref td { padding: 8px 9px; font-size: 12.5px; vertical-align: top; overflow-wrap: break-word; word-break: normal; hyphens: manual; }
+  .step-body table.ref th { white-space: nowrap; }
+  .step-body table.ref td:first-child { min-width: 78px; }
+  .step-body table.ref th { font-size: 11px; }
+  .step-body table.ref code { font-size: 11.5px; padding: 1px 4px; }
+}
+
+/* Simu ndogo: majedwali ya hatua yanakuwa kadi zilizopangwa wima */
+@media (max-width: 560px) {
+  .step-body table.ref thead { display: none; }
+  .step-body table.ref, .step-body table.ref tbody, .step-body table.ref tr, .step-body table.ref td { display: block; width: 100%; }
+  .step-body table.ref tr { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .step-body table.ref tr:last-child { border-bottom: 0; }
+  .step-body table.ref td { border: 0; padding: 3px 0; min-width: 0; font-size: 13px; }
+  .step-body table.ref td:first-child { font-size: 14px; margin-bottom: 3px; }
+  .step-body table.ref td:not(:first-child)::before { content: attr(data-label); display: block; color: var(--muted); font-weight: 800; font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+}
 </style>
 </head>
 <body>
@@ -488,6 +582,7 @@ table.ref td { color: #475569; }
     <a href="/developers/profile">Profile</a>
     <a href="/developers/settings">Settings</a>
     {% else %}
+    <a href="/developers/login">Log in</a>
     <a href="/developers/register">Create account</a>
     {% endif %}
   </aside>
@@ -509,23 +604,267 @@ table.ref td { color: #475569; }
 
     <section id="start">
       <h2>Getting Started</h2>
-      <p class="desc">Three steps to start calling the API.</p>
-      <div class="cards">
-        <div class="card">
-          <div class="num">1</div>
-          <h3>Get an API key</h3>
-          <p>Register as a developer and create a key from the dashboard.</p>
-        </div>
-        <div class="card">
-          <div class="num">2</div>
-          <h3>Authenticate</h3>
-          <p>Send the key in the <code>Authorization: Bearer</code> header.</p>
-        </div>
-        <div class="card">
-          <div class="num">3</div>
-          <h3>Call endpoints</h3>
-          <p>Request <code>/api/music</code> or <code>/api/quotes</code> and use the JSON response.</p>
-        </div>
+      <p class="desc">Three steps to start calling the API. Tap a step to read the details.</p>
+
+      <div class="steps" id="steps">
+
+        <!-- ================= STEP 1 ================= -->
+        <details class="step" id="step-1" open>
+          <summary>
+            <span class="num">1</span>
+            <span class="st-text"><b>Get an API key</b><small>Register as a developer and create a key from the dashboard.</small></span>
+            <span class="chev" aria-hidden="true"></span>
+          </summary>
+          <div class="step-body">
+            <p>An API key identifies your app on every request. Creating one takes about two minutes.</p>
+
+            <ol class="flow">
+              <li><b>Create a developer account.</b>
+                {% if developer_logged_in %}You are already signed in, so you can skip this.{% else %}Open <a href="/developers/register">Create account</a> and enter your name, email and a password (at least 8 characters). Already registered? <a href="/developers/login">Log in</a>.{% endif %}</li>
+              <li><b>Open <em>API Keys</em> in your dashboard.</b> Scroll to the <em>Create New API Key</em> form.</li>
+              <li><b>Fill in the form.</b> Tell us what you are building (see the fields below) and accept the terms.</li>
+              <li><b>Copy your key.</b> It starts with <code>dutoza_</code> and is shown <strong>only once</strong>, right after you create it.</li>
+            </ol>
+
+            <h4>What the form asks for</h4>
+            <div class="tbl-scroll">
+              <table class="ref">
+                <thead><tr><th>Field</th><th>Required</th><th>What to enter</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>Key name</strong></td><td>No</td><td>A label for you, e.g. <em>My App - Production</em>. Defaults to <em>Developer API Key</em>.</td></tr>
+                  <tr><td><strong>Service</strong></td><td>Yes</td><td><em>Quotes</em>, <em>Music</em> or <em>Quotes + Music</em>. Choose only what you need.</td></tr>
+                  <tr><td><strong>How you will use the API</strong></td><td>Yes</td><td>10 to 500 characters describing your project and what you will do with the data.</td></tr>
+                  <tr><td><strong>Project type</strong></td><td>Yes</td><td>Mobile app, Website, Backend / Server, or Learning / Personal.</td></tr>
+                  <tr><td><strong>Expected requests per day</strong></td><td>No</td><td>Under 1,000, 1,000 to 10,000, or over 10,000. It helps us set a fair rate limit.</td></tr>
+                  <tr><td><strong>Website or app link</strong></td><td>No</td><td>Must start with <code>https://</code> or <code>http://</code>.</td></tr>
+                  <tr><td><strong>Terms</strong></td><td>Yes</td><td>You agree not to resell or redistribute the content, to credit Dutoza where required, and to keep your key private.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4>When does my key start working?</h4>
+            <div class="tbl-scroll">
+              <table class="ref">
+                <thead><tr><th>Service you chose</th><th>Status after you submit</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>Quotes</strong></td><td><span class="pill ok">ACTIVE</span> Works immediately.</td></tr>
+                  <tr><td><strong>Music</strong> or <strong>Quotes + Music</strong></td><td><span class="pill wait">PENDING APPROVAL</span> An administrator reviews your request first. Once approved it becomes <span class="pill ok">ACTIVE</span>. If it is declined you will see <span class="pill bad">REJECTED</span> with the reason, and you can submit a new request.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="note-box">
+              <strong>Good to know</strong>
+              <ul>
+                <li>You still receive your key right away, even when approval is pending. Save it: it will start working as soon as it is approved.</li>
+                <li>You can have up to <strong>3 requests waiting</strong> for approval at the same time, and you can cancel a pending request from the Keys page.</li>
+                <li>A key only works for the services you selected. Calling another service returns <code>403 Scope not allowed</code>.</li>
+                <li>Lost your key? You cannot view it again. Revoke it and create a new one.</li>
+              </ul>
+            </div>
+
+            <div class="cta-row">
+              {% if developer_logged_in %}
+              <a class="cta primary" href="/developers/keys#create">Create an API key</a>
+              {% else %}
+              <a class="cta primary" href="/developers/register">Create account</a>
+              <a class="cta ghost" href="/developers/login">Log in</a>
+              {% endif %}
+              <a class="cta ghost" href="#step-2" data-open-step="2">Next: Authenticate →</a>
+            </div>
+          </div>
+        </details>
+
+        <!-- ================= STEP 2 ================= -->
+        <details class="step" id="step-2">
+          <summary>
+            <span class="num">2</span>
+            <span class="st-text"><b>Authenticate</b><small>Send the key in the <code>Authorization: Bearer</code> header.</small></span>
+            <span class="chev" aria-hidden="true"></span>
+          </summary>
+          <div class="step-body">
+            <p>Every request must include your key in the <code>Authorization</code> header, using the <strong>Bearer</strong> scheme: the word <code>Bearer</code>, one space, then your key.</p>
+
+            <div class="code">Authorization: Bearer dutoza_your_api_key_here</div>
+
+            <h4>Examples</h4>
+            <div class="lang-box">
+              <div class="lang-tabs">
+                <button type="button" class="on" data-lang="curl">cURL</button>
+                <button type="button" data-lang="js">JavaScript</button>
+                <button type="button" data-lang="py">Python</button>
+              </div>
+              <div class="lang-panel on" data-lang="curl"><div class="code">{% raw %}curl "https://dutoza-api.onrender.com/api/quotes/" \
+  -H "Authorization: Bearer YOUR_API_KEY"{% endraw %}</div></div>
+              <div class="lang-panel" data-lang="js"><div class="code">{% raw %}// Run this on a server (Node 18+), not in public browser code
+const res = await fetch("https://dutoza-api.onrender.com/api/quotes/", {
+  headers: { Authorization: `Bearer ${process.env.DUTOZA_API_KEY}` },
+});
+const json = await res.json();
+console.log(json.data);{% endraw %}</div></div>
+              <div class="lang-panel" data-lang="py"><div class="code">{% raw %}import os
+import requests
+
+res = requests.get(
+    "https://dutoza-api.onrender.com/api/quotes/",
+    headers={"Authorization": f"Bearer {os.environ['DUTOZA_API_KEY']}"},
+    timeout=15,
+)
+print(res.json()["data"]){% endraw %}</div></div>
+            </div>
+
+            <h4>Keep your key safe</h4>
+            <ul class="bul">
+              <li>Store it in an <strong>environment variable</strong> or your server's secret manager.</li>
+              <li>Call the API from your <strong>backend</strong>. For a mobile app or website, let your own server call Dutoza and pass the results on.</li>
+              <li>Never commit it to GitHub or put it in browser JavaScript or an app bundle. If it leaks, revoke it and create a new one.</li>
+            </ul>
+
+            <h4>If authentication fails</h4>
+            <div class="tbl-scroll">
+              <table class="ref">
+                <thead><tr><th>Status</th><th><code>error</code></th><th>What it means / what to do</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>401</strong></td><td>API key required<br>Invalid authorization header<br>Invalid authorization scheme</td><td>The header is missing or badly formed. Use exactly <code>Authorization: Bearer &lt;key&gt;</code>.</td></tr>
+                  <tr><td><strong>401</strong></td><td>Invalid API key</td><td>The key does not exist. Check for typos or extra spaces, or create a new key.</td></tr>
+                  <tr><td><strong>403</strong></td><td>API key inactive</td><td>The key is pending approval, rejected, disabled or revoked. Check its status on the Keys page.</td></tr>
+                  <tr><td><strong>403</strong></td><td>Scope not allowed</td><td>The key is not allowed to use this service (for example a Quotes key calling <code>/api/music</code>). Create a key for the service you need.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="code">{% raw %}{
+  "success": false,
+  "error": "API key inactive",
+  "message": "API key hii inasubiri idhini ya administrator."
+}{% endraw %}</div>
+            <p class="small">The <code>message</code> text can be in Swahili. In your code, rely on the HTTP status and the <code>error</code> field.</p>
+
+            <div class="cta-row">
+              <a class="cta primary" href="#step-3" data-open-step="3">Next: Call endpoints →</a>
+            </div>
+          </div>
+        </details>
+
+        <!-- ================= STEP 3 ================= -->
+        <details class="step" id="step-3">
+          <summary>
+            <span class="num">3</span>
+            <span class="st-text"><b>Call endpoints</b><small>Request <code>/api/quotes/</code> or <code>/api/music/</code> and use the JSON response.</small></span>
+            <span class="chev" aria-hidden="true"></span>
+          </summary>
+          <div class="step-body">
+            <p>The base URL is <code>https://dutoza-api.onrender.com</code>. Here is a first request that returns five Swahili quotes:</p>
+
+            <div class="code">{% raw %}curl "https://dutoza-api.onrender.com/api/quotes/?per_page=5&language=sw" \
+  -H "Authorization: Bearer YOUR_API_KEY"{% endraw %}</div>
+
+            <div class="note-box">
+              <strong>Keep the trailing slash</strong> on list endpoints: <code>/api/quotes/</code> and <code>/api/music/</code>.
+              Without it the server answers with a <code>308</code> redirect, and tools such as <code>curl</code> will not show any data unless you add <code>-L</code>.
+            </div>
+
+            <h4>Available endpoints</h4>
+            <div class="two">
+              <div class="mini">
+                <strong>Quotes</strong> <span class="muted">(needs Quotes access)</span>
+                <ul class="eps">
+                  <li><span class="m get">GET</span><code>/api/quotes/</code> list quotes</li>
+                  <li><span class="m get">GET</span><code>/api/quotes/{id}</code> one quote</li>
+                  <li><span class="m get">GET</span><code>/api/quotes/categories</code> all categories</li>
+                </ul>
+              </div>
+              <div class="mini">
+                <strong>Music</strong> <span class="muted">(needs Music access)</span>
+                <ul class="eps">
+                  <li><span class="m get">GET</span><code>/api/music/</code> list songs</li>
+                  <li><span class="m get">GET</span><code>/api/music/{id}</code> one song</li>
+                  <li><span class="m get">GET</span><code>/api/music/artists</code> and <code>/albums</code></li>
+                  <li><span class="m post">POST</span><code>/api/music/{id}/play</code> count a play</li>
+                  <li><span class="m post">POST</span><code>/api/music/{id}/download</code> count a download, returns <code>audio_url</code></li>
+                </ul>
+              </div>
+            </div>
+
+            <h4>Query parameters for list endpoints</h4>
+            <div class="tbl-scroll">
+              <table class="ref">
+                <thead><tr><th>Parameter</th><th>Works on</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr><td><code>page</code></td><td>Quotes, Music</td><td>Page number, starting at 1 (default 1).</td></tr>
+                  <tr><td><code>per_page</code></td><td>Quotes, Music</td><td>Items per page, from 1 to 100 (default 20).</td></tr>
+                  <tr><td><code>q</code></td><td>Quotes, Music</td><td>Search text.</td></tr>
+                  <tr><td><code>language</code></td><td>Quotes, Music</td><td>Filter by language, for example <code>sw</code> or <code>en</code>.</td></tr>
+                  <tr><td><code>source</code></td><td>Quotes, Music</td><td><code>admin</code> for content published by Dutoza, <code>user</code> for community content.</td></tr>
+                  <tr><td><code>user_id</code></td><td>Quotes, Music</td><td>Only content from one user.</td></tr>
+                  <tr><td><code>category</code></td><td>Quotes</td><td>A category <em>slug</em> from <code>/api/quotes/categories</code>, e.g. <code>motivation</code>.</td></tr>
+                  <tr><td><code>artist</code>, <code>album</code></td><td>Music</td><td>An artist or album <em>slug</em> or id.</td></tr>
+                  <tr><td><code>genre</code></td><td>Music</td><td>Genre name, for example <code>gospel</code>.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4>What the response looks like</h4>
+            <p>List endpoints return the items in <code>data</code>, together with paging details:</p>
+            <div class="code">{% raw %}{
+  "success": true,
+  "page": 1,
+  "per_page": 5,
+  "total": 134,
+  "pages": 27,
+  "data": [
+    {
+      "id": 12,
+      "text": "Mafanikio huanza kwa hatua ya kwanza.",
+      "author": "Dutoza",
+      "category": "Motivation",
+      "category_slug": "motivation",
+      "language": "sw",
+      "created_at": "2026-10-01T09:30:00+00:00",
+      "user_id": null,
+      "source": "admin",
+      "user": null
+    }
+  ]
+}{% endraw %}</div>
+            <p>A song contains <code>id</code>, <code>title</code>, <code>slug</code>, <code>description</code>, <code>lyrics</code>, <code>audio_url</code>, <code>cover_url</code>, <code>duration_seconds</code>, <code>track_number</code>, <code>genre</code>, <code>language</code>, <code>release_date</code>, <code>play_count</code>, <code>download_count</code>, an <code>artist</code> object, an <code>album</code> object, <code>created_at</code>, <code>user_id</code>, <code>source</code> and <code>user</code>.</p>
+            <p>Single-item endpoints return the same item under <code>data</code>. When something goes wrong you get <code>"success": false</code> and an <code>error</code> message.</p>
+
+            <h4>Read all pages</h4>
+            <div class="code">{% raw %}let page = 1, pages = 1;
+while (page <= pages) {
+  const res = await fetch(
+    `https://dutoza-api.onrender.com/api/music/?per_page=100&page=${page}`,
+    { headers: { Authorization: `Bearer ${process.env.DUTOZA_API_KEY}` } }
+  );
+  const json = await res.json();
+  pages = json.pages;           // total number of pages
+  // ...use json.data here...
+  page += 1;
+}{% endraw %}</div>
+
+            <h4>Stay within your rate limit</h4>
+            <p>Each key has a limit of requests per minute (the default is 100). Every successful response tells you where you stand:</p>
+            <div class="tbl-scroll">
+              <table class="ref">
+                <thead><tr><th>Header</th><th>Meaning</th></tr></thead>
+                <tbody>
+                  <tr><td><code>X-RateLimit-Limit</code></td><td>Requests allowed per minute for this key.</td></tr>
+                  <tr><td><code>X-RateLimit-Remaining</code></td><td>Requests left in the current minute.</td></tr>
+                  <tr><td><code>X-RateLimit-Reset</code></td><td>Seconds until the counter resets.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>If you go over the limit you get <strong>429 Too Many Requests</strong> with a <code>Retry-After</code> header (and a <code>retry_after</code> field in the body), the number of seconds to wait before trying again.</p>
+
+            <div class="cta-row">
+              <a class="cta primary" href="#quotes">Quotes reference</a>
+              <a class="cta ghost" href="#music">Music reference</a>
+              <a class="cta ghost" href="#limits">Rate limits</a>
+              <a class="cta ghost" href="#errors">Errors</a>
+            </div>
+          </div>
+        </details>
+
       </div>
     </section>
 
@@ -552,7 +891,7 @@ table.ref td { color: #475569; }
         </div>
         <div class="ep-body">
           <p>Returns the published music library (paginated / searchable depending on query params).</p>
-          <div class="code">curl https://dutoza-api.onrender.com/api/music \
+          <div class="code">curl https://dutoza-api.onrender.com/api/music/ \
   -H "Authorization: Bearer YOUR_API_KEY"</div>
           <div class="trybox">
             <strong>Try it</strong>
@@ -619,7 +958,7 @@ table.ref td { color: #475569; }
         </div>
         <div class="ep-body">
           <p>Returns available quotes. Supports filters such as category / search where enabled.</p>
-          <div class="code">curl https://dutoza-api.onrender.com/api/quotes \
+          <div class="code">curl https://dutoza-api.onrender.com/api/quotes/ \
   -H "Authorization: Bearer YOUR_API_KEY"</div>
           <div class="trybox">
             <strong>Try it</strong>
@@ -658,7 +997,7 @@ table.ref td { color: #475569; }
       <p class="desc">Default limits protect the API for everyone.</p>
       <div class="limit-card">
         <div style="font-size:13px;color:var(--muted);font-weight:700;">Default per API key</div>
-        <div class="big">60 / min</div>
+        <div class="big">100 / min</div>
         <p style="margin:0;color:var(--muted);font-size:14px;">
           If you exceed the limit you receive <strong>429 Too Many Requests</strong>.
           Contact support if you need a higher limit.
@@ -676,6 +1015,7 @@ table.ref td { color: #475569; }
         <tbody>
           <tr><td><strong>200</strong></td><td>Success</td></tr>
           <tr><td><strong>401</strong></td><td>Missing or invalid API key</td></tr>
+          <tr><td><strong>403</strong></td><td>Key not active (pending approval, rejected, disabled or revoked) or not allowed for this service</td></tr>
           <tr><td><strong>404</strong></td><td>Resource not found</td></tr>
           <tr><td><strong>429</strong></td><td>Rate limit exceeded</td></tr>
           <tr><td><strong>500</strong></td><td>Server error</td></tr>
@@ -790,6 +1130,64 @@ function oneQuote() {
   .then(function (res) { showResult("quoteOneResult", res); })
   .catch(function (err) { showResult("quoteOneResult", { error: String(err) }); });
 }
+</script>
+<script>
+(function () {
+  var steps = document.querySelectorAll("#steps .step");
+
+  /* Hatua moja wazi kwa wakati (accordion). Zinafungwa papo hapo wakati wa kubofya,
+     ili kusiwe na mweko wa hatua mbili kuwa wazi pamoja. */
+  function closeOthers(d) {
+    steps.forEach(function (o) { if (o !== d) o.open = false; });
+  }
+  steps.forEach(function (d) {
+    d.querySelector("summary").addEventListener("click", function () { if (!d.open) closeOthers(d); });
+    d.addEventListener("toggle", function () { if (d.open) closeOthers(d); });
+  });
+
+  function openStep(n, scroll) {
+    var el = document.getElementById("step-" + n);
+    if (!el) return;
+    closeOthers(el);
+    el.open = true;
+    if (scroll) setTimeout(function () { el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 30);
+  }
+
+  /* Kiungo cha moja kwa moja: /developers#step-2 */
+  function fromHash() {
+    var m = /^#step-([123])$/.exec(location.hash);
+    if (m) openStep(m[1], true);
+  }
+  window.addEventListener("hashchange", fromHash);
+  fromHash();
+
+  /* Vitufe vya "Next" */
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest("[data-open-step]");
+    if (!a) return;
+    e.preventDefault();
+    openStep(a.getAttribute("data-open-step"), true);
+  });
+
+  /* Weka jina la column kwenye kila seli (linatumika na mpangilio wa kadi kwenye simu ndogo) */
+  document.querySelectorAll(".step-body table.ref").forEach(function (t) {
+    var heads = Array.prototype.map.call(t.querySelectorAll("thead th"), function (th) { return th.textContent.trim(); });
+    t.querySelectorAll("tbody tr").forEach(function (tr) {
+      Array.prototype.forEach.call(tr.children, function (td, i) { if (heads[i]) td.setAttribute("data-label", heads[i]); });
+    });
+  });
+
+  /* Tabs za lugha (cURL / JavaScript / Python) */
+  document.querySelectorAll(".lang-box").forEach(function (box) {
+    box.addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-lang]");
+      if (!b) return;
+      var lang = b.getAttribute("data-lang");
+      box.querySelectorAll(".lang-tabs button").forEach(function (x) { x.classList.toggle("on", x === b); });
+      box.querySelectorAll(".lang-panel").forEach(function (p) { p.classList.toggle("on", p.getAttribute("data-lang") === lang); });
+    });
+  });
+})();
 </script>
 {% if developer_logged_in %}{% include "developers/_bottom_nav.html" %}{% endif %}
 </body>
