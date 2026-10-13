@@ -4,6 +4,10 @@
 
 {% block title %}Feed — Incredibles{% endblock %}
 
+{% block dark_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dark/feed.css') }}?v=1">
+{% endblock %}
+
 {% block bottom_nav_center %}
 <button type="button" class="bn-item" id="bnCompose" aria-label="Post" title="Post quote">
     <i class="fa-solid fa-plus" aria-hidden="true"></i>
@@ -2065,8 +2069,34 @@
         <div
             class="loading"
             id="loading"
+            role="status"
+            aria-busy="true"
+            aria-label="Inapakia posts"
         >
-            Inapakia posts...
+            <div class="skel-card">
+                <div class="skel-head">
+                    <div class="skel skel-avatar"></div>
+                    <div class="skel-lines"><div class="skel skel-line w40"></div><div class="skel skel-line w60"></div></div>
+                </div>
+                <div class="skel skel-body"></div>
+                <div class="skel-actions"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+            </div>
+            <div class="skel-card">
+                <div class="skel-head">
+                    <div class="skel skel-avatar"></div>
+                    <div class="skel-lines"><div class="skel skel-line w40"></div><div class="skel skel-line w60"></div></div>
+                </div>
+                <div class="skel skel-body"></div>
+                <div class="skel-actions"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+            </div>
+            <div class="skel-card">
+                <div class="skel-head">
+                    <div class="skel skel-avatar"></div>
+                    <div class="skel-lines"><div class="skel skel-line w40"></div><div class="skel skel-line w60"></div></div>
+                </div>
+                <div class="skel skel-body"></div>
+                <div class="skel-actions"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+            </div>
         </div>
 
     </section>
@@ -2075,6 +2105,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+window.__notificationsWired = true;   /* feed ina code yake ya notifications */
+</script>
 <script>
 (function () {
 
@@ -3748,12 +3781,150 @@
     );
 
 
+    /* ---------- Infinite scroll (inatumia has_more / next_before ya API) ---------- */
+    const FEED_PAGE_LIMIT = 20;
+    const renderedKeys = new Set();
+    let feedBefore = null;
+    let feedHasMore = false;
+    let feedLoadingMore = false;
+    let feedObserver = null;
+    let feedSentinel = null;
+
+    function postKey(post) {
+        return String(post.type) + ":" + String(post.id);
+    }
+
+    function stopInfiniteScroll(showEnd) {
+
+        if (feedObserver) {
+            feedObserver.disconnect();
+            feedObserver = null;
+        }
+
+        if (feedSentinel) {
+            feedSentinel.remove();
+            feedSentinel = null;
+        }
+
+        if (showEnd && !document.getElementById("feedEnd")) {
+            feed.insertAdjacentHTML(
+                "afterend",
+                '<div class="feed-end" id="feedEnd">Umefika mwisho wa feed</div>'
+            );
+        }
+
+    }
+
+    async function loadMoreFeed() {
+
+        if (feedLoadingMore || !feedHasMore || !feedBefore) {
+            return;
+        }
+
+        feedLoadingMore = true;
+
+        if (feedSentinel) {
+            feedSentinel.classList.add("loading-more");
+            feedSentinel.textContent = "Inapakia zaidi...";
+        }
+
+        try {
+
+            const response = await fetch(
+                "{{ url_for('user_feed.get_posts') }}" +
+                    "?limit=" + FEED_PAGE_LIMIT +
+                    "&before=" + encodeURIComponent(feedBefore),
+                {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Feed page request failed");
+            }
+
+            const data = await response.json();
+
+            const fresh = (data.posts || []).filter(function (post) {
+                return !renderedKeys.has(postKey(post));
+            });
+
+            fresh.forEach(function (post) {
+                renderedKeys.add(postKey(post));
+            });
+
+            if (fresh.length > 0) {
+                feed.insertAdjacentHTML(
+                    "beforeend",
+                    fresh.map(renderPost).join("")
+                );
+            }
+
+            feedHasMore = Boolean(data.has_more) && (data.posts || []).length > 0;
+            feedBefore = data.next_before || null;
+
+            if (!feedHasMore || !feedBefore) {
+                stopInfiniteScroll(true);
+            }
+
+        } catch (error) {
+
+            /* Itajaribiwa tena mtumiaji anaposogeza tena */
+            console.error(error);
+
+        } finally {
+
+            feedLoadingMore = false;
+
+            if (feedSentinel) {
+                feedSentinel.classList.remove("loading-more");
+                feedSentinel.textContent = "";
+            }
+
+        }
+
+    }
+
+    function setupInfiniteScroll(data) {
+
+        feedHasMore = Boolean(data.has_more);
+        feedBefore = data.next_before || null;
+
+        if (!feedHasMore || !feedBefore) {
+            return;
+        }
+
+        if (!("IntersectionObserver" in window)) {
+            return;
+        }
+
+        feedSentinel = document.createElement("div");
+        feedSentinel.className = "feed-sentinel";
+        feedSentinel.id = "feedSentinel";
+        feed.insertAdjacentElement("afterend", feedSentinel);
+
+        feedObserver = new IntersectionObserver(
+            function (entries) {
+                if (entries.some(function (entry) { return entry.isIntersecting; })) {
+                    loadMoreFeed();
+                }
+            },
+            { rootMargin: "700px 0px" }
+        );
+
+        feedObserver.observe(feedSentinel);
+
+    }
+
+
     async function loadFeed() {
 
         try {
 
             const response = await fetch(
-                "{{ url_for('user_feed.get_posts') }}",
+                "{{ url_for('user_feed.get_posts') }}?limit=" + FEED_PAGE_LIMIT,
                 {
                     headers: {
                         "Accept": "application/json"
@@ -3782,9 +3953,15 @@
                 return;
             }
 
+            data.posts.forEach(function (post) {
+                renderedKeys.add(postKey(post));
+            });
+
             feed.innerHTML = data.posts
                 .map(renderPost)
                 .join("");
+
+            setupInfiniteScroll(data);
 
         } catch (error) {
 

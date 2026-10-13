@@ -2,8 +2,24 @@
 <html lang="sw">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#ffffff" id="metaTheme">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='icons/favicon-64.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Incredibles">
+    <script>
+        /* Weka mode (giza/mwanga) kabla ya ukurasa kuchorwa: inazuia mweko mweupe */
+        (function () {
+            try {
+                var m = localStorage.getItem("incredibles_theme") || "auto";
+                var dark = m === "dark" || (m === "auto" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+                document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+            } catch (e) {}
+        })();
+    </script>
     <title>{% block title %}Incredibles{% endblock %}</title>
 
     <link
@@ -251,6 +267,9 @@
 
         {% block extra_css %}{% endblock %}
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark/base.css') }}?v=1">
+    {% block dark_css %}{% endblock %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app-shell.css') }}?v=1">
 </head>
 <body class="{% block body_class %}{% endblock %}">
 
@@ -264,38 +283,9 @@
     </a>
 
     <div class="topbar-right">
-        <a href="{{ url_for('user_feed.search_page') }}" class="search-top-btn" aria-label="Search" title="Search">
-            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-        </a>
-
-        <div class="notification-wrap">
-            <button
-                type="button"
-                class="notification-btn"
-                id="notificationButton"
-                aria-label="Notifications"
-                aria-expanded="false"
-                title="Notifications"
-            >
-                <i class="fa-solid fa-bell notification-icon" aria-hidden="true"></i>
-                <span class="notification-badge hidden" id="notificationBadge">0</span>
-            </button>
-
-            <div class="notification-panel" id="notificationPanel">
-                <div class="notification-header">
-                    <div class="notification-header-left">
-                        <button type="button" class="notification-close" id="notificationClose" aria-label="Close">
-                            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-                        </button>
-                        <div class="notification-title">Notifications</div>
-                    </div>
-                    <button type="button" class="mark-all" id="markAllButton">Mark all as read</button>
-                </div>
-                <div class="notification-list" id="notificationList">
-                    <div class="notification-loading">Inapakia notifications...</div>
-                </div>
-            </div>
-        </div>
+        <button type="button" class="theme-btn" id="themeToggle" aria-label="Badilisha mwonekano (giza/mwanga)" title="Mwonekano">
+            <i class="fa-solid fa-moon" data-theme-icon aria-hidden="true"></i>
+        </button>
 
         <a href="{{ url_for('user_auth.profile') }}" class="top-profile-btn" aria-label="Profile" title="Profile">
             {% if session.get("profile_image_url") %}
@@ -314,12 +304,23 @@
         <i class="fa-solid fa-house" aria-hidden="true"></i>
         <span>Home</span>
     </a>
+    <a href="{{ url_for('user_feed.search_page') }}"
+       class="bn-item {% if nav_active == 'search' %}active{% endif %}"
+       aria-label="Search" title="Search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <span>Search</span>
+    </a>
     {% block bottom_nav_center %}
     <a href="{{ url_for('user_feed.feed') }}" class="bn-item" aria-label="Post" title="Post" id="bnComposeLink">
         <i class="fa-solid fa-plus" aria-hidden="true"></i>
         <span>Post</span>
     </a>
     {% endblock %}
+    <button type="button" class="bn-item" id="notificationButton" aria-label="Notifications" aria-expanded="false" title="Notifications">
+        <i class="fa-solid fa-bell" aria-hidden="true"></i>
+        <span class="notification-badge hidden" id="notificationBadge">0</span>
+        <span>Alerts</span>
+    </button>
     <a href="{{ url_for('user_auth.profile') }}"
        class="bn-item {% if nav_active == 'profile' %}active{% endif %}"
        aria-label="Profile" title="Profile">
@@ -327,6 +328,35 @@
         <span>Profile</span>
     </a>
 </nav>
+
+<div class="notification-panel" id="notificationPanel"
+     data-count-url="{{ url_for('user_feed.get_unread_notification_count') }}"
+     data-list-url="{{ url_for('user_feed.get_notifications') }}"
+     data-read-all-url="{{ url_for('user_feed.mark_all_notifications_read') }}"
+     data-read-url="/api/user/notifications/__ID__/read">
+    <div class="notification-header">
+        <div class="notification-header-left">
+            <button type="button" class="notification-close" id="notificationClose" aria-label="Close">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            </button>
+            <div class="notification-title">Notifications</div>
+        </div>
+        <button type="button" class="mark-all" id="markAllButton">Mark all as read</button>
+    </div>
+    <div class="notification-list" id="notificationList">
+        <div class="notification-loading">Inapakia notifications...</div>
+    </div>
+</div>
+
+<div class="mini-player" id="miniPlayer" hidden role="region" aria-label="Wimbo unaochezwa">
+    <div class="mp-row">
+        <div class="mp-cover"><i class="fa-solid fa-music" aria-hidden="true"></i></div>
+        <div class="mp-info"><div class="mp-title"></div><div class="mp-artist"></div></div>
+        <button type="button" class="mp-btn main" data-mp-toggle aria-label="Cheza / simamisha"><i class="fa-solid fa-play" aria-hidden="true"></i></button>
+        <button type="button" class="mp-btn" data-mp-close aria-label="Funga"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    </div>
+    <div class="mp-bar"><div class="mp-fill"></div></div>
+</div>
 {% endif %}
 
 {% block body %}
@@ -358,6 +388,8 @@
 </script>
 
 {% block extra_js %}{% endblock %}
+
+<script defer src="{{ url_for('static', filename='js/app-shell.js') }}?v=1"></script>
 
 </body>
 </html>

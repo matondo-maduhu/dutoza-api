@@ -2,7 +2,7 @@
 <html lang="sw">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Jisajili — Dutoza</title>
 
     <style>
@@ -158,6 +158,20 @@
             }
         }
     </style>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='icons/favicon-64.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <script>
+        (function () {
+            try {
+                var m = localStorage.getItem("incredibles_theme") || "auto";
+                var dark = m === "dark" || (m === "auto" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+                document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+            } catch (e) {}
+        })();
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark/register.css') }}?v=1">
 </head>
 
 <body>
@@ -274,5 +288,6 @@
         </section>
 
     </main>
+<script defer src="{{ url_for('static', filename='js/app-shell.js') }}?v=1"></script>
 </body>
 </html>

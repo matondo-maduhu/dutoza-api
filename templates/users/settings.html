@@ -1,6 +1,10 @@
 {% extends "users/base.html" %}
 {% set nav_active = "profile" %}
 
+{% block dark_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dark/settings.css') }}?v=1">
+{% endblock %}
+
 {% block title %}Settings — Incredibles{% endblock %}
 
 {% block extra_css %}
@@ -158,6 +162,21 @@
             </div>
             <button type="submit" class="s-btn">Badili password</button>
         </form>
+    </div>
+
+    <div class="settings-card">
+        <h3>Mwonekano</h3>
+        <p style="margin:0 0 12px;font-size:13px;opacity:.7;">Chagua mwanga, giza, au ufuate mipangilio ya simu yako.</p>
+        <div class="seg" role="group" aria-label="Mwonekano">
+            <button type="button" data-theme-choice="auto" aria-pressed="false">Auto</button>
+            <button type="button" data-theme-choice="light" aria-pressed="false">Mwanga</button>
+            <button type="button" data-theme-choice="dark" aria-pressed="false">Giza</button>
+        </div>
+
+        <div class="install-box" data-install hidden>
+            <span>Sakinisha Incredibles kwenye simu yako kama app.</span>
+            <button type="button" data-install-btn>Sakinisha</button>
+        </div>
     </div>
 
     <div class="settings-card">

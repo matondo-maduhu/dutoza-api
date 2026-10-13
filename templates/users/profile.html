@@ -1,6 +1,10 @@
 {% extends "users/base.html" %}
 {% set nav_active = "profile" %}
 
+{% block dark_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dark/profile.css') }}?v=1">
+{% endblock %}
+
 {% block title %}Profile — Incredibles{% endblock %}
 
 {% block extra_css %}
