@@ -1,0 +1,112 @@
+/* ============================================================
+   App shell: nav, mode ya giza, skeleton, mini-player.
+   Inapakiwa BAADA ya CSS ya ukurasa, kwa hiyo inashinda sheria zilizopo.
+   ============================================================ */
+html[data-theme="dark"] { color-scheme: dark; }
+html { -webkit-tap-highlight-color: transparent; }
+
+/* ---------- Top bar ---------- */
+.theme-btn {
+  width: 42px; height: 42px; border-radius: 50%; border: 0; background: transparent; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; color: #334155; font-size: 18px; padding: 0;
+}
+.theme-btn:hover { background: #f1f5f9; color: #0f172a; }
+html[data-theme="dark"] .theme-btn { color: #cbd5e1; }
+html[data-theme="dark"] .theme-btn:hover { background: #1c2333; color: #fff; }
+
+/* ---------- Bottom nav (vitu 5) ---------- */
+.bottom-nav {
+  height: calc(62px + env(safe-area-inset-bottom, 0px));
+  padding: 0 6px env(safe-area-inset-bottom, 0px);
+  justify-content: space-between;
+}
+.bn-item { position: relative; max-width: none; min-width: 0; flex: 1; margin: 5px 0; -webkit-tap-highlight-color: transparent; }
+.bn-item span:not(.notification-badge) { line-height: 1.1; }
+.bn-item.active::before {
+  content: ""; position: absolute; top: -5px; left: 50%; width: 26px; height: 3px; margin-left: -13px;
+  border-radius: 0 0 4px 4px; background: #1EB53A;
+}
+.bn-item .notification-badge { top: 3px; left: calc(50% + 3px); right: auto; }
+
+/* kitufe cha katikati (Post) */
+#bnCompose, #bnComposeLink { overflow: visible; }
+#bnCompose i, #bnComposeLink i {
+  width: 46px; height: 46px; margin-top: -20px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 20px; color: #fff !important;
+  background: linear-gradient(135deg, #1EB53A, #00A3DD 60%, #7c3aed);
+  box-shadow: 0 8px 20px rgba(30,181,58,.35), 0 0 0 4px #fff;
+  transition: transform .15s;
+}
+#bnCompose:active i, #bnComposeLink:active i { transform: scale(.92); }
+html[data-theme="dark"] #bnCompose i, html[data-theme="dark"] #bnComposeLink i { box-shadow: 0 8px 20px rgba(0,0,0,.5), 0 0 0 4px #151a26; }
+
+html[data-theme="dark"] .bn-item { color: #94a3b8; }
+html[data-theme="dark"] .bn-item.active, html[data-theme="dark"] .bn-item:hover { color: #4ade80; }
+html[data-theme="dark"] .bn-item.active i { color: #4ade80; }
+
+/* ---------- Mini-player ---------- */
+.mini-player {
+  position: fixed; left: 8px; right: 8px; z-index: 85;
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));   /* juu ya kitufe cha Post kilichoinuliwa */
+  max-width: 616px; margin: 0 auto;
+  background: #0f172a; color: #fff; border-radius: 16px; overflow: hidden;
+  box-shadow: 0 10px 30px rgba(15,23,42,.35);
+  transform: translateY(24px); opacity: 0; pointer-events: none; transition: transform .22s ease, opacity .22s ease;
+}
+.mini-player.show { transform: none; opacity: 1; pointer-events: auto; }
+.mini-player[hidden] { display: none; }
+.mp-row { display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 10px; }
+.mp-cover { width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0; overflow: hidden; display: grid; place-items: center;
+  background: linear-gradient(135deg, #6366f1, #a855f7); color: #fff; font-size: 18px; }
+.mp-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mp-info { flex: 1; min-width: 0; cursor: pointer; }
+.mp-title { font-weight: 800; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mp-artist { font-size: 12px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.mp-btn { width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,.12); color: #fff; font-size: 15px; cursor: pointer; flex-shrink: 0; }
+.mp-btn.main { background: #1EB53A; }
+.mp-btn:active { transform: scale(.94); }
+.mp-bar { height: 3px; background: rgba(255,255,255,.14); }
+.mp-fill { height: 100%; width: 0; background: linear-gradient(90deg, #1EB53A, #00A3DD); transition: width .25s linear; }
+body.has-mini { padding-bottom: 168px; }
+
+/* ---------- Skeleton loaders ---------- */
+#loading { padding: 0; background: none; border: 0; box-shadow: none; color: inherit; }
+@keyframes shimmer { 0% { background-position: -300px 0; } 100% { background-position: 300px 0; } }
+.skel {
+  background: linear-gradient(90deg, #e8ebef 0%, #f4f6f8 40%, #e8ebef 80%); background-size: 600px 100%;
+  animation: shimmer 1.3s infinite linear; border-radius: 10px;
+}
+.skel-card { background: #fff; border-radius: 20px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 12px rgba(15,23,42,.05); }
+.skel-head { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+.skel-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
+.skel-lines { flex: 1; }
+.skel-line { height: 12px; margin-bottom: 8px; }
+.skel-line.w40 { width: 40%; } .skel-line.w60 { width: 60%; } .skel-line.w80 { width: 80%; }
+.skel-body { height: 150px; border-radius: 16px; margin-bottom: 12px; }
+.skel-actions { display: flex; gap: 10px; }
+.skel-actions .skel { height: 38px; flex: 1; border-radius: 12px; }
+html[data-theme="dark"] .skel { background: linear-gradient(90deg, #1b2233 0%, #252d42 40%, #1b2233 80%); background-size: 600px 100%; }
+html[data-theme="dark"] .skel-card { background: #151a26; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
+
+/* ---------- Infinite scroll ---------- */
+.feed-sentinel { height: 1px; }
+.feed-sentinel.loading-more { height: auto; padding: 18px 0 8px; text-align: center; color: #64748b; font-size: 13px; font-weight: 700; }
+.feed-sentinel.loading-more::before {
+  content: ""; display: inline-block; width: 16px; height: 16px; margin-right: 8px; vertical-align: -3px;
+  border: 2.5px solid #cbd5e1; border-top-color: #1EB53A; border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.feed-end { text-align: center; color: #94a3b8; font-size: 13px; font-weight: 700; padding: 18px 0 8px; }
+
+/* ---------- Settings: Appearance ---------- */
+.seg { display: flex; gap: 6px; background: #f1f5f9; border-radius: 14px; padding: 4px; }
+.seg button { flex: 1; border: 0; background: transparent; padding: 10px 6px; border-radius: 11px; font: inherit; font-weight: 800; font-size: 13px; color: #64748b; cursor: pointer; }
+.seg button.on { background: #fff; color: #0f172a; box-shadow: 0 1px 4px rgba(15,23,42,.12); }
+html[data-theme="dark"] .seg { background: #0d1018; }
+html[data-theme="dark"] .seg button { color: #94a3b8; }
+html[data-theme="dark"] .seg button.on { background: #252e43; color: #fff; box-shadow: none; }
+.install-box { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: #ecfdf5; color: #065f46; font-size: 14px; font-weight: 700; }
+.install-box[hidden] { display: none; }
+.install-box button { margin-left: auto; border: 0; background: #1EB53A; color: #fff; font: inherit; font-weight: 800; padding: 9px 16px; border-radius: 12px; cursor: pointer; }
+html[data-theme="dark"] .install-box { background: #0f2a1d; color: #86efac; }
