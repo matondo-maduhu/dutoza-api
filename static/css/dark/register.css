@@ -1,0 +1,10 @@
+/* Imetengenezwa na tools/gen_dark.py kutoka templates/users/register.html - usihariri kwa mkono. */
+html[data-theme="dark"] body { background: #0f131c; color: #cfd3dd; }
+html[data-theme="dark"] .brand-text { color: #8b96af; }
+html[data-theme="dark"] .card { background: #151a26; border: 1px solid #262f44; }
+html[data-theme="dark"] .intro { color: #8b96af; }
+html[data-theme="dark"] .message { background: #111620; border: 1px solid #642626; color: #eb746a; }
+html[data-theme="dark"] input { border: 1px solid #2b354d; background: #151a26; color: #cfd3dd; }
+html[data-theme="dark"] .login { color: #8b96af; }
+html[data-theme="dark"] .login a { color: #cfd3dd; }
+html[data-theme="dark"] .terms { color: #707d9c; }

@@ -1,0 +1,11 @@
+/* Imetengenezwa na tools/gen_dark.py kutoka templates/users/settings.html - usihariri kwa mkono. */
+html[data-theme="dark"] .settings-title { color: #d2d6e0; }
+html[data-theme="dark"] .settings-card { background: #151a26; border: 1px solid #242c3f; }
+html[data-theme="dark"] .settings-card h3 { color: #8792ac; }
+html[data-theme="dark"] .s-field label { color: #8792ac; }
+html[data-theme="dark"] .s-field input,
+html[data-theme="dark"] .s-field textarea { border: 1.5px solid #252e42; background: #151a26; }
+html[data-theme="dark"] .s-btn.ghost { background: #0d1018; color: #b2b9c9; }
+html[data-theme="dark"] .settings-links a { border-bottom: 1px solid #232b3e; color: #d2d6e0; }
+html[data-theme="dark"] .settings-links a .sl-left i { background: #0d1018; color: #a1aabe; }
+html[data-theme="dark"] .danger-zone h3 { color: #e66262; }

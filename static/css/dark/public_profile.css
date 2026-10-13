@@ -1,0 +1,16 @@
+/* Imetengenezwa na tools/gen_dark.py kutoka templates/users/public_profile.html - usihariri kwa mkono. */
+html[data-theme="dark"] body { background: #0e121b; color: #d3d7e0; }
+html[data-theme="dark"] .topbar { background: #151a26; border-bottom: 1px solid #252e43; }
+html[data-theme="dark"] .brand { color: #d3d7e0; }
+html[data-theme="dark"] .back-link { color: #b2b9c9; }
+html[data-theme="dark"] .back-link:hover { color: #d3d7e0; }
+html[data-theme="dark"] .profile-card { background: #151a26; border: 1px solid #252e43; }
+html[data-theme="dark"] .cover { background: #1e2638; }
+html[data-theme="dark"] .avatar { border: 5px solid #252d41; background: #29344c; }
+html[data-theme="dark"] .avatar-placeholder { color: #8994ad; }
+html[data-theme="dark"] .username { color: #8994ad; }
+html[data-theme="dark"] .bio { color: #b2b9c9; }
+html[data-theme="dark"] .subscribed-btn { background: #1e2638; color: #d3d7e0; }
+html[data-theme="dark"] .stats { border-top: 1px solid #252e43; }
+html[data-theme="dark"] .stat-label { color: #8994ad; }
+html[data-theme="dark"] .joined { color: #8994ad; }

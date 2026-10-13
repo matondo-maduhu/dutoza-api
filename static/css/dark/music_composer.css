@@ -1,0 +1,27 @@
+/* Imetengenezwa na tools/gen_dark.py kutoka templates/users/music_composer.html - usihariri kwa mkono. */
+html[data-theme="dark"] body { background: #11151f; color: #d3d7e0; }
+html[data-theme="dark"] .mc-back { background: #151a26; color: #d3d7e0; }
+html[data-theme="dark"] .mc-header-text p { color: #8994ad; }
+html[data-theme="dark"] .mc-card { background: #151a26; }
+html[data-theme="dark"] .mc-section { border-bottom: 1px solid #222a3c; }
+html[data-theme="dark"] .mc-section-subtitle { color: #8994ad; }
+html[data-theme="dark"] .mc-audio-drop { border: 2px dashed #2d3850; background: #121621; }
+html[data-theme="dark"] .mc-audio-drop.active { background: #0d1018; }
+html[data-theme="dark"] .mc-audio-drop p { color: #8994ad; }
+html[data-theme="dark"] .mc-field label { color: #b2b9c9; }
+html[data-theme="dark"] .mc-required { color: #e66262; }
+html[data-theme="dark"] .mc-field input,
+html[data-theme="dark"] .mc-field textarea,
+html[data-theme="dark"] .mc-field select { border: 1px solid #2d3850; background: #151a26; color: #d3d7e0; }
+html[data-theme="dark"] .mc-hint { color: #8994ad; }
+html[data-theme="dark"] .mc-cover-preview { background: #0d1018; border: 1px solid #252e43; }
+html[data-theme="dark"] .mc-cover-btn { border: 1px solid #2d3850; background: #151a26; }
+html[data-theme="dark"] .mc-preview-box { border: 1px solid #252e43; background: #151a26; }
+html[data-theme="dark"] .mc-preview-header { border-bottom: 1px solid #222a3c; color: #8994ad; }
+html[data-theme="dark"] .mc-avatar { background: #1e2638; color: #b2b9c9; }
+html[data-theme="dark"] .mc-preview-artist { color: #8994ad; }
+html[data-theme="dark"] .mc-preview-audio { background: #0d1018; }
+html[data-theme="dark"] .mc-chip { background: #0d1018; color: #a2abbe; }
+html[data-theme="dark"] .mc-cancel { border: 1px solid #2d3850; background: #151a26; color: #b2b9c9; }
+html[data-theme="dark"] .mc-message.error { background: #10141e; color: #e77575; }
+html[data-theme="dark"] .mc-message.success { background: #193a23; color: #85e5aa; }

@@ -1,0 +1,20 @@
+/* Imetengenezwa na tools/gen_dark.py kutoka templates/users/base.html - usihariri kwa mkono. */
+html[data-theme="dark"] body { background: #0e111a; color: #c6ccd8; }
+html[data-theme="dark"] .topbar { background: #151a26; border-bottom: 1px solid #252e43; }
+html[data-theme="dark"] .search-top-btn { color: #b2b9c9; }
+html[data-theme="dark"] .search-top-btn:hover { background: #0d1018; color: #d2d6e0; }
+html[data-theme="dark"] .notification-btn { color: #b2b9c9; }
+html[data-theme="dark"] .notification-btn:hover { background: #0d1018; color: #d2d6e0; }
+html[data-theme="dark"] .notification-badge { border: 2px solid #252d41; }
+html[data-theme="dark"] .notification-panel { background: #151a26; }
+html[data-theme="dark"] .notification-header { border-bottom: 1px solid #252e43; }
+html[data-theme="dark"] .notification-close { background: #0d1018; color: #a1aabe; }
+html[data-theme="dark"] .mark-all { color: #6de784; }
+html[data-theme="dark"] .notification-loading { color: #8792ac; }
+html[data-theme="dark"] .top-profile-btn { background: #1d2536; color: #a1aabe; border: 2px solid #252d41; box-shadow: 0 0 0 1px rgba(0,0,0,0.5); }
+html[data-theme="dark"] .bottom-nav { background: #151a26; border-top: 1px solid #252e43; }
+html[data-theme="dark"] .bn-item { color: #8792ac; }
+html[data-theme="dark"] .bn-item.active,
+html[data-theme="dark"] .bn-item:hover { color: #6de784; }
+html[data-theme="dark"] .bn-item.active i { color: #6de784; }
+html[data-theme="dark"] .flash { background: #193b2b; border: 1px solid #266447; color: #79f7d3; }

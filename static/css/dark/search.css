@@ -1,0 +1,18 @@
+/* Imetengenezwa na tools/gen_dark.py kutoka templates/users/search.html - usihariri kwa mkono. */
+html[data-theme="dark"] .search-box input { border: 1.5px solid #252e42; }
+html[data-theme="dark"] .search-filters button { border: 1px solid #252e42; background: #151a26; color: #a1aabe; }
+html[data-theme="dark"] .search-filters button.active { background: #1a3d23; color: #76f095; }
+html[data-theme="dark"] .feed-card { background: #151a26; border: 1px solid #222a3d; }
+html[data-theme="dark"] .feed-card-avatar { background: #1a3d23; }
+html[data-theme="dark"] .feed-meta-line { color: #8792ac; }
+html[data-theme="dark"] .quote-frame { background: linear-gradient(145deg, #3a2b19, #10141d 45%, #193a23); border: 1.5px solid #645726; }
+html[data-theme="dark"] .qf-author { color: #8792ac; }
+html[data-theme="dark"] .qf-cat { background: #151a26; color: #f1a16f; }
+html[data-theme="dark"] .music-frame { background: linear-gradient(145deg, #0f131c, #111620 50%, #193b2b); border: 1.5px solid #283147; }
+html[data-theme="dark"] .mf-cover-lg { background: #161b28; }
+html[data-theme="dark"] .mf-artist { color: #a1aabe; }
+html[data-theme="dark"] .fca-btn { background: #121621; color: #b2b9c9; }
+html[data-theme="dark"] .fca-btn.liked,
+html[data-theme="dark"] .fca-btn.liked i { color: #ea5f7d; }
+html[data-theme="dark"] .fca-btn.saved,
+html[data-theme="dark"] .fca-btn.saved i { color: #6de784; }

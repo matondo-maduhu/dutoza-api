@@ -1,0 +1,7 @@
+/* Imetengenezwa na tools/gen_dark.py kutoka templates/users/static_page.html - usihariri kwa mkono. */
+html[data-theme="dark"] .static-card { background: #151a26; border: 1px solid #242c3f; }
+html[data-theme="dark"] .static-card h1 { color: #d2d6e0; }
+html[data-theme="dark"] .static-card p,
+html[data-theme="dark"] .static-card li { color: #b2b9c9; }
+html[data-theme="dark"] .static-back { color: #8792ac; }
+html[data-theme="dark"] .static-back:hover { color: #6de784; }
