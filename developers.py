@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_connection
 from auth import generate_api_key, hash_api_key
 from schema import ensure_schema
+import throttle
 import secrets
 import traceback
 
@@ -23,6 +24,7 @@ USAGE_CHOICES = ("", "low", "medium", "high")
 PROFILE_LIMITS = {"name": (2, 100), "company": (0, 150), "website": (0, 255),
                   "country": (0, 80), "bio": (0, 300)}
 PASSWORD_MIN = 8
+LOGIN_LIMIT = 8            # majaribio yasiyofaa kwa dakika 10 kwa kila IP
 
 PURPOSE_MIN = 10
 PURPOSE_MAX = 500
@@ -122,6 +124,17 @@ def login():
 def login_post():
     ensure_developers_table()
 
+    wait = throttle.seconds_locked("developer", LOGIN_LIMIT)
+
+    if wait:
+        flash(
+            "Too many failed attempts. Please wait "
+            + str(throttle.minutes_text(wait))
+            + " minute(s) and try again.",
+            "error"
+        )
+        return redirect(url_for("developers.login"))
+
     email = request.form.get("email", "").strip().lower()
     password = request.form.get("password", "")
 
@@ -150,9 +163,11 @@ def login_post():
             developer[1],
             password
         ):
-            flash("Invalid email or password.")
+            throttle.record_failure("developer")
+            flash("Invalid email or password.", "error")
             return redirect(url_for("developers.login"))
 
+        throttle.clear("developer")
         session.clear()
         session["developer_id"] = developer[0]
 

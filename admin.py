@@ -20,6 +20,7 @@ from db import get_connection
 from storage import upload_file
 from auth import generate_api_key, hash_api_key
 from schema import get_status, ensure_schema
+import throttle
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -90,6 +91,9 @@ def get_categories():
     raise last_error
 
 
+ADMIN_LOGIN_LIMIT = 5      # majaribio yasiyofaa kwa dakika 10 kwa kila IP
+
+
 def _after_post(default_endpoint="admin.admin_dashboard"):
     """Rudi kwenye ukurasa ulioombwa (next) kama ni wa ndani ya /admin."""
     target = request.form.get("next", "")
@@ -113,6 +117,18 @@ def admin_login():
         )
 
     if request.method == "POST":
+
+        wait = throttle.seconds_locked("admin", ADMIN_LOGIN_LIMIT)
+
+        if wait:
+            flash(
+                "Majaribio mengi yasiyofaa. Subiri dakika "
+                + str(throttle.minutes_text(wait))
+                + " kisha ujaribu tena.",
+                "error"
+            )
+
+            return render_template("admin/login.html"), 429
 
         username = request.form.get(
             "username",
@@ -143,10 +159,13 @@ def admin_login():
             )
         ):
             session["admin_logged_in"] = True
+            throttle.clear("admin")
 
             return redirect(
                 url_for("admin.admin_dashboard")
             )
+
+        throttle.record_failure("admin")
 
         flash(
             "Username au password si sahihi.",
