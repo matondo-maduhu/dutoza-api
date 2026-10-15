@@ -13,6 +13,14 @@
   </div>
 </div>
 
+{% if insecure_secret %}
+  <div class="flash error" style="display:block">
+    🔐 <b>Hatari ya usalama:</b> <code>FLASK_SECRET_KEY</code> haijawekwa (au ni fupi sana). Mtu anaweza kughushi session ya mtumiaji, developer au admin.
+    Kwenye Render: <b>Environment</b> → ongeza <code>FLASK_SECRET_KEY</code> yenye herufi 32 au zaidi za nasibu, kisha u-redeploy.
+    <br><small>Kumbuka: ukibadilisha, watu wote watahitaji kuingia upya.</small>
+  </div>
+{% endif %}
+
 {% if stats.reports_open %}
   <a href="{{ url_for('panel.reports_page') }}" class="flash error" style="display:block;color:inherit">
     🚩 Kuna <b>{{ stats.reports_open }}</b> {{ 'report' if stats.reports_open == 1 else 'reports' }} zinazosubiri kushughulikiwa. Bonyeza kuzifungua →
