@@ -18,16 +18,19 @@ from perf import init_compression
 from guard import init_user_guard
 from admin_panel import panel_bp
 from pwa import pwa_bp
+from security import init_security
 
 app = Flask(__name__)
-
-init_compression(app)
-init_user_guard(app)
 
 app.secret_key = os.getenv(
     "FLASK_SECRET_KEY",
     "change-this-secret-in-production"
 )
+
+# Ulinzi lazima uanze KWANZA (ukaguzi wa chanzo cha ombi unatangulia kila kitu)
+init_security(app)
+init_compression(app)
+init_user_guard(app)
 
 
 # API

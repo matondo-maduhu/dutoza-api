@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db import get_connection
+import throttle
 
 
 user_auth_bp = Blueprint("user_auth", __name__)
@@ -17,6 +18,12 @@ def register():
 
 @user_auth_bp.post("/register")
 def register_post():
+    if throttle.seconds_locked("user_register", USER_REGISTER_LIMIT):
+        flash("Majaribio mengi ya kujisajili. Jaribu tena baadaye.")
+        return redirect(url_for("user_auth.register"))
+
+    throttle.record_failure("user_register")
+
     full_name = request.form.get("full_name", "").strip()
     username = request.form.get("username", "").strip()
     email = request.form.get("email", "").strip().lower()
@@ -121,8 +128,22 @@ def login():
     return render_template("users/login.html")
 
 
+USER_LOGIN_LIMIT = 10       # majaribio yasiyofaa kwa dakika 10 kwa kila IP
+USER_REGISTER_LIMIT = 10    # akaunti mpya kwa dakika 10 kwa kila IP
+
+
 @user_auth_bp.post("/login")
 def login_post():
+    wait = throttle.seconds_locked("user_login", USER_LOGIN_LIMIT)
+
+    if wait:
+        flash(
+            "Majaribio mengi yasiyofaa. Subiri dakika "
+            + str(throttle.minutes_text(wait))
+            + " kisha ujaribu tena."
+        )
+        return redirect(url_for("user_auth.login"))
+
     email_or_username = request.form.get(
         "email_or_username",
         ""
@@ -160,6 +181,7 @@ def login_post():
         user = cursor.fetchone()
 
         if not user:
+            throttle.record_failure("user_login")
             flash("Username/email au password si sahihi.")
             return redirect(url_for("user_auth.login"))
 
@@ -179,9 +201,11 @@ def login_post():
             password_hash,
             password
         ):
+            throttle.record_failure("user_login")
             flash("Username/email au password si sahihi.")
             return redirect(url_for("user_auth.login"))
 
+        throttle.clear("user_login")
         session.clear()
         session["user_id"] = user_id
 

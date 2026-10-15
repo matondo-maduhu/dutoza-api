@@ -13,6 +13,7 @@ from flask import (
 
 from db import get_connection
 from schema import ensure_schema
+from safe import public_error
 
 
 user_feed_bp = Blueprint("user_feed", __name__)
@@ -1676,7 +1677,7 @@ def delete_quote(quote_id):
                 connection.rollback()
             except Exception:
                 pass
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success": False, "message": public_error(e)}), 500
     finally:
         close_connection(connection)
 
@@ -1759,7 +1760,7 @@ def edit_quote(quote_id):
                 connection.rollback()
             except Exception:
                 pass
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success": False, "message": public_error(e)}), 500
     finally:
         close_connection(connection)
 
@@ -1798,7 +1799,7 @@ def report_content():
                 connection.rollback()
             except Exception:
                 pass
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success": False, "message": public_error(e)}), 500
     finally:
         close_connection(connection)
 
@@ -1849,7 +1850,7 @@ def toggle_interest():
                 connection.rollback()
             except Exception:
                 pass
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success": False, "message": public_error(e)}), 500
     finally:
         close_connection(connection)
 
@@ -1975,7 +1976,7 @@ def content_like_toggle():
                 connection.rollback()
             except Exception:
                 pass
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success": False, "message": public_error(e)}), 500
     finally:
         close_connection(connection)
 
@@ -2031,7 +2032,7 @@ def content_save_toggle():
                 connection.rollback()
             except Exception:
                 pass
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success": False, "message": public_error(e)}), 500
     finally:
         close_connection(connection)
 
@@ -2070,7 +2071,7 @@ def content_share():
                 connection.rollback()
             except Exception:
                 pass
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success": False, "message": public_error(e)}), 500
     finally:
         close_connection(connection)
 
@@ -2185,7 +2186,7 @@ def get_profile_posts():
         feed_items.sort(key=lambda x: x.get("created_at") or "", reverse=True)
         return jsonify({"success": True, "posts": feed_items[:50]})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"success": False, "error": public_error(e)}), 500
     finally:
         close_connection(connection)
 
@@ -2322,7 +2323,7 @@ def user_search():
             "posts": feed_items[:50],
         })
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"success": False, "error": public_error(e)}), 500
     finally:
         close_connection(connection)
 

@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 
 from db import get_connection
 from auth import require_api_key
+from safe import public_error
 
 
 music_bp = Blueprint("music", __name__)
@@ -332,7 +333,7 @@ def get_music():
     except Exception as error:
         return jsonify({
             "success": False,
-            "error": str(error)
+            "error": public_error(error)
         }), 500
 
     finally:
@@ -497,7 +498,7 @@ def get_artists():
     except Exception as error:
         return jsonify({
             "success": False,
-            "error": str(error)
+            "error": public_error(error)
         }), 500
 
     finally:
@@ -584,7 +585,7 @@ def get_artist(artist_id):
     except Exception as error:
         return jsonify({
             "success": False,
-            "error": str(error)
+            "error": public_error(error)
         }), 500
 
     finally:
@@ -795,7 +796,7 @@ def get_albums():
     except Exception as error:
         return jsonify({
             "success": False,
-            "error": str(error)
+            "error": public_error(error)
         }), 500
 
     finally:
@@ -902,7 +903,7 @@ def get_album(album_id):
     except Exception as error:
         return jsonify({
             "success": False,
-            "error": str(error)
+            "error": public_error(error)
         }), 500
 
     finally:
@@ -948,7 +949,7 @@ def get_music_by_id(music_id):
     except Exception as error:
         return jsonify({
             "success": False,
-            "error": str(error)
+            "error": public_error(error)
         }), 500
 
     finally:
@@ -1007,7 +1008,7 @@ def play_music(music_id):
 
         return jsonify({
             "success": False,
-            "error": str(error)
+            "error": public_error(error)
         }), 500
 
     finally:
@@ -1070,7 +1071,7 @@ def download_music(music_id):
 
         return jsonify({
             "success": False,
-            "error": str(error)
+            "error": public_error(error)
         }), 500
 
     finally:

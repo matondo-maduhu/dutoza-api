@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from db import get_connection
 from auth import require_api_key
+from safe import public_error
 
 quotes_bp = Blueprint("quotes", __name__)
 
@@ -184,7 +185,7 @@ def get_quotes():
     except Exception as error:
         return jsonify({
             "success": False,
-            "error": str(error)
+            "error": public_error(error)
         }), 500
 
 
@@ -225,7 +226,7 @@ def get_quote_by_id(quote_id):
     except Exception as error:
         return jsonify({
             "success": False,
-            "error": str(error)
+            "error": public_error(error)
         }), 500
 
 
@@ -271,5 +272,5 @@ def get_categories():
     except Exception as error:
         return jsonify({
             "success": False,
-            "error": str(error)
+            "error": public_error(error)
         }), 500

@@ -24,6 +24,7 @@ USAGE_CHOICES = ("", "low", "medium", "high")
 PROFILE_LIMITS = {"name": (2, 100), "company": (0, 150), "website": (0, 255),
                   "country": (0, 80), "bio": (0, 300)}
 PASSWORD_MIN = 8
+REGISTER_LIMIT = 5         # akaunti mpya kwa dakika 10 kwa kila IP
 LOGIN_LIMIT = 8            # majaribio yasiyofaa kwa dakika 10 kwa kila IP
 
 PURPOSE_MIN = 10
@@ -191,6 +192,12 @@ def register():
 @developers_bp.post("/developers/register")
 def register_post():
     ensure_developers_table()
+
+    if throttle.seconds_locked("developer_register", REGISTER_LIMIT):
+        flash("Too many sign-up attempts. Please try again later.", "error")
+        return redirect(url_for("developers.register"))
+
+    throttle.record_failure("developer_register")
 
     name = request.form.get("name", "").strip()
     email = request.form.get("email", "").strip().lower()

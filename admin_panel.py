@@ -21,6 +21,7 @@ from math import ceil
 
 from flask import (
     Blueprint,
+    current_app,
     Response,
     flash,
     jsonify,
@@ -32,6 +33,7 @@ from flask import (
 )
 
 import guard
+from security import secret_key_is_weak
 from auth import invalidate_key_scopes
 from admin import admin_logged_in, safe_close, slugify
 from db import get_connection
@@ -418,6 +420,7 @@ def overview():
         recent_reports=recent_reports,
         recent_audit=recent_audit,
         content_types=CONTENT,
+        insecure_secret=secret_key_is_weak(current_app),
     )
 
 

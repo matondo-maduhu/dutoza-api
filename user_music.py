@@ -7,6 +7,7 @@ from flask import Blueprint, request, jsonify, render_template, session
 
 from db import get_connection
 from storage import upload_file
+from safe import public_error
 
 
 user_music_bp = Blueprint("user_music", __name__)
@@ -573,7 +574,7 @@ def create_music_post():
         return jsonify({
             "success": False,
             "message": "Imeshindikana kutuma wimbo.",
-            "error": str(error)
+            "error": public_error(error)
         }), 500
 
 
@@ -616,7 +617,7 @@ def delete_music(song_id):
                 connection.rollback()
             except Exception:
                 pass
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success": False, "message": public_error(e)}), 500
     finally:
         if connection:
             try:
@@ -686,7 +687,7 @@ def edit_music(song_id):
                 connection.rollback()
             except Exception:
                 pass
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success": False, "message": public_error(e)}), 500
     finally:
         if connection:
             try:
