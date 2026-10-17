@@ -33,6 +33,7 @@ from flask import (
 )
 
 import guard
+import health
 from security import secret_key_is_weak
 from auth import invalidate_key_scopes
 from admin import admin_logged_in, safe_close, slugify
@@ -1631,3 +1632,30 @@ def developer_key_scopes(key_id):
         flash(f"Imeshindikana: {error}", "error")
 
     return redirect(back)
+
+
+# ============================================================
+# UKAGUZI WA MFUMO
+# ============================================================
+
+@panel_bp.get("/admin/health")
+@admin_required
+def health_page():
+    return render_template("admin/panel_health.html", active="health", result=None)
+
+
+@panel_bp.post("/admin/health/run")
+@admin_required
+@csrf_protected
+def health_run():
+    """Endesha ukaguzi (kurasa za GET tu - hakuna data inayobadilishwa) na onyesha matokeo."""
+    result = health.run_checks(current_app._get_current_object())
+
+    audit(
+        "health_check",
+        None,
+        None,
+        "OK %(OK)d, ONYO %(ONYO)d, KOSA %(KOSA)d" % result["summary"],
+    )
+
+    return render_template("admin/panel_health.html", active="health", result=result)
