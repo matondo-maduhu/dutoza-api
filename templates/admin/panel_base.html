@@ -294,6 +294,7 @@ table.rtable { width: 100%; border-collapse: collapse; }
       {% if pending_n %}<span class="count">{{ pending_n }}</span>{% endif %}
     </a>
     <a href="/admin/api-keys" class="{{ 'active' if active == 'apikeys' }}"><span class="ico">🔑</span>API Keys</a>
+    <a href="{{ url_for('panel.health_page') }}" class="{{ 'active' if active == 'health' }}"><span class="ico">🩺</span>Ukaguzi wa mfumo</a>
     <a href="{{ url_for('admin.schema_status') }}" class="{{ 'active' if active == 'schema' }}"><span class="ico">🛠️</span>Schema Status</a>
     <a href="/feed"><span class="ico">📱</span>Fungua app ya watumiaji</a>
   </nav>

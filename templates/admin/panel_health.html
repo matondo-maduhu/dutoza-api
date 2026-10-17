@@ -1,0 +1,103 @@
+{% extends "admin/panel_base.html" %}
+{% block title %}Ukaguzi wa mfumo{% endblock %}
+{% block topbar_title %}Ukaguzi wa mfumo{% endblock %}
+
+{% block head %}
+<style>
+  .v { display: inline-block; min-width: 54px; text-align: center; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 900; letter-spacing: .3px; }
+  .v.OK { background: var(--green-soft); color: var(--green-text); }
+  .v.ONYO { background: var(--amber-soft); color: var(--amber-text); }
+  .v.KOSA { background: var(--red-soft); color: var(--red-text); }
+  .v.RUKA { background: var(--border); color: var(--muted); }
+  .row { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .row:last-child { border-bottom: 0; }
+  .row .grow { flex: 1; min-width: 0; }
+  .row .t { font-weight: 700; }
+  .row code { font-size: 12px; color: var(--muted); word-break: break-all; }
+  .row .d { font-size: 13px; margin-top: 3px; color: var(--muted); word-break: break-word; }
+  .row.KOSA .d { color: var(--red-text); }
+  .row.ONYO .d { color: var(--amber-text); }
+  .ms { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  textarea.report { width: 100%; min-height: 150px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.5; }
+  .big-run { width: 100%; padding: 15px; font-size: 16px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Ukaguzi wa mfumo</h1>
+    <p>Unaendesha kurasa na API halisi (kusoma tu) kama mtumiaji, developer na admin, dhidi ya database yako halisi, kisha unakuonyesha kipi kinashindwa na kwa nini.</p>
+  </div>
+</div>
+
+<div class="card">
+  <form method="post" action="{{ url_for('panel.health_run') }}" id="runForm">
+    <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
+    <button class="btn big-run" type="submit" id="runBtn">🩺 {{ 'Kagua tena' if result else 'Endesha ukaguzi' }}</button>
+  </form>
+  <p class="small muted" style="margin:10px 0 0">Haibadilishi data yoyote. Inaweza kuchukua sekunde 5 hadi 30 kutegemea kasi ya database.</p>
+</div>
+
+{% if result %}
+  {% set s = result.summary %}
+  <div class="grid cols-3 mt">
+    <div class="card stat"><div class="glyph {{ 'g-red' if s.KOSA else 'g-green' }}">{{ '❌' if s.KOSA else '✅' }}</div>
+      <div class="label">{{ 'Kuna kinachoshindwa' if s.KOSA else 'Hakuna kosa' }}</div>
+      <div class="value">{{ s.KOSA }}</div><div class="sub">makosa</div></div>
+    <div class="card stat"><div class="glyph g-amber">⚠️</div><div class="label">Maonyo</div><div class="value">{{ s.ONYO }}</div><div class="sub">{{ s.RUKA }} zimerukwa</div></div>
+    <div class="card stat"><div class="glyph g-green">✔️</div><div class="label">Zinafanya kazi</div><div class="value">{{ s.OK }}</div><div class="sub">{{ result.duration_ms }} ms · {{ result.at.strftime('%H:%M:%S') }} UTC</div></div>
+  </div>
+
+  <div class="card mt">
+    <div class="card-title"><span>Mazingira na mipangilio</span></div>
+    {% for c in result.environment %}
+      <div class="row {{ c.verdict }}">
+        <span class="v {{ c.verdict }}">{{ c.verdict }}</span>
+        <div class="grow"><div class="t">{{ c.label }}</div><div class="d">{{ c.detail }}</div></div>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% for group in ['Mtumiaji', 'Developer', 'Admin', 'Umma'] %}
+    <div class="card mt">
+      <div class="card-title"><span>{{ {'Mtumiaji': '📱 App ya mtumiaji', 'Developer': '🧑‍💻 Portal ya developer', 'Admin': '🛡️ Admin', 'Umma': '🌐 Kurasa za umma'}[group] }}</span></div>
+      {% for p in result.probes if p.group == group %}
+        <div class="row {{ p.verdict }}">
+          <span class="v {{ p.verdict }}">{{ p.verdict }}</span>
+          <div class="grow">
+            <div class="t">{{ p.label }}</div>
+            <code>{{ p.path }}</code>
+            {% if p.detail %}<div class="d">{{ p.detail }}</div>{% endif %}
+          </div>
+          <div class="ms">{% if p.status %}{{ p.status }} · {% endif %}{{ p.ms }} ms</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+
+  <div class="card mt">
+    <div class="card-title"><span>Ripoti ya kunakili</span><button type="button" class="btn sm" id="copyBtn">Nakili</button></div>
+    <p class="small muted" style="margin-top:0">Nakili ripoti hii na unitumie kama kuna makosa, nitajua hasa nini cha kurekebisha.</p>
+    <textarea class="report" id="reportText" readonly>{{ result.report }}</textarea>
+  </div>
+{% else %}
+  <div class="card mt"><div class="empty"><div class="big">🩺</div>Bonyeza "Endesha ukaguzi" kuona hali ya mfumo wako.</div></div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  var form = document.getElementById("runForm");
+  if (form) form.addEventListener("submit", function () {
+    var b = document.getElementById("runBtn"); b.disabled = true; b.textContent = "Inakagua… subiri";
+  });
+  var copy = document.getElementById("copyBtn");
+  if (copy) copy.addEventListener("click", function () {
+    var t = document.getElementById("reportText");
+    t.select();
+    (navigator.clipboard ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(function () { copy.textContent = "Imenakiliwa ✓"; })
+      .catch(function () { document.execCommand("copy"); copy.textContent = "Imenakiliwa ✓"; });
+  });
+</script>
+{% endblock %}
