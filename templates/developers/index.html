@@ -597,7 +597,7 @@ table.ref td { color: #475569; }
         using a simple Bearer token.
       </p>
       <div class="base-url">
-        <code id="baseUrl">https://dutoza-api.onrender.com</code>
+        <code id="baseUrl">https://mercyfy.dutoza.com</code>
         <button type="button" class="btn-copy" onclick="copyBase()">Copy base URL</button>
       </div>
     </section>
@@ -694,10 +694,10 @@ table.ref td { color: #475569; }
                 <button type="button" data-lang="js">JavaScript</button>
                 <button type="button" data-lang="py">Python</button>
               </div>
-              <div class="lang-panel on" data-lang="curl"><div class="code">{% raw %}curl "https://dutoza-api.onrender.com/api/quotes/" \
+              <div class="lang-panel on" data-lang="curl"><div class="code">{% raw %}curl "https://mercyfy.dutoza.com/api/quotes/" \
   -H "Authorization: Bearer YOUR_API_KEY"{% endraw %}</div></div>
               <div class="lang-panel" data-lang="js"><div class="code">{% raw %}// Run this on a server (Node 18+), not in public browser code
-const res = await fetch("https://dutoza-api.onrender.com/api/quotes/", {
+const res = await fetch("https://mercyfy.dutoza.com/api/quotes/", {
   headers: { Authorization: `Bearer ${process.env.DUTOZA_API_KEY}` },
 });
 const json = await res.json();
@@ -706,7 +706,7 @@ console.log(json.data);{% endraw %}</div></div>
 import requests
 
 res = requests.get(
-    "https://dutoza-api.onrender.com/api/quotes/",
+    "https://mercyfy.dutoza.com/api/quotes/",
     headers={"Authorization": f"Bearer {os.environ['DUTOZA_API_KEY']}"},
     timeout=15,
 )
@@ -753,9 +753,9 @@ print(res.json()["data"]){% endraw %}</div></div>
             <span class="chev" aria-hidden="true"></span>
           </summary>
           <div class="step-body">
-            <p>The base URL is <code>https://dutoza-api.onrender.com</code>. Here is a first request that returns five Swahili quotes:</p>
+            <p>The base URL is <code>https://mercyfy.dutoza.com</code>. Here is a first request that returns five Swahili quotes:</p>
 
-            <div class="code">{% raw %}curl "https://dutoza-api.onrender.com/api/quotes/?per_page=5&language=sw" \
+            <div class="code">{% raw %}curl "https://mercyfy.dutoza.com/api/quotes/?per_page=5&language=sw" \
   -H "Authorization: Bearer YOUR_API_KEY"{% endraw %}</div>
 
             <div class="note-box">
@@ -833,7 +833,7 @@ print(res.json()["data"]){% endraw %}</div></div>
             <div class="code">{% raw %}let page = 1, pages = 1;
 while (page <= pages) {
   const res = await fetch(
-    `https://dutoza-api.onrender.com/api/music/?per_page=100&page=${page}`,
+    `https://mercyfy.dutoza.com/api/music/?per_page=100&page=${page}`,
     { headers: { Authorization: `Bearer ${process.env.DUTOZA_API_KEY}` } }
   );
   const json = await res.json();
@@ -891,7 +891,7 @@ while (page <= pages) {
         </div>
         <div class="ep-body">
           <p>Returns the published music library (paginated / searchable depending on query params).</p>
-          <div class="code">curl https://dutoza-api.onrender.com/api/music/ \
+          <div class="code">curl https://mercyfy.dutoza.com/api/music/ \
   -H "Authorization: Bearer YOUR_API_KEY"</div>
           <div class="trybox">
             <strong>Try it</strong>
@@ -958,7 +958,7 @@ while (page <= pages) {
         </div>
         <div class="ep-body">
           <p>Returns available quotes. Supports filters such as category / search where enabled.</p>
-          <div class="code">curl https://dutoza-api.onrender.com/api/quotes/ \
+          <div class="code">curl https://mercyfy.dutoza.com/api/quotes/ \
   -H "Authorization: Bearer YOUR_API_KEY"</div>
           <div class="trybox">
             <strong>Try it</strong>
