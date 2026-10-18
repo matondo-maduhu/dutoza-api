@@ -34,13 +34,30 @@
 <div class="card">
   <form method="post" action="{{ url_for('panel.health_run') }}" id="runForm">
     <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
-    <button class="btn big-run" type="submit" id="runBtn">🩺 {{ 'Kagua tena' if result else 'Endesha ukaguzi' }}</button>
+    <input type="hidden" name="group" value="all">
+    <button class="btn big-run" type="submit" id="runBtn">🩺 {{ 'Kagua tena (vyote)' if result else 'Endesha ukaguzi (vyote)' }}</button>
   </form>
-  <p class="small muted" style="margin:10px 0 0">Haibadilishi data yoyote. Inaweza kuchukua sekunde 5 hadi 30 kutegemea kasi ya database.</p>
+  <p class="small muted" style="margin:10px 0 0">Haibadilishi data yoyote. Ukaguzi unasimama baada ya sekunde 20 ili seva isiuzime; zilizobaki zinaruka.</p>
+
+  <div class="small muted" style="margin:14px 0 6px">Au kagua kundi moja tu (haraka zaidi, na ni bora kama "vyote" vinachelewa):</div>
+  <div class="btn-row">
+    {% for g in groups %}
+      <form method="post" action="{{ url_for('panel.health_run') }}" class="inline groupForm">
+        <input type="hidden" name="csrf_token" value="{{ panel_csrf() }}">
+        <input type="hidden" name="group" value="{{ g }}">
+        <button class="btn ghost sm" type="submit">{{ {'Mazingira': '⚙️ Mazingira', 'Mtumiaji': '📱 Mtumiaji', 'Developer': '🧑‍💻 Developer', 'Admin': '🛡️ Admin', 'Umma': '🌐 Umma'}[g] }}</button>
+      </form>
+    {% endfor %}
+  </div>
 </div>
 
 {% if result %}
   {% set s = result.summary %}
+  {% if result.partial %}
+    <div class="flash error mt" style="display:block">
+      ⏱️ <b>Muda wa ukaguzi umeisha</b> kabla ya kumaliza (database au seva ni polepole). Zilizoruka zimeandikwa <b>RUKA</b>. Kagua kundi moja moja kwa vitufe vilivyo juu.
+    </div>
+  {% endif %}
   <div class="grid cols-3 mt">
     <div class="card stat"><div class="glyph {{ 'g-red' if s.KOSA else 'g-green' }}">{{ '❌' if s.KOSA else '✅' }}</div>
       <div class="label">{{ 'Kuna kinachoshindwa' if s.KOSA else 'Hakuna kosa' }}</div>
@@ -49,6 +66,7 @@
     <div class="card stat"><div class="glyph g-green">✔️</div><div class="label">Zinafanya kazi</div><div class="value">{{ s.OK }}</div><div class="sub">{{ result.duration_ms }} ms · {{ result.at.strftime('%H:%M:%S') }} UTC</div></div>
   </div>
 
+  {% if result.environment %}
   <div class="card mt">
     <div class="card-title"><span>Mazingira na mipangilio</span></div>
     {% for c in result.environment %}
@@ -58,8 +76,10 @@
       </div>
     {% endfor %}
   </div>
+  {% endif %}
 
   {% for group in ['Mtumiaji', 'Developer', 'Admin', 'Umma'] %}
+    {% if result.probes | selectattr('group', 'equalto', group) | list %}
     <div class="card mt">
       <div class="card-title"><span>{{ {'Mtumiaji': '📱 App ya mtumiaji', 'Developer': '🧑‍💻 Portal ya developer', 'Admin': '🛡️ Admin', 'Umma': '🌐 Kurasa za umma'}[group] }}</span></div>
       {% for p in result.probes if p.group == group %}
@@ -74,6 +94,7 @@
         </div>
       {% endfor %}
     </div>
+    {% endif %}
   {% endfor %}
 
   <div class="card mt">
@@ -88,9 +109,11 @@
 
 {% block scripts %}
 <script>
-  var form = document.getElementById("runForm");
-  if (form) form.addEventListener("submit", function () {
-    var b = document.getElementById("runBtn"); b.disabled = true; b.textContent = "Inakagua… subiri";
+  document.querySelectorAll("#runForm, .groupForm").forEach(function (f) {
+    f.addEventListener("submit", function () {
+      document.querySelectorAll("button[type=submit]").forEach(function (b) { b.disabled = true; });
+      var main = document.getElementById("runBtn"); if (main) main.textContent = "Inakagua… subiri";
+    });
   });
   var copy = document.getElementById("copyBtn");
   if (copy) copy.addEventListener("click", function () {
