@@ -1638,10 +1638,42 @@ def developer_key_scopes(key_id):
 # UKAGUZI WA MFUMO
 # ============================================================
 
+def _health_error_page(error):
+    """Ukurasa unaosomeka badala ya "Internal Server Error" (ni wa admin tu, kwa hiyo ni salama kuonyesha kosa)."""
+    from html import escape
+    import traceback
+
+    from jinja2 import TemplateNotFound
+
+    if isinstance(error, TemplateNotFound):
+        hint = (
+            "Faili <b>%s</b> haipo kwenye seva. Iweke kwenye folda <b>templates/admin/</b> "
+            "(jina lilelile), kisha deploy upya." % escape(str(error.name))
+        )
+    else:
+        hint = "Nakili maelezo yaliyo chini na unitumie ili nirekebishe."
+
+    detail = "".join(traceback.format_exception_only(type(error), error)).strip()
+    tail = "".join(traceback.format_exception(type(error), error, error.__traceback__)[-4:]).strip()
+
+    html = (
+        "<!DOCTYPE html><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
+        "<body style='font-family:system-ui;padding:20px;max-width:720px;margin:auto'>"
+        "<h2>Ukaguzi wa mfumo umekutana na kosa</h2>"
+        "<p>%s</p><pre style='white-space:pre-wrap;background:#f1f5f9;padding:12px;border-radius:10px;font-size:13px'>%s\n\n%s</pre>"
+        "<p><a href='/admin/health'>Jaribu tena</a> · <a href='/admin/overview'>Rudi Muhtasari</a></p></body>"
+    ) % (hint, escape(detail), escape(tail))
+
+    return Response(html, status=500, mimetype="text/html")
+
+
 @panel_bp.get("/admin/health")
 @admin_required
 def health_page():
-    return render_template("admin/panel_health.html", active="health", result=None)
+    try:
+        return render_template("admin/panel_health.html", active="health", result=None, groups=health.GROUPS)
+    except Exception as error:
+        return _health_error_page(error)
 
 
 @panel_bp.post("/admin/health/run")
@@ -1649,13 +1681,23 @@ def health_page():
 @csrf_protected
 def health_run():
     """Endesha ukaguzi (kurasa za GET tu - hakuna data inayobadilishwa) na onyesha matokeo."""
-    result = health.run_checks(current_app._get_current_object())
+    group = request.form.get("group", "all")
 
-    audit(
-        "health_check",
-        None,
-        None,
-        "OK %(OK)d, ONYO %(ONYO)d, KOSA %(KOSA)d" % result["summary"],
-    )
+    if group != "all" and group not in health.GROUPS:
+        flash("Kundi si sahihi.", "error")
+        return redirect(url_for("panel.health_page"))
 
-    return render_template("admin/panel_health.html", active="health", result=result)
+    try:
+        result = health.run_checks(current_app._get_current_object(), group=group)
+
+        audit(
+            "health_check",
+            None,
+            None,
+            ("%s: " % group) + "OK %(OK)d, ONYO %(ONYO)d, KOSA %(KOSA)d" % result["summary"],
+        )
+
+        return render_template("admin/panel_health.html", active="health", result=result, groups=health.GROUPS)
+
+    except Exception as error:
+        return _health_error_page(error)

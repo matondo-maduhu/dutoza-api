@@ -24,6 +24,11 @@ OK, WARN, FAIL, SKIP = "OK", "ONYO", "KOSA", "RUKA"
 SLOW_MS = 1500
 SLOW_DB_MS = 300
 
+# Seva nyingi huua ombi linalozidi sekunde ~30. Tunasimama mapema kuliko hapo.
+TIME_BUDGET_SECONDS = 20
+
+GROUPS = ["Mazingira", "Mtumiaji", "Developer", "Admin", "Umma"]
+
 # (kundi, jina, njia)
 USER_PROBES = [
     ("Mtumiaji", "Feed (ukurasa)", "/feed"),
@@ -323,42 +328,75 @@ def _environment_checks(app):
     return checks
 
 
-def run_checks(app):
-    started = time.perf_counter()
+def run_checks(app, group="all", budget=None):
+    """
+    group: "all" au moja ya GROUPS. budget: sekunde za juu za kukagua kurasa
+    (zilizobaki zinaruka na kuashiria kuwa muda umeisha).
+    """
+    if group != "all" and group not in GROUPS:
+        raise ValueError("Kundi si sahihi: %r" % (group,))
 
-    user_id = _first_id(["SELECT id FROM users WHERE status = 'active' ORDER BY id LIMIT 1"])
-    developer_id = _first_id([
-        "SELECT id FROM developers WHERE status = 'active' ORDER BY id LIMIT 1",
-        "SELECT id FROM developers ORDER BY id LIMIT 1",
-    ])
+    budget = TIME_BUDGET_SECONDS if budget is None else budget
+    started = time.perf_counter()
+    out_of_time = {"hit": False}
+
+    def wanted(name):
+        return group == "all" or group == name
+
+    environment = _environment_checks(app) if wanted("Mazingira") else []
+
+    user_id = developer_id = None
+
+    if wanted("Mtumiaji"):
+        user_id = _first_id(["SELECT id FROM users WHERE status = 'active' ORDER BY id LIMIT 1"])
+
+    if wanted("Developer"):
+        developer_id = _first_id([
+            "SELECT id FROM developers WHERE status = 'active' ORDER BY id LIMIT 1",
+            "SELECT id FROM developers ORDER BY id LIMIT 1",
+        ])
+
+    def run(role, session_values, probe):
+        grp, label, path = probe
+
+        if time.perf_counter() - started > budget:
+            out_of_time["hit"] = True
+            return _skipped(grp, label, path,
+                            "Muda umeisha (sekunde %d). Endesha kundi hili peke yake." % budget)
+
+        return _probe(app, role, session_values, grp, label, path)
 
     probes = []
 
-    for group, label, path in USER_PROBES:
-        if user_id is None:
-            probes.append(_skipped(group, label, path, "Hakuna mtumiaji hai wa kujaribia"))
-        else:
-            probes.append(_probe(app, "mtumiaji #%s" % user_id, {"user_id": user_id}, group, label, path))
+    if wanted("Mtumiaji"):
+        for probe in USER_PROBES:
+            if user_id is None:
+                probes.append(_skipped(*probe, "Hakuna mtumiaji hai wa kujaribia"))
+            else:
+                probes.append(run("mtumiaji #%s" % user_id, {"user_id": user_id}, probe))
 
-    for group, label, path in DEVELOPER_PROBES:
-        if developer_id is None:
-            probes.append(_skipped(group, label, path, "Hakuna developer wa kujaribia"))
-        else:
-            probes.append(_probe(app, "developer #%s" % developer_id, {"developer_id": developer_id}, group, label, path))
+    if wanted("Developer"):
+        for probe in DEVELOPER_PROBES:
+            if developer_id is None:
+                probes.append(_skipped(*probe, "Hakuna developer wa kujaribia"))
+            else:
+                probes.append(run("developer #%s" % developer_id, {"developer_id": developer_id}, probe))
 
-    for group, label, path in ADMIN_PROBES:
-        probes.append(_probe(app, "admin", {"admin_logged_in": True}, group, label, path))
+    if wanted("Admin"):
+        for probe in ADMIN_PROBES:
+            probes.append(run("admin", {"admin_logged_in": True}, probe))
 
-    for group, label, path in PUBLIC_PROBES:
-        probes.append(_probe(app, "mgeni", {}, group, label, path))
-
-    environment = _environment_checks(app)
+    if wanted("Umma"):
+        for probe in PUBLIC_PROBES:
+            probes.append(run("mgeni", {}, probe))
 
     everything = [p["verdict"] for p in probes] + [c["verdict"] for c in environment]
     summary = {v: everything.count(v) for v in (OK, WARN, FAIL, SKIP)}
 
     return {
         "at": datetime.now(timezone.utc),
+        "group": group,
+        "partial": out_of_time["hit"],
         "duration_ms": int((time.perf_counter() - started) * 1000),
         "environment": environment,
         "probes": probes,
