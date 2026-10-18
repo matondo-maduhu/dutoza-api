@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block bottom_nav_center %}
-<button type="button" class="bn-item" id="bnCompose" aria-label="Post" title="Post quote">
+<button type="button" class="bn-item" id="bnCompose" aria-label="Post" title="Chapisha post">
     <i class="fa-solid fa-plus" aria-hidden="true"></i>
     <span>Post</span>
 </button>
@@ -1571,6 +1571,44 @@
         </div>
     </section>
 
+
+    <!-- Tabs za feed: Quote | Music | Post -->
+    <nav class="feed-tabs" id="feedTabs" role="tablist" aria-label="Aina ya maudhui">
+        <button type="button" class="feed-tab" role="tab" data-tab="quote" aria-selected="false">
+            <i class="fa-solid fa-quote-left" aria-hidden="true"></i><span>Quote</span>
+        </button>
+        <button type="button" class="feed-tab" role="tab" data-tab="music" aria-selected="false">
+            <i class="fa-solid fa-music" aria-hidden="true"></i><span>Music</span>
+        </button>
+        <button type="button" class="feed-tab" role="tab" data-tab="post" aria-selected="false">
+            <i class="fa-solid fa-image" aria-hidden="true"></i><span>Post</span>
+        </button>
+    </nav>
+
+    <style>
+    .feed-tabs {
+        position: sticky; top: 56px; z-index: 90;
+        display: flex; gap: 6px; padding: 8px 0 10px; margin: 0 0 12px;
+        background: #f5f6f7;
+    }
+    .feed-tab {
+        flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+        border: 1.5px solid #e2e8f0; background: #fff; color: #475569;
+        border-radius: 999px; padding: 10px 8px; font-size: 14px; font-weight: 800;
+        font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+        transition: background .15s, color .15s, border-color .15s;
+    }
+    .feed-tab i { font-size: 14px; }
+    .feed-tab.active {
+        color: #fff; border-color: transparent;
+        background: linear-gradient(120deg, #1EB53A 0%, #00A3DD 55%, #7c3aed 100%);
+    }
+    html[data-theme="dark"] .feed-tabs { background: #0d1018; }
+    html[data-theme="dark"] .feed-tab { background: #151a26; border-color: #252e42; color: #a1aabe; }
+    html[data-theme="dark"] .feed-tab.active { color: #fff; border-color: transparent;
+        background: linear-gradient(120deg, #1EB53A 0%, #00A3DD 55%, #7c3aed 100%); }
+    </style>
+
     <!-- Quote form modal -->
     <div class="quote-modal-overlay" id="quoteModal" hidden>
         <div class="quote-modal" role="dialog" aria-modal="true" aria-labelledby="quoteModalTitle">
@@ -2064,6 +2102,111 @@
         </div>
     </div>
 
+
+    <!-- Kitufe cha + : Kamera / Video / Galeri -->
+    <div class="mf-sheet-overlay" id="mediaSheet" hidden>
+        <div class="mf-sheet" role="dialog" aria-modal="true" aria-labelledby="mediaSheetTitle">
+            <div class="mf-sheet-grab" aria-hidden="true"></div>
+            <h3 id="mediaSheetTitle">Tengeneza post</h3>
+            <div class="mf-sheet-grid">
+                <button type="button" class="mf-sheet-opt" data-pick="camera">
+                    <span class="mf-sheet-ico cam"><i class="fa-solid fa-camera"></i></span>
+                    <span>Kamera</span>
+                </button>
+                <button type="button" class="mf-sheet-opt" data-pick="video">
+                    <span class="mf-sheet-ico vid"><i class="fa-solid fa-video"></i></span>
+                    <span>Video</span>
+                </button>
+                <button type="button" class="mf-sheet-opt" data-pick="gallery">
+                    <span class="mf-sheet-ico gal"><i class="fa-solid fa-images"></i></span>
+                    <span>Galeri</span>
+                </button>
+            </div>
+            <button type="button" class="mf-sheet-cancel" id="mediaSheetCancel">Ghairi</button>
+        </div>
+    </div>
+    <input type="file" id="pickCamera" class="mf-file-input" accept="image/*" capture="environment">
+    <input type="file" id="pickVideo" class="mf-file-input" accept="video/*" capture="environment">
+    <input type="file" id="pickGallery" class="mf-file-input" accept="image/*,video/*">
+
+    <!-- Fomu ya post ya picha/video -->
+    <div class="quote-modal-overlay" id="mediaPostModal" hidden>
+        <div class="quote-modal" role="dialog" aria-modal="true" aria-labelledby="mediaPostTitle">
+            <div class="quote-modal-header">
+                <h2 id="mediaPostTitle">Chapisha Post</h2>
+                <button type="button" class="quote-modal-close" id="mediaPostClose" aria-label="Funga">&times;</button>
+            </div>
+            <form id="mediaPostForm" novalidate>
+                <div class="mp-preview" id="mpPreview"></div>
+                <label class="qm-label" for="mpCaption">Maelezo (si lazima)</label>
+                <textarea id="mpCaption" name="content" maxlength="2000" rows="3"
+                          placeholder="Andika kitu kuhusu post hii..."></textarea>
+                <div class="mp-error" id="mpError" hidden></div>
+                <div class="mp-progress" id="mpProgress" hidden><span id="mpBar"></span></div>
+                <div class="quote-modal-actions">
+                    <button type="button" class="qm-btn qm-cancel" id="mediaPostCancel">Ghairi</button>
+                    <button type="submit" class="qm-btn qm-submit" id="mediaPostSubmit">
+                        <i class="fa-solid fa-paper-plane"></i> Chapisha
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+    .mf-file-input { position: fixed; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+    .mf-sheet-overlay {
+        position: fixed; inset: 0; z-index: 9998; background: rgba(15,23,42,.45);
+        display: flex; align-items: flex-end; justify-content: center;
+    }
+    .mf-sheet-overlay[hidden] { display: none !important; }
+    .mf-sheet {
+        width: 100%; max-width: 480px; background: #fff; border-radius: 20px 20px 0 0;
+        padding: 10px 18px calc(22px + env(safe-area-inset-bottom, 0px));
+        box-shadow: 0 -8px 40px rgba(0,0,0,.18); animation: qmSlide .2s ease;
+    }
+    .mf-sheet-grab { width: 42px; height: 4px; border-radius: 4px; background: #cbd5e1; margin: 4px auto 12px; }
+    .mf-sheet h3 { margin: 0 0 14px; font-size: 17px; font-weight: 800; text-align: center; color: #0f172a; }
+    .mf-sheet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .mf-sheet-opt {
+        display: flex; flex-direction: column; align-items: center; gap: 8px;
+        border: none; background: #f1f5f9; border-radius: 16px; padding: 16px 6px;
+        font-size: 14px; font-weight: 700; color: #1f2937; font-family: inherit; cursor: pointer;
+    }
+    .mf-sheet-opt:active { transform: scale(.97); }
+    .mf-sheet-ico {
+        width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center;
+        justify-content: center; color: #fff; font-size: 20px;
+    }
+    .mf-sheet-ico.cam { background: linear-gradient(135deg,#1EB53A,#16a34a); }
+    .mf-sheet-ico.vid { background: linear-gradient(135deg,#00A3DD,#2563eb); }
+    .mf-sheet-ico.gal { background: linear-gradient(135deg,#8b5cf6,#7c3aed); }
+    .mf-sheet-cancel {
+        width: 100%; margin-top: 14px; border: none; background: transparent; color: #64748b;
+        font-weight: 700; font-size: 15px; padding: 10px; cursor: pointer; font-family: inherit;
+    }
+    .mp-preview { border-radius: 14px; overflow: hidden; background: #0f172a; margin-bottom: 4px; }
+    .mp-preview img, .mp-preview video { display: block; width: 100%; max-height: 46vh; object-fit: contain; background: #000; }
+    #mediaPostForm textarea {
+        width: 100%; box-sizing: border-box; resize: vertical; min-height: 76px;
+        border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;
+        font-size: 16px; font-family: inherit; line-height: 1.45; outline: none; background: #fff; color: inherit;
+    }
+    #mediaPostForm textarea:focus { border-color: #1EB53A; }
+    .mp-error { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: #fef2f2; color: #b91c1c; font-size: 13px; font-weight: 600; }
+    .mp-error[hidden], .mp-progress[hidden] { display: none; }
+    .mp-progress { margin-top: 12px; height: 6px; border-radius: 6px; background: #e2e8f0; overflow: hidden; }
+    .mp-progress span { display: block; height: 100%; width: 0; background: linear-gradient(90deg,#1EB53A,#00A3DD,#7c3aed); transition: width .15s; }
+    .post-media { margin: 10px 0 2px; border-radius: 14px; overflow: hidden; background: #000; }
+    .post-media img, .post-media video { display: block; width: 100%; max-height: 70vh; object-fit: contain; }
+    html[data-theme="dark"] .mf-sheet { background: #151a26; }
+    html[data-theme="dark"] .mf-sheet h3 { color: #d2d6e0; }
+    html[data-theme="dark"] .mf-sheet-opt { background: #0d1018; color: #d2d6e0; }
+    html[data-theme="dark"] .mf-sheet-grab { background: #252e42; }
+    html[data-theme="dark"] #mediaPostForm textarea { background: #151a26; border-color: #252e42; }
+    html[data-theme="dark"] .mp-error { background: #3b1518; color: #fca5a5; }
+    </style>
+
     <section id="feed">
 
         <div
@@ -2231,7 +2374,7 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
     }
     var bnCompose = document.getElementById("bnCompose");
     if (bnCompose) {
-        bnCompose.addEventListener("click", openQuoteModal);
+        bnCompose.addEventListener("click", function () { openMediaSheet(); });
     }
     var brandHome = document.getElementById("brandHome");
     if (brandHome) {
@@ -2495,6 +2638,7 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
                     closeMusicModal();
                     musicModalForm.reset();
                     if (mmAudioName) mmAudioName.textContent = "";
+                    try { localStorage.setItem("mercfy_feed_tab", "music"); } catch (err) {}
                     window.location.reload();
                 } else {
                     var msg = (res.d && (res.d.message || res.d.error)) || "Imeshindikana kutuma wimbo.";
@@ -3042,6 +3186,13 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
             post.content || ""
         );
 
+        const mediaSrc = post.media_url ? escapeHtml(post.media_url) : "";
+        const isVideo = post.media_type === "video"
+            || /\.(mp4|mov|webm|m4v|3gp)(\?|$)/i.test(post.media_url || "");
+        const mediaHtml = !mediaSrc ? "" : isVideo
+            ? `<div class="post-media"><video src="${mediaSrc}" controls playsinline preload="metadata"></video></div>`
+            : `<div class="post-media"><img src="${mediaSrc}" alt="" loading="lazy"></div>`;
+
         return `
             <article class="post">
 
@@ -3074,9 +3225,8 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
 
                 </div>
 
-                <div class="post-content">
-                    ${content}
-                </div>
+                ${content ? `<div class="post-content">${content}</div>` : ""}
+                ${mediaHtml}
 
                 <div class="post-actions">
 
@@ -3790,6 +3940,25 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
     let feedObserver = null;
     let feedSentinel = null;
 
+    /* ================================
+       TABS: Quote | Music | Post
+       ================================ */
+    const TAB_KEY = "mercfy_feed_tab";
+    const TABS = ["quote", "music", "post"];
+    const EMPTY_TEXT = {
+        quote: "Bado hakuna quote. Kuwa wa kwanza kuandika quote.",
+        music: "Bado hakuna muziki. Kuwa wa kwanza kupakia wimbo.",
+        post: "Bado hakuna post. Bonyeza + ili u-post picha au video."
+    };
+    let feedTab = (function () {
+        try {
+            const t = localStorage.getItem(TAB_KEY);
+            return TABS.indexOf(t) > -1 ? t : "quote";
+        } catch (err) { return "quote"; }
+    })();
+    let feedReq = 0;
+    const loadingHTML = loading ? loading.outerHTML : "";
+
     function postKey(post) {
         return String(post.type) + ":" + String(post.id);
     }
@@ -3822,6 +3991,7 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
         }
 
         feedLoadingMore = true;
+        const reqId = feedReq;
 
         if (feedSentinel) {
             feedSentinel.classList.add("loading-more");
@@ -3833,6 +4003,7 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
             const response = await fetch(
                 "{{ url_for('user_feed.get_posts') }}" +
                     "?limit=" + FEED_PAGE_LIMIT +
+                    "&type=" + encodeURIComponent(feedTab) +
                     "&before=" + encodeURIComponent(feedBefore),
                 {
                     headers: {
@@ -3846,6 +4017,10 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
             }
 
             const data = await response.json();
+
+            if (reqId !== feedReq) {
+                return; /* mtumiaji amebadilisha tab */
+            }
 
             const fresh = (data.posts || []).filter(function (post) {
                 return !renderedKeys.has(postKey(post));
@@ -3876,7 +4051,9 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
 
         } finally {
 
-            feedLoadingMore = false;
+            if (reqId === feedReq) {
+                feedLoadingMore = false;
+            }
 
             if (feedSentinel) {
                 feedSentinel.classList.remove("loading-more");
@@ -3921,10 +4098,13 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
 
     async function loadFeed() {
 
+        const reqId = ++feedReq;
+
         try {
 
             const response = await fetch(
-                "{{ url_for('user_feed.get_posts') }}?limit=" + FEED_PAGE_LIMIT,
+                "{{ url_for('user_feed.get_posts') }}?limit=" + FEED_PAGE_LIMIT +
+                    "&type=" + encodeURIComponent(feedTab),
                 {
                     headers: {
                         "Accept": "application/json"
@@ -3938,6 +4118,10 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
 
             const data = await response.json();
 
+            if (reqId !== feedReq) {
+                return; /* mtumiaji amebadilisha tab */
+            }
+
             if (loading) {
                 loading.remove();
             }
@@ -3946,7 +4130,7 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
 
                 feed.innerHTML = `
                     <div class="empty">
-                        Bado hakuna post. Kuwa wa kwanza ku-post.
+                        ${EMPTY_TEXT[feedTab] || EMPTY_TEXT.post}
                     </div>
                 `;
 
@@ -3964,6 +4148,10 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
             setupInfiniteScroll(data);
 
         } catch (error) {
+
+            if (reqId !== feedReq) {
+                return;
+            }
 
             if (loading) {
                 loading.remove();
@@ -4417,6 +4605,215 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
         }
     );
 
+
+    /* ================================
+       TABS + KITUFE CHA + (Kamera/Video/Galeri)
+       ================================ */
+    const feedTabsEl = document.getElementById("feedTabs");
+
+    function paintTabs() {
+        if (!feedTabsEl) return;
+        feedTabsEl.querySelectorAll(".feed-tab").forEach(function (btn) {
+            const on = btn.dataset.tab === feedTab;
+            btn.classList.toggle("active", on);
+            btn.setAttribute("aria-selected", on ? "true" : "false");
+        });
+    }
+
+    function setTab(tab, force) {
+        if (TABS.indexOf(tab) < 0) return;
+        if (tab === feedTab && !force) return;
+
+        feedTab = tab;
+        try { localStorage.setItem(TAB_KEY, tab); } catch (err) {}
+        paintTabs();
+
+        feedReq++;                       /* futa maombi yaliyokuwa yanaendelea */
+        stopInfiniteScroll(false);
+        const endEl = document.getElementById("feedEnd");
+        if (endEl) endEl.remove();
+        renderedKeys.clear();
+        feedBefore = null;
+        feedHasMore = false;
+        feedLoadingMore = false;
+        feed.innerHTML = loadingHTML;
+
+        if (feedTabsEl) {
+            const y = feedTabsEl.getBoundingClientRect().top + window.scrollY - 56;
+            if (window.scrollY > y) window.scrollTo(0, Math.max(0, y));
+        }
+
+        loadFeed();
+    }
+
+    if (feedTabsEl) {
+        feedTabsEl.addEventListener("click", function (e) {
+            const btn = e.target.closest(".feed-tab");
+            if (btn) setTab(btn.dataset.tab);
+        });
+    }
+    paintTabs();
+
+    /* quote ikitumwa, rudi kwenye tab ya Quote */
+    const quotePostForm = document.getElementById("postForm");
+    if (quotePostForm) {
+        quotePostForm.addEventListener("submit", function () {
+            try { localStorage.setItem(TAB_KEY, "quote"); } catch (err) {}
+        });
+    }
+
+    const mediaSheet = document.getElementById("mediaSheet");
+    const mediaPostModal = document.getElementById("mediaPostModal");
+    const mediaPostForm = document.getElementById("mediaPostForm");
+    const mpPreview = document.getElementById("mpPreview");
+    const mpCaption = document.getElementById("mpCaption");
+    const mpError = document.getElementById("mpError");
+    const mpProgress = document.getElementById("mpProgress");
+    const mpBar = document.getElementById("mpBar");
+    const mediaPostSubmit = document.getElementById("mediaPostSubmit");
+    const MAX_IMAGE = 15 * 1024 * 1024;
+    const MAX_VIDEO = 100 * 1024 * 1024;
+    let pickedFile = null;
+    let previewUrl = null;
+    let uploading = null;
+
+    function openMediaSheet() {
+        if (mediaSheet) mediaSheet.hidden = false;
+    }
+    function closeMediaSheet() {
+        if (mediaSheet) mediaSheet.hidden = true;
+    }
+    function showMpError(msg) {
+        if (!mpError) return;
+        mpError.textContent = msg || "";
+        mpError.hidden = !msg;
+    }
+    function closeMediaPost() {
+        if (uploading) { uploading.abort(); uploading = null; }
+        if (mediaPostModal) mediaPostModal.hidden = true;
+        document.body.style.overflow = "";
+        if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+        if (mpPreview) mpPreview.innerHTML = "";
+        pickedFile = null;
+        if (mpCaption) mpCaption.value = "";
+        showMpError("");
+        if (mpProgress) mpProgress.hidden = true;
+        if (mpBar) mpBar.style.width = "0";
+        if (mediaPostSubmit) {
+            mediaPostSubmit.disabled = false;
+            mediaPostSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Chapisha';
+        }
+    }
+    function fileKind(file) {
+        const t = (file.type || "").toLowerCase();
+        if (t.indexOf("image/") === 0) return "image";
+        if (t.indexOf("video/") === 0) return "video";
+        const ext = (file.name.split(".").pop() || "").toLowerCase();
+        if (["jpg", "jpeg", "png", "webp", "gif"].indexOf(ext) > -1) return "image";
+        if (["mp4", "mov", "webm", "m4v", "3gp"].indexOf(ext) > -1) return "video";
+        return "";
+    }
+    function openMediaPost(file) {
+        const kind = fileKind(file);
+        closeMediaSheet();
+        if (!kind) {
+            alert("Chagua picha au video tu.");
+            return;
+        }
+        if (file.size > (kind === "video" ? MAX_VIDEO : MAX_IMAGE)) {
+            alert(kind === "video" ? "Video ni kubwa mno (kikomo MB 100)." : "Picha ni kubwa mno (kikomo MB 15).");
+            return;
+        }
+        pickedFile = file;
+        previewUrl = URL.createObjectURL(file);
+        mpPreview.innerHTML = kind === "video"
+            ? '<video src="' + previewUrl + '" controls playsinline preload="metadata"></video>'
+            : '<img src="' + previewUrl + '" alt="">';
+        mediaPostModal.hidden = false;
+        document.body.style.overflow = "hidden";
+    }
+
+    if (mediaSheet) {
+        mediaSheet.addEventListener("click", function (e) {
+            if (e.target === mediaSheet) { closeMediaSheet(); return; }
+            const opt = e.target.closest("[data-pick]");
+            if (!opt) return;
+            const map = { camera: "pickCamera", video: "pickVideo", gallery: "pickGallery" };
+            const input = document.getElementById(map[opt.dataset.pick]);
+            if (input) { input.value = ""; input.click(); }
+        });
+    }
+    const cancelSheetBtn = document.getElementById("mediaSheetCancel");
+    if (cancelSheetBtn) cancelSheetBtn.addEventListener("click", closeMediaSheet);
+
+    ["pickCamera", "pickVideo", "pickGallery"].forEach(function (id) {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.addEventListener("change", function () {
+            if (input.files && input.files[0]) openMediaPost(input.files[0]);
+        });
+    });
+
+    const mpCloseBtn = document.getElementById("mediaPostClose");
+    const mpCancelBtn = document.getElementById("mediaPostCancel");
+    if (mpCloseBtn) mpCloseBtn.addEventListener("click", closeMediaPost);
+    if (mpCancelBtn) mpCancelBtn.addEventListener("click", closeMediaPost);
+    if (mediaPostModal) {
+        mediaPostModal.addEventListener("click", function (e) {
+            if (e.target === mediaPostModal && !uploading) closeMediaPost();
+        });
+    }
+
+    if (mediaPostForm) {
+        mediaPostForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            if (!pickedFile || uploading) return;
+            showMpError("");
+
+            const fd = new FormData();
+            fd.append("content", mpCaption.value.trim());
+            fd.append("media", pickedFile, pickedFile.name || "upload");
+
+            const xhr = new XMLHttpRequest();
+            uploading = xhr;
+            mediaPostSubmit.disabled = true;
+            mediaPostSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Inatuma…';
+            mpProgress.hidden = false;
+            mpBar.style.width = "0";
+
+            xhr.open("POST", "/api/user/posts/create");
+            xhr.withCredentials = true;
+            xhr.upload.onprogress = function (ev) {
+                if (ev.lengthComputable) {
+                    const pct = Math.round((ev.loaded / ev.total) * 100);
+                    mpBar.style.width = pct + "%";
+                    mediaPostSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + pct + "%";
+                }
+            };
+            xhr.onload = function () {
+                uploading = null;
+                let d = null;
+                try { d = JSON.parse(xhr.responseText); } catch (err) {}
+                if (xhr.status >= 200 && xhr.status < 300 && d && d.success) {
+                    closeMediaPost();
+                    setTab("post", true);
+                } else {
+                    showMpError((d && (d.message || d.error)) || "Imeshindikana kutuma post. Jaribu tena.");
+                    mpProgress.hidden = true;
+                    mediaPostSubmit.disabled = false;
+                    mediaPostSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Chapisha';
+                }
+            };
+            xhr.onerror = function () {
+                uploading = null;
+                showMpError("Hakuna mtandao. Angalia intaneti kisha jaribu tena.");
+                mpProgress.hidden = true;
+                mediaPostSubmit.disabled = false;
+                mediaPostSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Chapisha';
+            };
+            xhr.send(fd);
+        });
+    }
 
     loadFeed();
     loadUnreadCount();
