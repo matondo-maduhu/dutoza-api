@@ -824,9 +824,9 @@ def about():
     return render_template(
         "users/static_page.html",
         page_title="About",
-        page_heading="Kuhusu Incredibles",
+        page_heading="Kuhusu Mercfy",
         page_body="""
-        <p><strong>Incredibles</strong> ni jukwaa la kushiriki quotes na muziki.
+        <p><strong>Mercfy</strong> ni jukwaa la kushiriki quotes na muziki.
         Watumiaji wanachapisha content; developers wanaitumia kupitia API.</p>
         <p>Lengo letu ni kutoa catalog safi ya quotes na music kwa apps na watumiaji.</p>
         """,
@@ -840,7 +840,7 @@ def terms():
         page_title="Terms",
         page_heading="Terms & Conditions",
         page_body="""
-        <p>Kwa kutumia Incredibles, unakubali:</p>
+        <p>Kwa kutumia Mercfy, unakubali:</p>
         <ul>
             <li>Usichapishe content haramu, ya chuki, au inayokiuka haki miliki.</li>
             <li>Uwe na haki ya content unayopakia (quotes, audio, cover).</li>

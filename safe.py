@@ -8,7 +8,7 @@ wa mfumo. Tunaiandika kwenye log ya seva na kumpa mteja ujumbe wa jumla.
 
 import logging
 
-log = logging.getLogger("incredibles")
+log = logging.getLogger("mercfy")
 
 GENERIC_MESSAGE = "Hitilafu ya ndani ya seva. Jaribu tena baadaye."
 

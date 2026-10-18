@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 
 from flask import Response, jsonify, request
 
-log = logging.getLogger("incredibles.security")
+log = logging.getLogger("mercfy.security")
 
 DEFAULT_SECRET = "change-this-secret-in-production"
 MIN_SECRET_LENGTH = 16

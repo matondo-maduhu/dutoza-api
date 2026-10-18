@@ -138,7 +138,7 @@ def _first_id(sql_variants):
 
 def _probe(app, role, session_values, group, label, path):
     capture = _Capture()
-    loggers = [logging.getLogger("incredibles"), app.logger]
+    loggers = [logging.getLogger("mercfy"), app.logger]
 
     for lg in loggers:
         lg.addHandler(capture)
