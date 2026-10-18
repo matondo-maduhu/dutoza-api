@@ -171,7 +171,16 @@ def get_posts():
                         FROM post_likes my_like
                         WHERE my_like.post_id = p.id
                           AND my_like.user_id = %s
-                    ) AS is_liked
+                    ) AS is_liked,
+                    (
+                        SELECT COUNT(*)
+                        FROM post_comments pc
+                        JOIN users cu
+                            ON cu.id = pc.user_id
+                        WHERE pc.post_id = p.id
+                          AND pc.status = 'published'
+                          AND cu.status = 'active'
+                    ) AS comments_count
                 FROM posts p
                 JOIN users u
                     ON u.id = p.user_id
@@ -185,7 +194,13 @@ def get_posts():
             post_rows = cursor.fetchall()
             stream_sizes.append(len(post_rows))
 
+            post_eng = safe_engagement_map(
+                cursor, "post", [r[0] for r in post_rows], current_user_id
+            )
+
             for row in post_rows:
+                eng = post_eng.get(row[0]) or NO_ENGAGEMENT
+
                 feed_items.append({
                     "type": "post",
                     "id": row[0],
@@ -195,6 +210,10 @@ def get_posts():
                     "created_at": row[4].isoformat() if row[4] else None,
                     "likes_count": row[9],
                     "is_liked": bool(row[10]),
+                    "comments_count": row[11],
+                    "saves_count": eng["saves_count"],
+                    "is_saved": eng["is_saved"],
+                    "shares_count": eng["shares_count"],
                     "user": {
                         "id": row[5],
                         "full_name": row[6],
@@ -855,9 +874,7 @@ def mark_all_notifications_read():
 # ============================================================
 
 POST_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "gif"}
-POST_VIDEO_EXTENSIONS = {"mp4", "mov", "webm", "m4v", "3gp"}
 POST_IMAGE_MAX_BYTES = 15 * 1024 * 1024
-POST_VIDEO_MAX_BYTES = 100 * 1024 * 1024
 
 
 @user_feed_bp.post("/api/user/posts/create")
@@ -883,7 +900,7 @@ def create_media_post():
     if not content and not has_media:
         return jsonify({
             "success": False,
-            "message": "Chagua picha au video, au andika kitu."
+            "message": "Chagua picha, au andika kitu."
         }), 400
 
     media_url = None
@@ -893,24 +910,21 @@ def create_media_post():
         name = media.filename or ""
         ext = name.rsplit(".", 1)[1].lower() if "." in name else ""
 
-        if ext in POST_IMAGE_EXTENSIONS:
-            media_type = "image"
-            max_bytes = POST_IMAGE_MAX_BYTES
-        elif ext in POST_VIDEO_EXTENSIONS:
-            media_type = "video"
-            max_bytes = POST_VIDEO_MAX_BYTES
-        else:
+        if ext not in POST_IMAGE_EXTENSIONS:
             return jsonify({
                 "success": False,
-                "message": "Aina ya file hairuhusiwi. Tumia picha (JPG, PNG, WEBP, GIF) au video (MP4, MOV, WEBM)."
+                "message": "Picha tu zinaruhusiwa (JPG, PNG, WEBP au GIF)."
             }), 400
+
+        media_type = "image"
+        max_bytes = POST_IMAGE_MAX_BYTES
 
         mimetype = (media.mimetype or "").lower()
         if mimetype and not mimetype.startswith(media_type + "/") \
                 and mimetype != "application/octet-stream":
             return jsonify({
                 "success": False,
-                "message": "File haionekani kuwa picha au video halali."
+                "message": "File haionekani kuwa picha halali."
             }), 400
 
         media.stream.seek(0, 2)
@@ -999,6 +1013,54 @@ def create_media_post():
 
         finally:
             close_connection(connection)
+
+
+@user_feed_bp.route("/api/user/posts/<int:post_id>/delete", methods=["POST", "DELETE"])
+def delete_media_post(post_id):
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"success": False, "message": "Login required"}), 401
+
+    connection = None
+
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            UPDATE posts
+            SET status = 'deleted'
+            WHERE id = %s
+              AND user_id = %s
+              AND status = 'published'
+        """, (post_id, user_id))
+
+        changed = cursor.rowcount
+        connection.commit()
+
+        if not changed:
+            return jsonify({
+                "success": False,
+                "message": "Post haipatikani au si yako."
+            }), 404
+
+        return jsonify({"success": True})
+
+    except Exception as exc:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+
+        return jsonify({
+            "success": False,
+            "message": public_error(exc, "Imeshindikana kufuta post.")
+        }), 500
+
+    finally:
+        close_connection(connection)
 
 
 @user_feed_bp.post("/create_post")
