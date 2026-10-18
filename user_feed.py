@@ -14,6 +14,7 @@ from flask import (
 from db import get_connection
 from schema import ensure_schema
 from safe import public_error
+from storage import upload_file
 
 
 user_feed_bp = Blueprint("user_feed", __name__)
@@ -119,6 +120,15 @@ def get_posts():
     limit = max(1, min(limit, FEED_PAGE_SIZE))
     before = parse_before(request.args.get("before"))
 
+    # Tab ya feed: post | quote | music (bila type = vyote, kama zamani)
+    wanted_type = (request.args.get("type") or "").strip().lower()
+    if wanted_type not in ("post", "quote", "music"):
+        wanted_type = ""
+
+    limit_posts = limit if wanted_type in ("", "post") else 0
+    limit_quotes = limit if wanted_type in ("", "quote") else 0
+    limit_music = limit if wanted_type in ("", "music") else 0
+
     for attempt in range(2):
         connection = None
 
@@ -138,7 +148,7 @@ def get_posts():
             params = [current_user_id]
             if before:
                 params.append(before)
-            params.append(limit)
+            params.append(limit_posts)
 
             cursor.execute(f"""
                 SELECT
@@ -197,7 +207,7 @@ def get_posts():
             # QUOTES
             # -------------------------------------------------
             before_sql = "AND q.created_at < %s" if before else ""
-            params = ([before] if before else []) + [limit]
+            params = ([before] if before else []) + [limit_quotes]
 
             cursor.execute(f"""
                 SELECT
@@ -260,7 +270,7 @@ def get_posts():
             # MUSIC
             # -------------------------------------------------
             before_sql = "AND s.created_at < %s" if before else ""
-            params = ([before] if before else []) + [limit]
+            params = ([before] if before else []) + [limit_music]
 
             cursor.execute(f"""
                 SELECT
@@ -835,6 +845,157 @@ def mark_all_notifications_read():
                 continue
 
             raise
+
+        finally:
+            close_connection(connection)
+
+
+# ============================================================
+# MEDIA POST (picha / video kutoka Kamera, Video au Galeri)
+# ============================================================
+
+POST_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "gif"}
+POST_VIDEO_EXTENSIONS = {"mp4", "mov", "webm", "m4v", "3gp"}
+POST_IMAGE_MAX_BYTES = 15 * 1024 * 1024
+POST_VIDEO_MAX_BYTES = 100 * 1024 * 1024
+
+
+@user_feed_bp.post("/api/user/posts/create")
+def create_media_post():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({
+            "success": False,
+            "message": "Ingia kwanza ili u-post."
+        }), 401
+
+    content = (request.form.get("content") or "").strip()
+    media = request.files.get("media")
+    has_media = bool(media and media.filename)
+
+    if len(content) > 2000:
+        return jsonify({
+            "success": False,
+            "message": "Maelezo ni marefu sana (juu ya herufi 2000)."
+        }), 400
+
+    if not content and not has_media:
+        return jsonify({
+            "success": False,
+            "message": "Chagua picha au video, au andika kitu."
+        }), 400
+
+    media_url = None
+    media_type = None
+
+    if has_media:
+        name = media.filename or ""
+        ext = name.rsplit(".", 1)[1].lower() if "." in name else ""
+
+        if ext in POST_IMAGE_EXTENSIONS:
+            media_type = "image"
+            max_bytes = POST_IMAGE_MAX_BYTES
+        elif ext in POST_VIDEO_EXTENSIONS:
+            media_type = "video"
+            max_bytes = POST_VIDEO_MAX_BYTES
+        else:
+            return jsonify({
+                "success": False,
+                "message": "Aina ya file hairuhusiwi. Tumia picha (JPG, PNG, WEBP, GIF) au video (MP4, MOV, WEBM)."
+            }), 400
+
+        mimetype = (media.mimetype or "").lower()
+        if mimetype and not mimetype.startswith(media_type + "/") \
+                and mimetype != "application/octet-stream":
+            return jsonify({
+                "success": False,
+                "message": "File haionekani kuwa picha au video halali."
+            }), 400
+
+        media.stream.seek(0, 2)
+        size = media.stream.tell()
+        media.stream.seek(0)
+
+        if size <= 0:
+            return jsonify({
+                "success": False,
+                "message": "File ni tupu."
+            }), 400
+
+        if size > max_bytes:
+            return jsonify({
+                "success": False,
+                "message": "File ni kubwa mno (kikomo: %d MB)." % (max_bytes // (1024 * 1024))
+            }), 413
+
+        try:
+            media_url = upload_file(media, "posts")
+        except Exception as exc:
+            return jsonify({
+                "success": False,
+                "message": public_error(exc, "Imeshindikana kupakia file. Jaribu tena.")
+            }), 500
+
+    for attempt in range(2):
+        connection = None
+
+        try:
+            connection = get_connection()
+            cursor = connection.cursor()
+
+            cursor.execute("""
+                SELECT status
+                FROM users
+                WHERE id = %s
+                LIMIT 1
+            """, (user_id,))
+
+            user = cursor.fetchone()
+
+            if not user or user[0] != "active":
+                session.clear()
+                return jsonify({
+                    "success": False,
+                    "message": "Akaunti haipatikani. Ingia tena."
+                }), 401
+
+            cursor.execute("""
+                INSERT INTO posts (
+                    user_id,
+                    content,
+                    media_url,
+                    media_type,
+                    status
+                )
+                VALUES (%s, %s, %s, %s, 'published')
+                RETURNING id
+            """, (user_id, content, media_url, media_type))
+
+            post_id = cursor.fetchone()[0]
+            connection.commit()
+
+            return jsonify({
+                "success": True,
+                "id": post_id,
+                "media_url": media_url,
+                "media_type": media_type
+            }), 201
+
+        except Exception as exc:
+            if connection:
+                try:
+                    connection.rollback()
+                except Exception:
+                    pass
+
+            if attempt == 0 and is_connection_error(exc):
+                continue
+
+            return jsonify({
+                "success": False,
+                "message": public_error(exc, "Imeshindikana kuhifadhi post. Jaribu tena.")
+            }), 500
 
         finally:
             close_connection(connection)
