@@ -1,4 +1,4 @@
-/* App shell ya Incredibles: mode ya giza, PWA, mini-player na notifications
+/* App shell ya Mercfy: mode ya giza, PWA, mini-player na notifications
    kwa kurasa zote. Inapakiwa kwa `defer` mwishoni mwa kila ukurasa. */
 (function () {
   "use strict";
@@ -6,7 +6,7 @@
   var root = document.documentElement;
 
   /* ====================== MODE YA GIZA ====================== */
-  var KEY = "incredibles_theme";                       // auto | light | dark
+  var KEY = "mercfy_theme";                       // auto | light | dark
 
   function stored() {
     try { return localStorage.getItem(KEY) || "auto"; } catch (e) { return "auto"; }
@@ -38,7 +38,7 @@
     applyTheme(mode);
   }
 
-  window.IncrediblesTheme = { get: stored, set: setMode, effective: function () { return effective(stored()); } };
+  window.MercfyTheme = { get: stored, set: setMode, effective: function () { return effective(stored()); } };
   applyTheme(stored());
 
   if (window.matchMedia) {
