@@ -2107,15 +2107,11 @@
     <div class="mf-sheet-overlay" id="mediaSheet" hidden>
         <div class="mf-sheet" role="dialog" aria-modal="true" aria-labelledby="mediaSheetTitle">
             <div class="mf-sheet-grab" aria-hidden="true"></div>
-            <h3 id="mediaSheetTitle">Tengeneza post</h3>
+            <h3 id="mediaSheetTitle">Chapisha picha</h3>
             <div class="mf-sheet-grid">
                 <button type="button" class="mf-sheet-opt" data-pick="camera">
                     <span class="mf-sheet-ico cam"><i class="fa-solid fa-camera"></i></span>
                     <span>Kamera</span>
-                </button>
-                <button type="button" class="mf-sheet-opt" data-pick="video">
-                    <span class="mf-sheet-ico vid"><i class="fa-solid fa-video"></i></span>
-                    <span>Video</span>
                 </button>
                 <button type="button" class="mf-sheet-opt" data-pick="gallery">
                     <span class="mf-sheet-ico gal"><i class="fa-solid fa-images"></i></span>
@@ -2126,19 +2122,18 @@
         </div>
     </div>
     <input type="file" id="pickCamera" class="mf-file-input" accept="image/*" capture="environment">
-    <input type="file" id="pickVideo" class="mf-file-input" accept="video/*" capture="environment">
-    <input type="file" id="pickGallery" class="mf-file-input" accept="image/*,video/*">
+    <input type="file" id="pickGallery" class="mf-file-input" accept="image/*">
 
     <!-- Fomu ya post ya picha/video -->
     <div class="quote-modal-overlay" id="mediaPostModal" hidden>
         <div class="quote-modal" role="dialog" aria-modal="true" aria-labelledby="mediaPostTitle">
             <div class="quote-modal-header">
-                <h2 id="mediaPostTitle">Chapisha Post</h2>
+                <h2 id="mediaPostTitle">Post mpya</h2>
                 <button type="button" class="quote-modal-close" id="mediaPostClose" aria-label="Funga">&times;</button>
             </div>
             <form id="mediaPostForm" novalidate>
                 <div class="mp-preview" id="mpPreview"></div>
-                <label class="qm-label" for="mpCaption">Maelezo (si lazima)</label>
+                <label class="qm-label" for="mpCaption">Maelezo ya picha (si lazima)</label>
                 <textarea id="mpCaption" name="content" maxlength="2000" rows="3"
                           placeholder="Andika kitu kuhusu post hii..."></textarea>
                 <div class="mp-error" id="mpError" hidden></div>
@@ -2167,7 +2162,7 @@
     }
     .mf-sheet-grab { width: 42px; height: 4px; border-radius: 4px; background: #cbd5e1; margin: 4px auto 12px; }
     .mf-sheet h3 { margin: 0 0 14px; font-size: 17px; font-weight: 800; text-align: center; color: #0f172a; }
-    .mf-sheet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .mf-sheet-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .mf-sheet-opt {
         display: flex; flex-direction: column; align-items: center; gap: 8px;
         border: none; background: #f1f5f9; border-radius: 16px; padding: 16px 6px;
@@ -2186,7 +2181,7 @@
         font-weight: 700; font-size: 15px; padding: 10px; cursor: pointer; font-family: inherit;
     }
     .mp-preview { border-radius: 14px; overflow: hidden; background: #0f172a; margin-bottom: 4px; }
-    .mp-preview img, .mp-preview video { display: block; width: 100%; max-height: 46vh; object-fit: contain; background: #000; }
+    .mp-preview img { display: block; width: 100%; max-height: 46vh; object-fit: contain; background: #000; }
     #mediaPostForm textarea {
         width: 100%; box-sizing: border-box; resize: vertical; min-height: 76px;
         border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;
@@ -2198,13 +2193,104 @@
     .mp-progress { margin-top: 12px; height: 6px; border-radius: 6px; background: #e2e8f0; overflow: hidden; }
     .mp-progress span { display: block; height: 100%; width: 0; background: linear-gradient(90deg,#1EB53A,#00A3DD,#7c3aed); transition: width .15s; }
     .post-media { margin: 10px 0 2px; border-radius: 14px; overflow: hidden; background: #000; }
-    .post-media img, .post-media video { display: block; width: 100%; max-height: 70vh; object-fit: contain; }
+    .post-media img { display: block; width: 100%; max-height: 70vh; object-fit: contain; }
     html[data-theme="dark"] .mf-sheet { background: #151a26; }
     html[data-theme="dark"] .mf-sheet h3 { color: #d2d6e0; }
     html[data-theme="dark"] .mf-sheet-opt { background: #0d1018; color: #d2d6e0; }
     html[data-theme="dark"] .mf-sheet-grab { background: #252e42; }
     html[data-theme="dark"] #mediaPostForm textarea { background: #151a26; border-color: #252e42; }
     html[data-theme="dark"] .mp-error { background: #3b1518; color: #fca5a5; }
+    </style>
+
+
+    <div class="cs-backdrop" id="commentBackdrop" hidden></div>
+    <div class="lb-overlay" id="photoLightbox" hidden>
+        <button type="button" class="lb-close" id="photoLightboxClose" aria-label="Funga">&times;</button>
+        <img id="photoLightboxImg" alt="">
+    </div>
+
+    <style>
+    /* ----- Post card ya picha ----- */
+    .photo-card .feed-card-user { text-decoration: none; color: inherit; }
+    .photo-frame {
+        display: block; width: 100%; padding: 0; border: 0; margin: 2px 0 0;
+        background: #0f172a; cursor: zoom-in; line-height: 0;
+    }
+    .photo-frame img {
+        display: block; width: 100%; max-height: 78vh; object-fit: cover; background: #0f172a;
+    }
+    .photo-caption {
+        margin: 0; padding: 12px 16px 4px; font-size: 15px; line-height: 1.55;
+        color: #1f2937; white-space: pre-wrap; overflow-wrap: anywhere;
+    }
+    .photo-card .feed-card-actions { padding-top: 10px; }
+    .photo-card .comment-btn { min-height: 0; background: #f8fafc; }
+    .photo-card .comment-btn:hover { background: #f1f5f9; }
+    html[data-theme="dark"] .photo-caption { color: #d2d6e0; }
+    html[data-theme="dark"] .photo-card .comment-btn { background: #0d1018; }
+    .lb-overlay {
+        position: fixed; inset: 0; z-index: 10001; background: rgba(0,0,0,.94);
+        display: flex; align-items: center; justify-content: center; padding: 12px;
+    }
+    .lb-overlay[hidden] { display: none !important; }
+    .lb-overlay img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; }
+    .lb-close {
+        position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 14px;
+        width: 42px; height: 42px; border-radius: 50%; border: 0; font-size: 28px; line-height: 1;
+        color: #fff; background: rgba(255,255,255,.16); cursor: pointer;
+    }
+
+    /* ----- Comments: fomu inayofunguka kutoka chini ----- */
+    .cs-backdrop {
+        position: fixed; inset: 0; z-index: 9996; background: rgba(15,23,42,.5);
+        animation: csFade .18s ease;
+    }
+    .cs-backdrop[hidden] { display: none !important; }
+    @keyframes csFade { from { opacity: 0; } to { opacity: 1; } }
+    .photo-card .comments-section:not([hidden]) {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 9997;
+        width: 100%; max-width: 560px; margin: 0 auto; padding: 0;
+        height: 78vh; max-height: 78vh; display: flex; flex-direction: column;
+        background: #fff; border: 0; border-radius: 22px 22px 0 0;
+        box-shadow: 0 -10px 44px rgba(0,0,0,.22); animation: qmSlide .22s ease;
+    }
+    .photo-card .comments-section[hidden] { display: none !important; }
+    .comment-meta span { font-size: 12px; color: #94a3b8; }
+    .comment-bubble { background: #f1f5f9; }
+    html[data-theme="dark"] .comment-bubble { background: #0d1018; }
+    .comment-reply-form { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+    .comment-reply-form input { flex: 1; min-width: 0; height: 38px; padding: 0 12px; border: 1px solid #e2e8f0; border-radius: 19px; outline: none; font-size: 14px; }
+    .comment-reply-form input:focus { border-color: #1EB53A; }
+    .comment-reply-form button { width: 38px; height: 38px; border: 0; border-radius: 50%; background: #1EB53A; color: #fff; cursor: pointer; flex-shrink: 0; }
+    .cs-grab { width: 42px; height: 4px; border-radius: 4px; background: #cbd5e1; margin: 9px auto 2px; flex-shrink: 0; }
+    .cs-head {
+        display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        padding: 6px 16px 10px; border-bottom: 1px solid #eef1f4;
+    }
+    .cs-head strong { font-size: 16px; font-weight: 800; color: #0f172a; }
+    .cs-close {
+        width: 34px; height: 34px; border: 0; border-radius: 50%; background: #f1f5f9;
+        font-size: 22px; line-height: 1; color: #475569; cursor: pointer;
+    }
+    .photo-card .comments-list {
+        flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px; -webkit-overflow-scrolling: touch;
+    }
+    .photo-card .comment-form {
+        flex-shrink: 0; margin: 0; padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid #eef1f4; background: #fff;
+    }
+    .photo-card .comment-form input { background: #f8fafc; border-color: #e2e8f0; }
+    .photo-card .comment-form input:focus { background: #fff; }
+    .photo-card .comment-form button {
+        background: linear-gradient(135deg, #1EB53A, #00A3DD 60%, #7c3aed);
+    }
+    html[data-theme="dark"] .photo-card .comments-section:not([hidden]) { background: #151a26; }
+    html[data-theme="dark"] .cs-head { border-color: #252e42; }
+    html[data-theme="dark"] .cs-head strong { color: #d2d6e0; }
+    html[data-theme="dark"] .cs-close { background: #0d1018; color: #a1aabe; }
+    html[data-theme="dark"] .cs-grab { background: #252e42; }
+    html[data-theme="dark"] .photo-card .comment-form { background: #151a26; border-color: #252e42; }
+    html[data-theme="dark"] .photo-card .comment-form input { background: #0d1018; border-color: #252e42; color: #d2d6e0; }
     </style>
 
     <section id="feed">
@@ -2513,6 +2599,18 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
                       if (d && d.success) window.location.reload();
                       else alert((d && d.message) || "Imeshindikana");
                   });
+                return;
+            }
+            if (act === "delete-post" && id) {
+                if (!confirm("Futa post hii?")) return;
+                fetch("/api/user/posts/" + id + "/delete", { method: "POST", credentials: "same-origin" })
+                    .then(function (r) { return r.json(); })
+                    .then(function (d) {
+                        if (d && d.success) {
+                            var el = document.querySelector('.feed-card[data-type="post"][data-id="' + id + '"]');
+                            if (el) el.remove();
+                        } else alert((d && d.message) || "Imeshindikana");
+                    });
                 return;
             }
             if (act === "delete-music" && id) {
@@ -3179,132 +3277,80 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
         }
 
         /* ================================
-           NORMAL POST
+           PHOTO POST
            ================================ */
-
-        const content = escapeHtml(
-            post.content || ""
-        );
-
-        const mediaSrc = post.media_url ? escapeHtml(post.media_url) : "";
-        const isVideo = post.media_type === "video"
-            || /\.(mp4|mov|webm|m4v|3gp)(\?|$)/i.test(post.media_url || "");
-        const mediaHtml = !mediaSrc ? "" : isVideo
-            ? `<div class="post-media"><video src="${mediaSrc}" controls playsinline preload="metadata"></video></div>`
-            : `<div class="post-media"><img src="${mediaSrc}" alt="" loading="lazy"></div>`;
+        const caption = escapeHtml(post.content || "");
+        const photoSrc = post.media_url ? escapeHtml(post.media_url) : "";
+        const ownerOfPost = user.id && Number(user.id) === Number(CURRENT_USER_ID);
+        const postAvatar = user.profile_image_url
+            ? `<img src="${escapeHtml(user.profile_image_url)}" alt="">`
+            : `<span class="qf-avatar-letter">${escapeHtml((user.full_name || "M").trim().charAt(0).toUpperCase())}</span>`;
+        const postMenu = ownerOfPost
+            ? `<button type="button" class="menu-act danger" data-act="delete-post" data-id="${post.id}">Delete</button>`
+            : `<button type="button" class="menu-act" data-act="report" data-type="post" data-id="${post.id}">Report</button>`;
+        const commentsTotal = Number(post.comments_count || 0);
 
         return `
-            <article class="post">
-
-                <div class="post-header">
-
-                    <div class="avatar">
-                        ${image}
-                    </div>
-
-                    <div>
-
-                        <div class="user-name">
-                            ${name}
+            <article class="feed-card photo-card" data-type="post" data-id="${post.id}">
+                <div class="feed-card-head">
+                    <a class="feed-card-user" href="/users/${encodeURIComponent(user.username || "")}">
+                        <div class="feed-card-avatar">${postAvatar}</div>
+                        <div class="feed-card-user-meta">
+                            <strong>${name}</strong>
+                            <span class="feed-meta-line">${username ? "@" + username + " · " : ""}${formatRelativeTime(post.created_at)}</span>
                         </div>
-
-                        <a
-                            class="username"
-                            href="/users/${encodeURIComponent(
-                                user.username || ""
-                            )}"
-                        >
-                            @${username}
-                        </a>
-
+                    </a>
+                    <button type="button" class="feed-card-menu" aria-label="Menu" data-toggle-menu>
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </button>
+                    <div class="feed-card-menu-drop" hidden>
+                        ${post.content ? `<button type="button" class="menu-act" data-act="copy" data-text="${escapeHtml(post.content)}">Copy text</button>` : ""}
+                        ${postMenu}
                     </div>
-
-                    <div class="post-time">
-                        ${formatDate(post.created_at)}
-                    </div>
-
                 </div>
 
-                ${content ? `<div class="post-content">${content}</div>` : ""}
-                ${mediaHtml}
+                ${photoSrc ? `
+                    <button type="button" class="photo-frame" data-act="view-photo" data-src="${photoSrc}" aria-label="Fungua picha kubwa">
+                        <img src="${photoSrc}" alt="" loading="lazy">
+                    </button>` : ""}
 
-                <div class="post-actions">
+                ${caption ? `<p class="photo-caption">${caption}</p>` : ""}
 
-                    <button
-                        type="button"
-                        class="like-btn ${post.is_liked ? "liked" : ""}"
-                        data-post-id="${post.id}"
-                        aria-label="${post.is_liked ? "Unlike post" : "Like post"}"
-                    >
-                        <i
-                            class="fa-solid fa-heart"
-                            aria-hidden="true"
-                        ></i>
-
-                        <span class="like-count">
-                            ${Number(post.likes_count || 0)}
-                        </span>
+                <div class="feed-card-actions">
+                    <button type="button" class="fca-btn like-btn ${post.is_liked ? "liked" : ""}" data-post-id="${post.id}" aria-label="Like" title="Like">
+                        <i class="fa-solid fa-heart" aria-hidden="true"></i>
+                        <span class="like-count">${Number(post.likes_count || 0)}</span>
                     </button>
-
-                    <button
-                        type="button"
-                        class="comment-btn"
-                        data-post-id="${post.id}"
-                        aria-label="Open comments"
-                    >
-                        <i
-                            class="fa-regular fa-comment"
-                            aria-hidden="true"
-                        ></i>
-
-                        <span class="comment-count">
-                            0
-                        </span>
+                    <button type="button" class="fca-btn comment-btn" data-post-id="${post.id}" aria-label="Maoni" title="Maoni">
+                        <i class="fa-regular fa-comment" aria-hidden="true"></i>
+                        <span class="comment-count">${commentsTotal}</span>
                     </button>
-
+                    <button type="button" class="fca-btn save-btn ${post.is_saved ? "saved" : ""}" data-engage="save" data-type="post" data-id="${post.id}" title="Save">
+                        <i class="fa-${post.is_saved ? "solid" : "regular"} fa-bookmark"></i>
+                        <span class="save-count">${post.saves_count || 0}</span>
+                    </button>
+                    <button type="button" class="fca-btn share-btn" data-engage="share" data-type="post" data-id="${post.id}" data-share-text="${escapeHtml(post.content || "Picha kwenye Mercfy")}" title="Share">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <span class="share-count">${post.shares_count || 0}</span>
+                    </button>
                 </div>
 
-                <section
-                    class="comments-section"
-                    id="comments-${post.id}"
-                    hidden
-                    data-post-id="${post.id}"
-                >
-
-                    <form
-                        class="comment-form"
-                        data-post-id="${post.id}"
-                    >
-
-                        <input
-                            type="text"
-                            name="content"
-                            maxlength="5000"
-                            placeholder="Andika comment..."
-                            autocomplete="off"
-                            required
-                        >
-
-                        <button
-                            type="submit"
-                            aria-label="Send comment"
-                        >
-                            <i
-                                class="fa-solid fa-paper-plane"
-                                aria-hidden="true"
-                            ></i>
-                        </button>
-
-                    </form>
-
+                <section class="comments-section" id="comments-${post.id}" hidden data-post-id="${post.id}" aria-label="Maoni">
+                    <div class="cs-grab" aria-hidden="true"></div>
+                    <div class="cs-head">
+                        <strong>Maoni</strong>
+                        <button type="button" class="cs-close" data-close-comments aria-label="Funga">&times;</button>
+                    </div>
                     <div class="comments-list">
-                        <div class="comments-loading">
-                            Inapakia comments...
-                        </div>
+                        <div class="comments-loading">Inapakia maoni...</div>
                     </div>
-
+                    <form class="comment-form" data-post-id="${post.id}">
+                        <input type="text" name="content" maxlength="5000" placeholder="Andika maoni yako..." autocomplete="off" required>
+                        <button type="submit" aria-label="Tuma maoni">
+                            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                        </button>
+                    </form>
                 </section>
-
             </article>
         `;
     }
@@ -3474,9 +3520,7 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
                                     : ""
                             }
 
-                            <div class="comment-text">
-                                ${content}
-                            </div>
+                            <div class="comment-text">${content}</div>
 
                         </div>
 
@@ -3500,7 +3544,7 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
 
                             <button
                                 type="button"
-                                
+                                class="reply-comment-btn"
                                 data-comment-id="${comment.id}"
                                 data-username="${username}"
                             >
@@ -4628,6 +4672,7 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
         try { localStorage.setItem(TAB_KEY, tab); } catch (err) {}
         paintTabs();
 
+        closeAllComments();
         feedReq++;                       /* futa maombi yaliyokuwa yanaendelea */
         stopInfiniteScroll(false);
         const endEl = document.getElementById("feedEnd");
@@ -4672,7 +4717,6 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
     const mpBar = document.getElementById("mpBar");
     const mediaPostSubmit = document.getElementById("mediaPostSubmit");
     const MAX_IMAGE = 15 * 1024 * 1024;
-    const MAX_VIDEO = 100 * 1024 * 1024;
     let pickedFile = null;
     let previewUrl = null;
     let uploading = null;
@@ -4704,31 +4748,25 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
             mediaPostSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Chapisha';
         }
     }
-    function fileKind(file) {
+    function isImageFile(file) {
         const t = (file.type || "").toLowerCase();
-        if (t.indexOf("image/") === 0) return "image";
-        if (t.indexOf("video/") === 0) return "video";
+        if (t.indexOf("image/") === 0) return true;
         const ext = (file.name.split(".").pop() || "").toLowerCase();
-        if (["jpg", "jpeg", "png", "webp", "gif"].indexOf(ext) > -1) return "image";
-        if (["mp4", "mov", "webm", "m4v", "3gp"].indexOf(ext) > -1) return "video";
-        return "";
+        return ["jpg", "jpeg", "png", "webp", "gif"].indexOf(ext) > -1;
     }
     function openMediaPost(file) {
-        const kind = fileKind(file);
         closeMediaSheet();
-        if (!kind) {
-            alert("Chagua picha au video tu.");
+        if (!isImageFile(file)) {
+            alert("Chagua picha tu (JPG, PNG, WEBP au GIF).");
             return;
         }
-        if (file.size > (kind === "video" ? MAX_VIDEO : MAX_IMAGE)) {
-            alert(kind === "video" ? "Video ni kubwa mno (kikomo MB 100)." : "Picha ni kubwa mno (kikomo MB 15).");
+        if (file.size > MAX_IMAGE) {
+            alert("Picha ni kubwa mno (kikomo MB 15).");
             return;
         }
         pickedFile = file;
         previewUrl = URL.createObjectURL(file);
-        mpPreview.innerHTML = kind === "video"
-            ? '<video src="' + previewUrl + '" controls playsinline preload="metadata"></video>'
-            : '<img src="' + previewUrl + '" alt="">';
+        mpPreview.innerHTML = '<img src="' + previewUrl + '" alt="">';
         mediaPostModal.hidden = false;
         document.body.style.overflow = "hidden";
     }
@@ -4738,7 +4776,7 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
             if (e.target === mediaSheet) { closeMediaSheet(); return; }
             const opt = e.target.closest("[data-pick]");
             if (!opt) return;
-            const map = { camera: "pickCamera", video: "pickVideo", gallery: "pickGallery" };
+            const map = { camera: "pickCamera", gallery: "pickGallery" };
             const input = document.getElementById(map[opt.dataset.pick]);
             if (input) { input.value = ""; input.click(); }
         });
@@ -4746,7 +4784,7 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
     const cancelSheetBtn = document.getElementById("mediaSheetCancel");
     if (cancelSheetBtn) cancelSheetBtn.addEventListener("click", closeMediaSheet);
 
-    ["pickCamera", "pickVideo", "pickGallery"].forEach(function (id) {
+    ["pickCamera", "pickGallery"].forEach(function (id) {
         const input = document.getElementById(id);
         if (!input) return;
         input.addEventListener("change", function () {
@@ -4814,6 +4852,54 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
             xhr.send(fd);
         });
     }
+
+    /* ----- Picha kubwa (lightbox) ----- */
+    const lightbox = document.getElementById("photoLightbox");
+    const lightboxImg = document.getElementById("photoLightboxImg");
+    function closeLightbox() {
+        if (!lightbox) return;
+        lightbox.hidden = true;
+        lightboxImg.removeAttribute("src");
+    }
+    feed.addEventListener("click", function (e) {
+        const frame = e.target.closest(".photo-frame");
+        if (!frame || !lightbox) return;
+        lightboxImg.src = frame.dataset.src || "";
+        lightbox.hidden = false;
+    });
+    if (lightbox) {
+        lightbox.addEventListener("click", closeLightbox);
+    }
+
+    /* ----- Comments: fomu ya chini (bottom sheet) ----- */
+    const commentBackdrop = document.getElementById("commentBackdrop");
+    function syncCommentSheet() {
+        const open = feed.querySelector(".comments-section:not([hidden])");
+        if (commentBackdrop) commentBackdrop.hidden = !open;
+        document.body.style.overflow = open ? "hidden" : "";
+    }
+    function closeAllComments() {
+        feed.querySelectorAll(".comments-section:not([hidden])").forEach(function (sec) {
+            sec.setAttribute("hidden", "");
+        });
+        syncCommentSheet();
+    }
+    feed.addEventListener("click", function (e) {
+        if (e.target.closest("[data-close-comments]")) {
+            closeAllComments();
+            return;
+        }
+        if (e.target.closest(".comment-btn")) {
+            /* handler ya zamani inafungua/inafunga; tunalinganisha baadaye */
+            setTimeout(syncCommentSheet, 0);
+        }
+    });
+    if (commentBackdrop) commentBackdrop.addEventListener("click", closeAllComments);
+    document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        closeLightbox();
+        closeAllComments();
+    });
 
     loadFeed();
     loadUnreadCount();
