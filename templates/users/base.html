@@ -14,13 +14,13 @@
         /* Weka mode (giza/mwanga) kabla ya ukurasa kuchorwa: inazuia mweko mweupe */
         (function () {
             try {
-                var m = localStorage.getItem("incredibles_theme") || "auto";
+                var m = localStorage.getItem("mercfy_theme") || "auto";
                 var dark = m === "dark" || (m === "auto" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
                 document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
             } catch (e) {}
         })();
     </script>
-    <title>{% block title %}Incredibles{% endblock %}</title>
+    <title>{% block title %}Mercfy{% endblock %}</title>
 
     <link
         rel="stylesheet"
@@ -278,8 +278,8 @@
 
 {% if show_nav and session.get('user_id') %}
 <header class="topbar">
-    <a href="{{ url_for('user_feed.feed') }}" class="brand" id="brandHome" title="Incredibles — Home">
-        Incredibles
+    <a href="{{ url_for('user_feed.feed') }}" class="brand" id="brandHome" title="Mercfy — Home">
+        Mercfy
     </a>
 
     <div class="topbar-right">

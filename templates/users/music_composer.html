@@ -537,7 +537,7 @@
     <script>
         (function () {
             try {
-                var m = localStorage.getItem("incredibles_theme") || "auto";
+                var m = localStorage.getItem("mercfy_theme") || "auto";
                 var dark = m === "dark" || (m === "auto" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
                 document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
             } catch (e) {}
