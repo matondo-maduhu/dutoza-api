@@ -15,9 +15,9 @@ _BASE = os.path.dirname(os.path.abspath(__file__))
 
 MANIFEST = {
     "id": "/feed",
-    "name": "Incredibles",
-    "short_name": "Incredibles",
-    "description": "Quotes, muziki na jamii ya Incredibles.",
+    "name": "Mercfy",
+    "short_name": "Mercfy",
+    "description": "Quotes, muziki na jamii ya Mercfy.",
     "lang": "sw",
     "start_url": "/feed",
     "scope": "/",
