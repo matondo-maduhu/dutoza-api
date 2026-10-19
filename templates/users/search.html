@@ -139,7 +139,9 @@
             '<button type="button" class="fca-btn" data-engage="share" data-type="' + post.type + '" data-id="' + post.id + '" data-share-text="' + esc(post.type==='quote'?(post.content||''):(post.title||'')) + '"><i class="fa-solid fa-share-nodes"></i> <span class="share-count">' + (post.shares_count||0) + '</span></button>' +
             '<button type="button" class="fca-btn ' + (post.is_liked ? 'liked' : '') + '" data-engage="like" data-type="' + post.type + '" data-id="' + post.id + '"><i class="fa-' + (post.is_liked ? 'solid' : 'regular') + ' fa-heart"></i> <span class="like-count">' + (post.likes_count||0) + '</span></button>' +
             '</div>';
-        var head = '<div class="feed-card-head"><div class="feed-card-user"><div class="feed-card-avatar">' + avatar + '</div><div class="feed-card-user-meta"><strong>' + name + '</strong><span class="feed-meta-line">' + (uname ? '@'+uname+' · ' : '') + relTime(post.created_at) + '</span></div></div></div>';
+        var uTag = uname ? 'a' : 'div';
+        var uHref = uname ? ' href="/users/' + encodeURIComponent(user.username) + '" style="text-decoration:none;color:inherit;"' : '';
+        var head = '<div class="feed-card-head"><' + uTag + ' class="feed-card-user"' + uHref + '><div class="feed-card-avatar">' + avatar + '</div><div class="feed-card-user-meta"><strong>' + name + '</strong><span class="feed-meta-line">' + (uname ? '@'+uname+' · ' : '') + relTime(post.created_at) + '</span></div></' + uTag + '></div>';
         if (post.type === 'quote') {
             return '<article class="feed-card">' + head + '<div class="quote-frame"><p class="qf-text">' + esc(post.content) + '</p><div class="qf-author">— ' + esc(post.quote_author||name) + '</div>' + (post.category ? '<div class="qf-cat">' + esc(post.category) + '</div>' : '') + '</div>' + actions + '</article>';
         }

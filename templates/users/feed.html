@@ -2215,7 +2215,11 @@
 
     <style>
     /* ----- Post card ya picha ----- */
-    .photo-card .feed-card-user { text-decoration: none; color: inherit; }
+    a.feed-card-user, .photo-card .feed-card-user { text-decoration: none; color: inherit; -webkit-tap-highlight-color: transparent; }
+    a.feed-card-user:active .feed-card-avatar { transform: scale(.95); }
+    a.comment-avatar, a.comment-author { text-decoration: none; color: inherit; }
+    a.comment-author { display: block; }
+    a.comment-author:hover { text-decoration: underline; }
     a.composer-avatar { text-decoration: none; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     a.composer-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
     a.composer-avatar .composer-avatar-letter { font-weight: 800; color: #0d7a28; }
@@ -3144,13 +3148,13 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
             return `
                 <article class="feed-card quote-card" data-type="quote" data-id="${post.id}">
                     <div class="feed-card-head">
-                        <div class="feed-card-user">
+                        <${uname ? "a" : "div"} class="feed-card-user"${uname ? ` href="/users/${encodeURIComponent(post.user.username)}" aria-label="Fungua profile ya ${displayName}"` : ""}>
                             <div class="feed-card-avatar">${avatarHtml}</div>
                             <div class="feed-card-user-meta">
                                 <strong>${displayName}</strong>
                                 <span class="feed-meta-line">${uname ? `@${uname} · ` : ""}${formatRelativeTime(post.created_at)}</span>
                             </div>
-                        </div>
+                        </${uname ? "a" : "div"}>
                         <button type="button" class="feed-card-menu" aria-label="Menu" data-toggle-menu>
                             <i class="fa-solid fa-ellipsis"></i>
                         </button>
@@ -3229,13 +3233,13 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
             return `
                 <article class="feed-card music-card-v2" data-type="music" data-id="${post.id}">
                     <div class="feed-card-head">
-                        <div class="feed-card-user">
+                        <${username ? "a" : "div"} class="feed-card-user"${username ? ` href="/users/${encodeURIComponent(user.username)}" aria-label="Fungua profile ya ${name}"` : ""}>
                             <div class="feed-card-avatar">${avatarHtml}</div>
                             <div class="feed-card-user-meta">
                                 <strong>${name}</strong>
                                 <span class="feed-meta-line">${username ? `@${username} · ` : ""}${formatRelativeTime(post.created_at)}</span>
                             </div>
-                        </div>
+                        </${username ? "a" : "div"}>
                         <button type="button" class="feed-card-menu" aria-label="Menu" data-toggle-menu>
                             <i class="fa-solid fa-ellipsis"></i>
                         </button>
@@ -3525,17 +3529,17 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
 
                 <div class="comment-body">
 
-                    <div class="comment-avatar">
-                        ${avatar}
-                    </div>
+                    ${username
+                        ? `<a class="comment-avatar" href="/users/${encodeURIComponent(user.username)}" aria-label="Profile ya ${name}">${avatar}</a>`
+                        : `<div class="comment-avatar">${avatar}</div>`}
 
                     <div class="comment-main">
 
                         <div class="comment-bubble">
 
-                            <div class="comment-author">
-                                ${name}
-                            </div>
+                            ${username
+                                ? `<a class="comment-author" href="/users/${encodeURIComponent(user.username)}">${name}</a>`
+                                : `<div class="comment-author">${name}</div>`}
 
                             ${
                                 parentLabel
@@ -4351,6 +4355,7 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
                     notification.id
                 )}"
                 data-read="${notification.is_read ? "1" : "0"}"
+                data-actor-username="${escapeHtml(actor.username || "")}"
             >
 
                 <div class="notification-avatar">
@@ -4639,14 +4644,20 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
                 return;
             }
 
-            if (item.dataset.read === "1") {
-                return;
+            if (item.dataset.read !== "1") {
+                await markNotificationRead(
+                    notificationId,
+                    item
+                );
             }
 
-            await markNotificationRead(
-                notificationId,
-                item
-            );
+            /* Bonyeza notification -> fungua profile ya aliyeitoa */
+            const actorUsername = item.dataset.actorUsername;
+
+            if (actorUsername) {
+                window.location.href =
+                    "/users/" + encodeURIComponent(actorUsername);
+            }
 
         }
     );
