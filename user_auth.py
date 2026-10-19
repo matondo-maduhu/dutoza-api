@@ -296,12 +296,33 @@ def public_profile(username):
             )
             is_subscribed = cursor.fetchone()[0]
 
+            posts_count = 0
+            try:
+                cursor.execute(
+                    """
+                    SELECT
+                        (SELECT COUNT(*) FROM quotes WHERE user_id = %s AND status = 'published')
+                      + (SELECT COUNT(*) FROM songs WHERE user_id = %s AND status = 'published')
+                      + (SELECT COUNT(*) FROM posts WHERE user_id = %s AND status = 'published')
+                    """,
+                    (profile_user_id, profile_user_id, profile_user_id)
+                )
+                posts_count = int(cursor.fetchone()[0] or 0)
+            except Exception:
+                try:
+                    connection.rollback()
+                except Exception:
+                    pass
+                posts_count = 0
+
             return render_template(
                 "users/public_profile.html",
                 user=user,
                 subscribers_count=subscribers_count,
                 subscriptions_count=subscriptions_count,
-                is_subscribed=is_subscribed
+                is_subscribed=is_subscribed,
+                is_self=(profile_user_id == current_user_id),
+                posts_count=posts_count
             )
 
         except Exception as exc:
@@ -532,11 +553,16 @@ def profile():
                 SELECT
                     (SELECT COUNT(*) FROM quotes WHERE user_id = %s AND status = 'published')
                   + (SELECT COUNT(*) FROM songs WHERE user_id = %s AND status = 'published')
+                  + (SELECT COUNT(*) FROM posts WHERE user_id = %s AND status = 'published')
                 """,
-                (user_id, user_id),
+                (user_id, user_id, user_id),
             )
             posts_count = int(cursor.fetchone()[0] or 0)
         except Exception:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
             posts_count = 0
 
         try:
