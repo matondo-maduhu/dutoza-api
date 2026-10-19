@@ -7,7 +7,7 @@ PWA: manifest, service worker na ukurasa wa offline.
 import json
 import os
 
-from flask import Blueprint, Response, render_template
+from flask import Blueprint, Response, render_template, url_for
 
 pwa_bp = Blueprint("pwa", __name__)
 
@@ -64,4 +64,13 @@ def service_worker():
 
 @pwa_bp.get("/offline")
 def offline():
-    return render_template("offline.html")
+    # Ukurasa huo huo safi wa hitilafu (aina "offline")
+    feed_url = url_for("user_feed.feed")
+    return render_template(
+        "error.html",
+        variant="offline",
+        code="",
+        home_url=feed_url,
+        login_url=url_for("user_auth.login"),
+        retry_url=feed_url,
+    )

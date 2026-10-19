@@ -19,6 +19,7 @@ from guard import init_user_guard
 from admin_panel import panel_bp
 from pwa import pwa_bp
 from security import init_security
+from errors import init_errors
 
 app = Flask(__name__)
 
@@ -31,6 +32,7 @@ app.secret_key = os.getenv(
 init_security(app)
 init_compression(app)
 init_user_guard(app)
+init_errors(app)
 
 
 # API
