@@ -8,54 +8,121 @@
 {% block title %}Profile — Mercfy{% endblock %}
 
 {% block extra_css %}
-.profile-card {
+/* ================= PROFILE HEADER ================= */
+.pf {
     background: #ffffff;
     border: 1px solid #e8ecf0;
-    border-radius: 14px;
+    border-radius: 22px;
     overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 22px rgba(15, 23, 42, 0.06);
 }
-.cover {
-    height: 88px;
+.pf-cover {
+    position: relative;
+    height: 150px;
     background: linear-gradient(135deg, #1EB53A 0%, #00A3DD 50%, #7c3aed 100%);
+    overflow: hidden;
 }
-.profile-body { padding: 0 16px 16px; }
-.avatar {
-    width: 64px; height: 64px; border-radius: 50%; margin-top: -32px;
-    border: 3px solid #ffffff; background: #e9edf0;
-    display: flex; align-items: center; justify-content: center; overflow: hidden;
-    font-size: 22px; font-weight: 800; color: #17212b;
-    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+.pf-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pf-cover::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.18) 100%);
+    pointer-events: none;
 }
-.avatar img { width: 100%; height: 100%; object-fit: cover; }
-.name { margin: 10px 0 2px; font-size: 17px; font-weight: 800; color: #0f172a; }
-.username { color: #68737d; font-size: 13px; }
-.bio { margin-top: 10px; color: #4f5b65; line-height: 1.45; font-size: 13px; }
-.stats {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    border-top: 1px solid #edf0f2; margin-top: 14px; padding-top: 12px; gap: 6px;
+.pf-top {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 12px; padding: 0 18px; margin-top: -48px; position: relative; z-index: 2;
 }
-.stat { text-align: center; }
-.stat-number { font-size: 15px; font-weight: 800; color: #0f172a; }
-.stat-label { margin-top: 2px; color: #7b858d; font-size: 11px; }
-.account { margin-top: 12px; padding-top: 12px; border-top: 1px solid #edf0f2; color: #68737d; font-size: 12px; }
-.logout-row { margin-top: 10px; }
-.logout-row form { margin: 0; }
-.logout {
-    width: 100%; border: 0; background: #f1f5f9; color: #334155; border-radius: 12px;
-    padding: 11px 14px; font-weight: 700; font-size: 13px; cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit;
+.pf-avatar {
+    width: 98px; height: 98px; border-radius: 50%; flex-shrink: 0;
+    padding: 3px; background: linear-gradient(135deg, #1EB53A, #00A3DD 55%, #7c3aed);
+    box-shadow: 0 6px 18px rgba(15,23,42,.18);
 }
-.logout:hover { background: #fee2e2; color: #b91c1c; }
-.profile-posts-title {
-    margin: 18px 4px 10px; font-size: 15px; font-weight: 800; color: #0f172a;
+.pf-avatar-inner {
+    width: 100%; height: 100%; border-radius: 50%; overflow: hidden;
+    border: 3px solid #fff; background: #e9edf0; display: flex; align-items: center;
+    justify-content: center; font-size: 34px; font-weight: 800; color: #0d7a28;
+    cursor: zoom-in; padding: 0;
 }
-.profile-loading, .profile-empty {
-    text-align: center; color: #94a3b8; font-size: 14px; padding: 20px 8px;
+.pf-avatar-inner img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pf-actions { display: flex; gap: 8px; padding-bottom: 6px; }
+.pf-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    height: 40px; padding: 0 16px; border-radius: 999px; border: 0; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 800; text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
 }
+.pf-btn.primary { color: #fff; background: linear-gradient(120deg, #1EB53A, #00A3DD 60%, #7c3aed); }
+.pf-btn.icon { width: 40px; padding: 0; background: #f1f5f9; color: #334155; }
+.pf-btn:active { transform: scale(.97); }
+.pf-info { padding: 12px 20px 4px; }
+.pf-name { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -.3px; color: #0f172a; overflow-wrap: anywhere; }
+.pf-username { margin-top: 2px; color: #64748b; font-size: 14px; font-weight: 600; }
+.pf-bio { margin: 12px 0 0; color: #334155; font-size: 14.5px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pf-meta { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; color: #64748b; font-size: 13px; }
+.pf-meta i { margin-right: 6px; color: #94a3b8; }
+.pf-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    padding: 16px 16px 18px;
+}
+.pf-stat { background: #f8fafc; border-radius: 16px; padding: 12px 6px; text-align: center; }
+.pf-stat-number { font-size: 20px; font-weight: 900; color: #0f172a; font-variant-numeric: tabular-nums; }
+.pf-stat-label { margin-top: 2px; color: #64748b; font-size: 12px; font-weight: 700; }
+
+/* ================= TABS ================= */
+.pf-tabs {
+    position: sticky; top: 56px; z-index: 80; display: flex; gap: 6px;
+    margin: 14px 0 12px; padding: 8px 0; background: #f5f6f7;
+    overflow-x: auto; scrollbar-width: none;
+}
+.pf-tabs::-webkit-scrollbar { display: none; }
+.pf-tab {
+    flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    border: 1.5px solid #e2e8f0; background: #fff; color: #475569; border-radius: 999px;
+    padding: 9px 14px; font-size: 13.5px; font-weight: 800; font-family: inherit; cursor: pointer;
+    white-space: nowrap;
+}
+.pf-tab small { font-size: 11.5px; font-weight: 800; opacity: .75; }
+.pf-tab.active { color: #fff; border-color: transparent; background: linear-gradient(120deg, #1EB53A, #00A3DD 55%, #7c3aed); }
+
+/* ================= CONTENT ================= */
+.profile-loading, .profile-empty { text-align: center; color: #94a3b8; font-size: 14px; padding: 28px 8px; }
+.profile-empty i { display: block; font-size: 30px; margin-bottom: 10px; opacity: .5; }
+
+.pf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; border-radius: 16px; overflow: hidden; }
+.pf-grid button { position: relative; padding: 0; border: 0; background: #0f172a; aspect-ratio: 1 / 1; cursor: zoom-in; display: block; }
+.pf-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.pf-photo-frame { display: block; width: 100%; padding: 0; border: 0; background: #0f172a; cursor: zoom-in; line-height: 0; }
+.pf-photo-frame img { width: 100%; max-height: 70vh; object-fit: cover; display: block; }
+.pf-photo-caption { margin: 0; padding: 12px 16px 4px; font-size: 15px; line-height: 1.55; color: #1f2937; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pf-photo-foot { padding: 8px 16px 14px; color: #64748b; font-size: 13px; font-weight: 700; }
+.pf-photo-foot i { color: #e11d48; margin-right: 6px; }
+
+.pf-footer { margin: 22px 0 8px; display: flex; flex-direction: column; gap: 10px; }
+.pf-account { text-align: center; color: #94a3b8; font-size: 12.5px; overflow-wrap: anywhere; }
+.pf-footer form { margin: 0; }
+.pf-logout {
+    width: 100%; border: 0; background: #f1f5f9; color: #334155; border-radius: 14px; padding: 13px 14px;
+    font-weight: 800; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center;
+    justify-content: center; gap: 8px; font-family: inherit;
+}
+.pf-logout:hover { background: #fee2e2; color: #b91c1c; }
+
+.pf-toast {
+    position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); z-index: 10002;
+    background: #0f172a; color: #fff; padding: 10px 16px; border-radius: 999px; font-size: 13.5px;
+    font-weight: 700; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.pf-toast.show { opacity: 1; }
+.pf-lb { position: fixed; inset: 0; z-index: 10001; background: rgba(0,0,0,.94); display: flex; align-items: center; justify-content: center; padding: 12px; }
+.pf-lb[hidden] { display: none !important; }
+.pf-lb img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; }
+.pf-lb button { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 14px; width: 42px; height: 42px; border-radius: 50%; border: 0; font-size: 28px; line-height: 1; color: #fff; background: rgba(255,255,255,.16); cursor: pointer; }
+
+/* ================= CARDS (quote / music) ================= */
 .feed-card {
     background: #fff; border-radius: 18px; margin: 0 0 14px;
-    box-shadow: 0 2px 12px rgba(15,23,42,.06); border: 1px solid #eef1f4;
+    box-shadow: 0 2px 12px rgba(15,23,42,.06); border: 1px solid #eef1f4; overflow: hidden;
 }
 .feed-card-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px 8px; position: relative; }
 .feed-card-user { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
@@ -72,7 +139,7 @@
     background: linear-gradient(145deg, #fff7ed 0%, #fdf2f8 45%, #f0fdf4 100%);
     border: 1.5px solid #fde68a; padding: 16px 14px; text-align: center;
 }
-.qf-text { margin: 8px 0; font-size: 15px; font-weight: 650; line-height: 1.45; color: #1e293b; }
+.qf-text { margin: 8px 0; font-size: 15px; font-weight: 650; line-height: 1.45; color: #1e293b; white-space: pre-wrap; overflow-wrap: anywhere; }
 .qf-author { font-size: 12px; font-weight: 700; color: #64748b; }
 .music-frame {
     margin: 4px 12px 8px; border-radius: 16px; padding: 14px;
@@ -95,63 +162,113 @@
 }
 .fca-btn.liked, .fca-btn.liked i { color: #e11d48; }
 .fca-btn.saved, .fca-btn.saved i { color: #1EB53A; }
+
+/* ================= DARK MODE ================= */
+html[data-theme="dark"] .pf { background: #151a26; border-color: #222a3d; }
+html[data-theme="dark"] .pf-avatar-inner { border-color: #151a26; background: #0d1018; color: #76f095; }
+html[data-theme="dark"] .pf-name, html[data-theme="dark"] .pf-stat-number { color: #e6e8ed; }
+html[data-theme="dark"] .pf-username, html[data-theme="dark"] .pf-meta, html[data-theme="dark"] .pf-stat-label { color: #8792ac; }
+html[data-theme="dark"] .pf-bio { color: #b4bccd; }
+html[data-theme="dark"] .pf-stat { background: #0d1018; }
+html[data-theme="dark"] .pf-btn.icon { background: #0d1018; color: #a1aabe; }
+html[data-theme="dark"] .pf-tabs { background: #0d1018; }
+html[data-theme="dark"] .pf-tab { background: #151a26; border-color: #252e42; color: #a1aabe; }
+html[data-theme="dark"] .pf-tab.active { color: #fff; border-color: transparent; background: linear-gradient(120deg, #1EB53A, #00A3DD 55%, #7c3aed); }
+html[data-theme="dark"] .pf-photo-caption { color: #d2d6e0; }
+html[data-theme="dark"] .pf-logout { background: #151a26; color: #a1aabe; }
+html[data-theme="dark"] .pf-toast { background: #e6e8ed; color: #0d1018; }
 {% endblock %}
 
 {% block content %}
-<section class="profile-card">
-    <div class="cover"></div>
-    <div class="profile-body">
-        <div class="avatar">
+{% set months = ["Jan","Feb","Mac","Apr","Mei","Jun","Jul","Ago","Sep","Okt","Nov","Des"] %}
+<section class="pf">
+    <div class="pf-cover">
+        {% if user[5] %}<img src="{{ user[5] }}" alt="" onerror="this.remove()">{% endif %}
+    </div>
+
+    <div class="pf-top">
+        <div class="pf-avatar">
             {% if user[4] %}
-                <img src="{{ user[4] }}" alt="Profile">
+                <button type="button" class="pf-avatar-inner" id="pfAvatarBtn" data-src="{{ user[4] }}" aria-label="Fungua picha ya profile">
+                    <img src="{{ user[4] }}" alt="Profile">
+                </button>
             {% else %}
-                {{ user[1][0]|upper }}
+                <div class="pf-avatar-inner" style="cursor:default;">{{ (user[1] or user[2] or "M")[0]|upper }}</div>
             {% endif %}
         </div>
-        <div class="name">{{ user[1] }}</div>
-        <div class="username">@{{ user[2] }}</div>
-        {% if user[6] %}<div class="bio">{{ user[6] }}</div>{% endif %}
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-number" id="statPosts">{{ posts_count|default(0) }}</div>
-                <div class="stat-label">Posts</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">{{ followers_count|default(0) }}</div>
-                <div class="stat-label">Followers</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">{{ following_count|default(0) }}</div>
-                <div class="stat-label">Following</div>
-            </div>
-        </div>
-        <div class="account">Akaunti · {{ user[3] }}</div>
-        <div class="logout-row" style="margin-bottom:8px;">
-            <a href="{{ url_for('user_auth.settings') }}" class="logout" style="text-decoration:none;background:#e8f8ec;color:#0d7a28;">
-                <i class="fa-solid fa-gear"></i> Settings
+        <div class="pf-actions">
+            <a href="{{ url_for('user_auth.settings') }}" class="pf-btn primary">
+                <i class="fa-solid fa-pen" aria-hidden="true"></i> Hariri
             </a>
+            <button type="button" class="pf-btn icon" id="pfShare" aria-label="Shiriki profile" title="Shiriki profile">
+                <i class="fa-solid fa-share-nodes" aria-hidden="true"></i>
+            </button>
         </div>
-        <div class="logout-row">
-            <form method="POST" action="{{ url_for('user_auth.logout') }}">
-                <button class="logout" type="submit">
-                    <i class="fa-solid fa-right-from-bracket"></i> Toka
-                </button>
-            </form>
+    </div>
+
+    <div class="pf-info">
+        <h1 class="pf-name">{{ user[1] }}</h1>
+        <div class="pf-username">@{{ user[2] }}</div>
+        {% if user[6] %}<p class="pf-bio">{{ user[6] }}</p>{% endif %}
+        {% if user[8] %}
+        <div class="pf-meta">
+            <span><i class="fa-regular fa-calendar" aria-hidden="true"></i>Alijiunga {{ months[user[8].month - 1] }} {{ user[8].year }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="pf-stats">
+        <div class="pf-stat">
+            <div class="pf-stat-number" id="statPosts">{{ posts_count|default(0) }}</div>
+            <div class="pf-stat-label">Posts</div>
+        </div>
+        <div class="pf-stat">
+            <div class="pf-stat-number">{{ followers_count|default(0) }}</div>
+            <div class="pf-stat-label">Subscribers</div>
+        </div>
+        <div class="pf-stat">
+            <div class="pf-stat-number">{{ following_count|default(0) }}</div>
+            <div class="pf-stat-label">Subscriptions</div>
         </div>
     </div>
 </section>
 
-<h2 class="profile-posts-title">Machapisho yako</h2>
+<nav class="pf-tabs" id="pfTabs" role="tablist" aria-label="Machapisho yako">
+    <button type="button" class="pf-tab active" role="tab" data-tab="all">Zote <small id="cntAll"></small></button>
+    <button type="button" class="pf-tab" role="tab" data-tab="quote"><i class="fa-solid fa-quote-left" aria-hidden="true"></i> Quote <small id="cntQuote"></small></button>
+    <button type="button" class="pf-tab" role="tab" data-tab="music"><i class="fa-solid fa-music" aria-hidden="true"></i> Music <small id="cntMusic"></small></button>
+    <button type="button" class="pf-tab" role="tab" data-tab="post"><i class="fa-solid fa-image" aria-hidden="true"></i> Picha <small id="cntPost"></small></button>
+</nav>
+
 <div id="profileFeed">
     <div class="profile-loading">Inapakia posts...</div>
 </div>
+
+<div class="pf-footer">
+    <div class="pf-account">Akaunti · {{ user[3] }}</div>
+    <form method="POST" action="{{ url_for('user_auth.logout') }}">
+        <button class="pf-logout" type="submit">
+            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Toka
+        </button>
+    </form>
+</div>
+
+<div class="pf-lb" id="pfLightbox" hidden>
+    <button type="button" id="pfLightboxClose" aria-label="Funga">&times;</button>
+    <img id="pfLightboxImg" alt="">
+</div>
+<div class="pf-toast" id="pfToast" role="status"></div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 (function () {
     const CURRENT_USER_ID = {{ session.get("user_id") or 0 }};
+    const PROFILE_URL = {{ url_for('user_auth.public_profile', username=user[2], _external=True)|tojson }};
+    const PROFILE_NAME = {{ user[1]|tojson }};
     const feedEl = document.getElementById("profileFeed");
+    let allPosts = [];
+    let activeTab = "all";
 
     function esc(s) {
         return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -169,6 +286,37 @@
         catch (e) { return d.toLocaleDateString(); }
     }
 
+    /* ---------- toast + lightbox + share ---------- */
+    const toastEl = document.getElementById("pfToast");
+    let toastTimer = null;
+    function toast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2000);
+    }
+    const lb = document.getElementById("pfLightbox");
+    const lbImg = document.getElementById("pfLightboxImg");
+    function openLb(src) { if (!src) return; lbImg.src = src; lb.hidden = false; }
+    function closeLb() { lb.hidden = true; lbImg.removeAttribute("src"); }
+    lb.addEventListener("click", closeLb);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeLb(); });
+
+    const avatarBtn = document.getElementById("pfAvatarBtn");
+    if (avatarBtn) avatarBtn.addEventListener("click", function () { openLb(avatarBtn.dataset.src); });
+
+    document.getElementById("pfShare").addEventListener("click", function () {
+        if (navigator.share) {
+            navigator.share({ title: PROFILE_NAME + " — Mercfy", url: PROFILE_URL }).catch(function () {});
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(PROFILE_URL).then(function () { toast("Link ya profile imenakiliwa"); })
+                .catch(function () { toast(PROFILE_URL); });
+        } else {
+            toast(PROFILE_URL);
+        }
+    });
+
+    /* ---------- render ---------- */
     function render(post) {
         var user = post.user || {};
         var name = esc(user.full_name || "User");
@@ -176,6 +324,19 @@
         var avatar = user.profile_image_url
             ? '<img src="' + esc(user.profile_image_url) + '" alt="">'
             : '<span class="qf-avatar-letter">' + esc((user.full_name || "U").charAt(0).toUpperCase()) + '</span>';
+
+        var head =
+            '<div class="feed-card-head"><div class="feed-card-user"><div class="feed-card-avatar">' + avatar + '</div>' +
+            '<div class="feed-card-user-meta"><strong>' + name + '</strong>' +
+            '<span class="feed-meta-line">' + (uname ? '@' + uname + ' · ' : '') + relTime(post.created_at) + '</span></div></div></div>';
+
+        if (post.type === 'post') {
+            return '<article class="feed-card" data-type="post" data-id="' + post.id + '">' + head +
+                (post.media_url ? '<button type="button" class="pf-photo-frame" data-src="' + esc(post.media_url) + '" aria-label="Fungua picha kubwa"><img src="' + esc(post.media_url) + '" alt="" loading="lazy"></button>' : '') +
+                (post.content ? '<p class="pf-photo-caption">' + esc(post.content) + '</p>' : '') +
+                '<div class="pf-photo-foot"><i class="fa-solid fa-heart"></i>' + Number(post.likes_count || 0) + '</div></article>';
+        }
+
         var actions =
             '<div class="feed-card-actions">' +
             '<button type="button" class="fca-btn save-btn ' + (post.is_saved ? 'saved' : '') + '" data-engage="save" data-type="' + post.type + '" data-id="' + post.id + '">' +
@@ -185,11 +346,6 @@
             '<button type="button" class="fca-btn like-btn ' + (post.is_liked ? 'liked' : '') + '" data-engage="like" data-type="' + post.type + '" data-id="' + post.id + '">' +
             '<i class="fa-' + (post.is_liked ? 'solid' : 'regular') + ' fa-heart"></i> <span class="like-count">' + (post.likes_count || 0) + '</span></button>' +
             '</div>';
-
-        var head =
-            '<div class="feed-card-head"><div class="feed-card-user"><div class="feed-card-avatar">' + avatar + '</div>' +
-            '<div class="feed-card-user-meta"><strong>' + name + '</strong>' +
-            '<span class="feed-meta-line">' + (uname ? '@' + uname + ' · ' : '') + relTime(post.created_at) + '</span></div></div></div>';
 
         if (post.type === 'quote') {
             return '<article class="feed-card" data-type="quote" data-id="' + post.id + '">' + head +
@@ -211,6 +367,57 @@
         return '';
     }
 
+    const EMPTY = {
+        all: ['fa-regular fa-folder-open', 'Bado hujachapisha chochote.'],
+        quote: ['fa-solid fa-quote-left', 'Bado hujaandika quote.'],
+        music: ['fa-solid fa-music', 'Bado hujapakia wimbo.'],
+        post: ['fa-regular fa-image', 'Bado hujapost picha.']
+    };
+
+    function draw() {
+        var list = activeTab === 'all' ? allPosts : allPosts.filter(function (p) { return p.type === activeTab; });
+        if (!list.length) {
+            var e = EMPTY[activeTab];
+            feedEl.innerHTML = '<div class="profile-empty"><i class="' + e[0] + '"></i>' + e[1] + '</div>';
+            return;
+        }
+        if (activeTab === 'post') {
+            feedEl.innerHTML = '<div class="pf-grid">' + list.filter(function (p) { return p.media_url; }).map(function (p) {
+                return '<button type="button" data-src="' + esc(p.media_url) + '" aria-label="Fungua picha"><img src="' + esc(p.media_url) + '" alt="" loading="lazy"></button>';
+            }).join('') + '</div>';
+            return;
+        }
+        feedEl.innerHTML = list.map(render).join('');
+    }
+
+    function paintCounts() {
+        var c = { quote: 0, music: 0, post: 0 };
+        allPosts.forEach(function (p) { if (c[p.type] !== undefined) c[p.type]++; });
+        document.getElementById('cntAll').textContent = allPosts.length || '';
+        document.getElementById('cntQuote').textContent = c.quote || '';
+        document.getElementById('cntMusic').textContent = c.music || '';
+        document.getElementById('cntPost').textContent = c.post || '';
+    }
+
+    document.getElementById('pfTabs').addEventListener('click', function (e) {
+        var btn = e.target.closest('.pf-tab');
+        if (!btn) return;
+        activeTab = btn.dataset.tab;
+        document.querySelectorAll('.pf-tab').forEach(function (t) {
+            var on = t === btn;
+            t.classList.toggle('active', on);
+            t.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        draw();
+    });
+
+    /* picha kubwa: kutoka grid au card */
+    document.addEventListener('click', function (e) {
+        var ph = e.target.closest('.pf-photo-frame, .pf-grid button');
+        if (ph) openLb(ph.dataset.src);
+    });
+
+    /* ---------- like / save / share ---------- */
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('[data-engage]');
         if (!btn) return;
@@ -255,29 +462,27 @@
                   if (c) c.textContent = d.likes_count;
               } else {
                   btn.classList.toggle('saved', !!d.saved);
-                  var icon = btn.querySelector('i');
-                  if (icon) icon.className = d.saved ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
-                  var c = btn.querySelector('.save-count');
-                  if (c) c.textContent = d.saves_count;
+                  var icon2 = btn.querySelector('i');
+                  if (icon2) icon2.className = d.saved ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
+                  var c2 = btn.querySelector('.save-count');
+                  if (c2) c2.textContent = d.saves_count;
               }
           })
           .finally(function () { btn.disabled = false; });
     });
 
+    /* ---------- load ---------- */
     fetch('/api/user/profile/posts', { credentials: 'same-origin' })
         .then(function (r) { return r.json(); })
         .then(function (data) {
-            var posts = (data && data.posts) ? data.posts : [];
-            if (!posts.length) {
-                feedEl.innerHTML = '<div class="profile-empty">Bado hujachapisha chochote.</div>';
-                return;
-            }
-            feedEl.innerHTML = posts.map(render).join('');
+            allPosts = (data && data.posts) ? data.posts : [];
+            paintCounts();
+            draw();
             var stat = document.getElementById('statPosts');
-            if (stat) stat.textContent = posts.length;
+            if (stat && allPosts.length) stat.textContent = allPosts.length;
         })
         .catch(function () {
-            feedEl.innerHTML = '<div class="profile-empty">Imeshindikana kupakia posts.</div>';
+            feedEl.innerHTML = '<div class="profile-empty"><i class="fa-solid fa-triangle-exclamation"></i>Imeshindikana kupakia posts.</div>';
         });
 })();
 </script>
