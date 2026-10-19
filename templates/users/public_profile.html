@@ -94,15 +94,6 @@
 .pf-photo-foot { padding: 8px 16px 14px; color: #64748b; font-size: 13px; font-weight: 700; }
 .pf-photo-foot i { color: #e11d48; margin-right: 6px; }
 
-.pf-footer { margin: 22px 0 8px; display: flex; flex-direction: column; gap: 10px; }
-.pf-account { text-align: center; color: #94a3b8; font-size: 12.5px; overflow-wrap: anywhere; }
-.pf-footer form { margin: 0; }
-.pf-logout {
-    width: 100%; border: 0; background: #f1f5f9; color: #334155; border-radius: 14px; padding: 13px 14px;
-    font-weight: 800; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center;
-    justify-content: center; gap: 8px; font-family: inherit;
-}
-.pf-logout:hover { background: #fee2e2; color: #b91c1c; }
 
 .pf-toast {
     position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); z-index: 10002;
@@ -171,8 +162,7 @@ html[data-theme="dark"] .pf-tabs { background: #0d1018; }
 html[data-theme="dark"] .pf-tab { background: #151a26; border-color: #252e42; color: #a1aabe; }
 html[data-theme="dark"] .pf-tab.active { color: #fff; border-color: transparent; background: linear-gradient(120deg, #1EB53A, #00A3DD 55%, #7c3aed); }
 html[data-theme="dark"] .pf-photo-caption { color: #d2d6e0; }
-html[data-theme="dark"] .pf-logout { background: #151a26; color: #a1aabe; }
-html[data-theme="dark"] .pf-toast { background: #e6e8ed; color: #0d1018; }
+html[data-theme="dark"] html[data-theme="dark"] .pf-toast { background: #e6e8ed; color: #0d1018; }
 
 .pf-btn.ghost { background: #f1f5f9; color: #334155; }
 html[data-theme="dark"] .pf-btn.ghost { background: #0d1018; color: #a1aabe; }
@@ -199,7 +189,7 @@ html[data-theme="dark"] .pf-btn.ghost { background: #0d1018; color: #a1aabe; }
         <div class="pf-actions">
             {% if is_self %}
                 <a href="{{ url_for('user_auth.settings') }}" class="pf-btn primary">
-                    <i class="fa-solid fa-pen" aria-hidden="true"></i> Hariri
+                    <i class="fa-solid fa-gear" aria-hidden="true"></i> Settings
                 </a>
             {% elif is_subscribed %}
                 <form class="pf-form" method="POST" action="{{ url_for('user_auth.unsubscribe_user', user_id=user[0]) }}">
