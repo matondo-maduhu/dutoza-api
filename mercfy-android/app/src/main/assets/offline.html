@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light dark">
+<title>Mercfy</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2300A3DD'/%3E%3Cpath d='M17 44V22l15 15 15-15v22' fill='none' stroke='white' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script>
+(function () {
+    try {
+        var m = localStorage.getItem("mercfy_theme") || "auto";
+        var dark = m === "dark" || (m === "auto" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    } catch (e) {}
+})();
+</script>
+<style>
+:root {
+    --bg: #f5f6f7;
+    --ink: #0f172a;
+    --muted: #586377;
+    --line: #dde3ea;
+    --g1: #1EB53A;
+    --g2: #00A3DD;
+    --g3: #7c3aed;
+    --focus: #7c3aed;
+}
+html[data-theme="dark"] {
+    --bg: #0d1018;
+    --ink: #e6e8ed;
+    --muted: #9aa5bd;
+    --line: #252e42;
+    --focus: #a78bfa;
+}
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+        --bg: #0d1018;
+        --ink: #e6e8ed;
+        --muted: #9aa5bd;
+        --line: #252e42;
+        --focus: #a78bfa;
+    }
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+.wrap {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: max(20px, env(safe-area-inset-top)) 22px max(22px, env(safe-area-inset-bottom));
+}
+.col { width: 100%; max-width: 520px; margin: 0 auto; }
+
+header .col { display: flex; align-items: center; }
+.home { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; border-radius: 10px; }
+.mark { width: 34px; height: 34px; display: block; }
+.brand {
+    font-size: 20px; font-weight: 900; letter-spacing: -0.4px;
+    background: linear-gradient(120deg, var(--g1) 0%, var(--g2) 55%, var(--g3) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+main { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 28px 0 20px; }
+
+/* Mistari ya sauti: hali ya ukurasa inaonekana kwa mwendo wake */
+.eq {
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 6px;
+    height: 128px; margin: 0 0 34px;
+}
+.eq i {
+    flex: 1; min-width: 8px; max-width: 22px; height: var(--h, 50%);
+    border-radius: 999px; background: var(--c, var(--g2));
+}
+body[data-variant="server"] .eq i,
+body[data-variant="busy"] .eq i {
+    animation: beat var(--d, 1.4s) ease-in-out var(--dl, 0s) infinite;
+}
+body[data-variant="offline"] .eq i { height: 22px; opacity: 0.42; }
+body[data-variant="forbidden"] .eq i,
+body[data-variant="error"] .eq i { opacity: 0.55; }
+.eq i.gap { height: 22px; opacity: 0.42; }
+@keyframes beat {
+    0%, 100% { height: var(--lo, 20%); }
+    50% { height: var(--h, 80%); }
+}
+
+[data-v] { display: none; }
+body[data-variant="server"] [data-v~="server"],
+body[data-variant="busy"] [data-v~="busy"],
+body[data-variant="offline"] [data-v~="offline"],
+body[data-variant="notfound"] [data-v~="notfound"],
+body[data-variant="forbidden"] [data-v~="forbidden"],
+body[data-variant="error"] [data-v~="error"] { display: block; }
+
+h1 {
+    margin: 0 0 14px; font-size: clamp(32px, 9vw, 44px); line-height: 1.08;
+    letter-spacing: -0.03em; font-weight: 800; text-wrap: balance;
+}
+.lead { margin: 0; font-size: 17px; line-height: 1.6; color: var(--muted); max-width: 38ch; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.btn {
+    appearance: none; -webkit-appearance: none; border: 0; font: inherit; font-weight: 800; font-size: 16px;
+    height: 52px; padding: 0 26px; border-radius: 999px; cursor: pointer; text-decoration: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+}
+.btn.primary { background: var(--ink); color: var(--bg); }
+.btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+.btn:active { transform: scale(0.98); }
+.btn:focus-visible, .home:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+.status { margin: 26px 0 0; font-size: 15px; line-height: 1.5; color: var(--muted); }
+.meter { display: block; height: 4px; max-width: 320px; margin-top: 12px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.meter b {
+    display: block; width: 100%; height: 100%; transform-origin: 0 50%;
+    background: linear-gradient(90deg, var(--g1), var(--g2), var(--g3));
+    animation: drain var(--auto, 10s) linear forwards;
+}
+@keyframes drain { to { transform: scaleX(0); } }
+
+footer { font-size: 13px; color: var(--muted); }
+footer[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .eq i { animation: none !important; }
+    .meter { display: none; }
+}
+</style>
+</head>
+<body data-variant="server">
+<div class="wrap">
+
+    <header>
+        <div class="col">
+            <a class="home" href="https://mercyfy.dutoza.com/feed" aria-label="Mercfy, rudi mwanzo">
+                <svg class="mark" viewBox="0 0 512 512" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="mg" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#1db954"/>
+                            <stop offset=".55" stop-color="#039be5"/>
+                            <stop offset="1" stop-color="#6c4ff0"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="512" height="512" rx="112" fill="url(#mg)"/>
+                    <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M136 330V176l120 116 120-116v154" stroke-width="54"/>
+                        <g stroke-width="22"><path d="M196 392v10"/><path d="M226 380v34"/><path d="M256 366v62"/><path d="M286 380v34"/><path d="M316 392v10"/></g>
+                    </g>
+                </svg>
+                <span class="brand">Mercfy</span>
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <div class="col">
+            <div class="eq" id="eq" aria-hidden="true"></div>
+
+            <section data-v="server">
+                <h1>Mercfy inaamka</h1>
+                <p class="lead">Seva haikujibu kwa sasa. Simu na intaneti yako ziko sawa. Tunajaribu tena kila sekunde 10, na ukurasa utafunguka wenyewe.</p>
+                <div class="actions"><button type="button" class="btn primary" data-act="retry">Jaribu tena sasa</button></div>
+            </section>
+
+            <section data-v="busy">
+                <h1>Maombi ni mengi sana</h1>
+                <p class="lead">Umetuma maombi mengi ndani ya muda mfupi. Subiri kidogo; tutajaribu tena wenyewe.</p>
+                <div class="actions"><button type="button" class="btn primary" data-act="retry">Jaribu tena sasa</button></div>
+            </section>
+
+            <section data-v="offline">
+                <h1>Huna mtandao</h1>
+                <p class="lead">Washa data au Wi-Fi. Mtandao ukirudi, ukurasa utafunguka wenyewe.</p>
+                <div class="actions"><button type="button" class="btn primary" data-act="retry">Jaribu tena</button></div>
+            </section>
+
+            <section data-v="notfound">
+                <h1>Ukurasa huu haupo</h1>
+                <p class="lead">Kiungo kinaweza kuwa kimeandikwa vibaya, au maudhui yamefutwa.</p>
+                <div class="actions"><a class="btn primary" href="https://mercyfy.dutoza.com/feed">Rudi kwenye feed</a></div>
+            </section>
+
+            <section data-v="forbidden">
+                <h1>Huwezi kufungua ukurasa huu</h1>
+                <p class="lead">Akaunti yako haina ruhusa ya kuufungua. Ingia kwa akaunti yenye ruhusa kisha ujaribu tena.</p>
+                <div class="actions">
+                    <a class="btn primary" href="https://mercyfy.dutoza.com/feed">Rudi kwenye feed</a>
+                    <a class="btn ghost" href="https://mercyfy.dutoza.com/login">Ingia</a>
+                </div>
+            </section>
+
+            <section data-v="error">
+                <h1>Ombi halikukamilika</h1>
+                <p class="lead">Jaribu tena baada ya sekunde chache. Ikiendelea, mjulishe msimamizi wa Mercfy na umtajie msimbo ulio chini.</p>
+                <div class="actions">
+                    <button type="button" class="btn primary" data-act="retry">Jaribu tena</button>
+                    <a class="btn ghost" href="https://mercyfy.dutoza.com/feed">Rudi kwenye feed</a>
+                </div>
+            </section>
+
+            <p class="status" role="status" aria-live="polite" data-v="server busy">
+                Tunajaribu tena baada ya sekunde <b id="n">10</b>.
+                <span class="meter" id="meter" aria-hidden="true"><b></b></span>
+            </p>
+            <p class="status" role="status" aria-live="polite" data-v="offline">Tunasubiri mtandao kurudi.</p>
+        </div>
+    </main>
+
+    <footer id="foot">
+        <div class="col">Msimbo wa hitilafu: <b id="code"></b></div>
+    </footer>
+
+</div>
+
+<script>
+(function () {
+    var body = document.body;
+    var CODE = "";
+    var HOME = "https://mercyfy.dutoza.com/feed";
+    var RETRY = "https://mercyfy.dutoza.com/feed";
+
+    var isFile = location.protocol === "file:";
+    var q = new URLSearchParams(location.search);
+    var ALL = ["server", "busy", "offline", "notfound", "forbidden", "error"];
+
+    /* Kwenye app ya Android ukurasa unafunguliwa kama faili: aina inatoka kwenye anwani. */
+    var V = body.getAttribute("data-variant");
+    if (isFile && q.get("c")) { V = q.get("c"); }
+    if (ALL.indexOf(V) < 0) { V = "error"; }
+    body.setAttribute("data-variant", V);
+
+    var h = document.querySelector('section[data-v="' + V + '"] h1');
+    if (h) { document.title = h.textContent + " — Mercfy"; }
+
+    var foot = document.getElementById("foot");
+    if (!CODE || V === "offline") { foot.hidden = true; }
+
+    /* Anwani ya kujaribu tena: ndani ya Mercfy tu, kamwe tovuti nyingine. */
+    var HOME_ORIGIN = "";
+    try { HOME_ORIGIN = new URL(HOME, location.href).origin; } catch (e) {}
+    function allowed(u) {
+        try {
+            var x = new URL(u, location.href);
+            var okOrigin = isFile ? HOME_ORIGIN : location.origin;
+            return x.origin === okOrigin ? x.href : HOME;
+        } catch (e) { return HOME; }
+    }
+    var target = allowed((isFile && q.get("u")) || RETRY);
+    function go() { location.replace(target); }
+
+    var btns = document.querySelectorAll('[data-act="retry"]');
+    for (var b = 0; b < btns.length; b++) { btns[b].addEventListener("click", go); }
+    if (V === "offline" || V === "server" || V === "busy") { window.addEventListener("online", go); }
+
+    var AUTO = V === "server" ? 10 : (V === "busy" ? 15 : 0);
+    if (AUTO) {
+        var n = document.getElementById("n");
+        var meter = document.getElementById("meter");
+        var left = AUTO;
+        n.textContent = left;
+        meter.style.setProperty("--auto", AUTO + "s");
+        var timer = setInterval(function () {
+            left -= 1;
+            n.textContent = Math.max(left, 0);
+            if (left <= 0) { clearInterval(timer); go(); }
+        }, 1000);
+    }
+
+    /* Mistari ya sauti */
+    var eq = document.getElementById("eq");
+    var STOPS = [[30, 181, 58], [0, 163, 221], [124, 58, 237]];
+    function mix(a, c, t) { return a + (c - a) * t; }
+    function color(t) {
+        var s = t < 0.5 ? 0 : 1;
+        var u = t < 0.5 ? t * 2 : (t - 0.5) * 2;
+        var a = STOPS[s], c = STOPS[s + 1];
+        return "rgb(" + Math.round(mix(a[0], c[0], u)) + "," + Math.round(mix(a[1], c[1], u)) + "," + Math.round(mix(a[2], c[2], u)) + ")";
+    }
+    function build() {
+        eq.textContent = "";
+        var n = Math.max(11, Math.min(21, Math.round(eq.clientWidth / 27)));
+        var bars = [];
+        for (var i = 0; i < n; i++) {
+            var t = n > 1 ? i / (n - 1) : 0;
+            var hgt = Math.round(Math.max(24, Math.min(96, 26 + 68 * Math.abs(Math.sin(i * 0.95 + 0.4)) * (0.62 + 0.38 * Math.sin(i * 0.41 + 1.3)))));
+            var el = document.createElement("i");
+            el.style.setProperty("--c", color(t));
+            el.style.setProperty("--h", hgt + "%");
+            el.style.setProperty("--lo", Math.max(14, Math.round(hgt * 0.3)) + "%");
+            el.style.setProperty("--d", (1.1 + ((i * 37) % 7) / 10) + "s");
+            el.style.setProperty("--dl", (-(i * 0.23)).toFixed(2) + "s");
+            eq.appendChild(el);
+            bars.push(el);
+        }
+        if (V === "notfound") { bars[Math.floor(n / 2)].className = "gap"; }
+    }
+    build();
+    var rt;
+    window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(build, 150); });
+})();
+</script>
+</body>
+</html>
