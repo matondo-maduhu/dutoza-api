@@ -1546,13 +1546,14 @@
                 class="composer-avatar"
                 aria-label="Fungua profile yako"
             >
-                {% if session.get("profile_image_url") %}
-                    <img src="{{ session.get('profile_image_url') }}" alt="Profile">
+                {% set my_img = (me.profile_image_url if me else "") or session.get("profile_image_url") %}
+                {% set my_name = ((me.full_name if me else "") or session.get("full_name", ""))|trim %}
+                {% if my_img %}
+                    <img src="{{ my_img }}" alt="Profile" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'fa-solid fa-user'}))">
+                {% elif my_name %}
+                    <span class="composer-avatar-letter">{{ my_name[0]|upper }}</span>
                 {% else %}
-                    {% set name = session.get("full_name", "")|trim %}
-                    {% if name %}
-                        <span class="composer-avatar-letter">{{ name[0]|upper }}</span>
-                    {% endif %}
+                    <i class="fa-solid fa-user" aria-hidden="true"></i>
                 {% endif %}
             </a>
             <button type="button" class="composer-fake-input" id="openQuoteModal" aria-label="Andika quote">
@@ -1565,6 +1566,9 @@
                     </button>
                     <button type="button" class="composer-action" id="musicOption" aria-label="Music" title="Post music">
                         <i class="fa-solid fa-music" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="composer-action photo-plus" id="photoOption" aria-label="Post picha" title="Post picha (Kamera / Galeri)">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
@@ -2212,6 +2216,15 @@
     <style>
     /* ----- Post card ya picha ----- */
     .photo-card .feed-card-user { text-decoration: none; color: inherit; }
+    a.composer-avatar { text-decoration: none; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    a.composer-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    a.composer-avatar .composer-avatar-letter { font-weight: 800; color: #0d7a28; }
+    .composer-action.photo-plus {
+        width: 24px !important; height: 24px !important; min-width: 24px !important;
+        font-size: 11px !important; color: #fff !important; margin-left: 2px;
+        background: linear-gradient(135deg, #1EB53A, #00A3DD 60%, #7c3aed) !important;
+    }
+    .composer-action.photo-plus:hover { filter: brightness(1.08); }
     .photo-frame {
         display: block; width: 100%; padding: 0; border: 0; margin: 2px 0 0;
         background: #0f172a; cursor: zoom-in; line-height: 0;
@@ -2460,7 +2473,19 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
     }
     var bnCompose = document.getElementById("bnCompose");
     if (bnCompose) {
-        bnCompose.addEventListener("click", function () { openMediaSheet(); });
+        /* + ya chini inafanya kazi kulingana na tab ulipo */
+        bnCompose.addEventListener("click", function () {
+            if (feedTab === "music") openMusicModal();
+            else if (feedTab === "post") openMediaSheet();
+            else openQuoteModal();
+        });
+    }
+    var photoOption = document.getElementById("photoOption");
+    if (photoOption) {
+        photoOption.addEventListener("click", function (e) {
+            e.preventDefault();
+            openMediaSheet();
+        });
     }
     var brandHome = document.getElementById("brandHome");
     if (brandHome) {
@@ -4655,7 +4680,18 @@ window.__notificationsWired = true;   /* feed ina code yake ya notifications */
        ================================ */
     const feedTabsEl = document.getElementById("feedTabs");
 
+    const COMPOSE_LABEL = {
+        quote: "Andika quote",
+        music: "Pakia wimbo",
+        post: "Chapisha picha"
+    };
+
     function paintTabs() {
+        const plus = document.getElementById("bnCompose");
+        if (plus) {
+            plus.title = COMPOSE_LABEL[feedTab] || "Post";
+            plus.setAttribute("aria-label", plus.title);
+        }
         if (!feedTabsEl) return;
         feedTabsEl.querySelectorAll(".feed-tab").forEach(function (btn) {
             const on = btn.dataset.tab === feedTab;
