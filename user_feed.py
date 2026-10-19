@@ -42,6 +42,7 @@ def feed():
         return redirect(url_for("user_auth.login"))
 
     categories = []
+    me = {}
     connection = None
     try:
         connection = get_connection()
@@ -55,6 +56,24 @@ def feed():
             {"name": row[0], "slug": row[1]}
             for row in cursor.fetchall()
         ]
+
+        # Profile ya mtumiaji (picha ya sasa) kwa avatar ya composer
+        try:
+            cursor.execute("""
+                SELECT full_name, username, profile_image_url
+                FROM users
+                WHERE id = %s
+                LIMIT 1
+            """, (session.get("user_id"),))
+            row = cursor.fetchone()
+            if row:
+                me = {
+                    "full_name": row[0] or "",
+                    "username": row[1] or "",
+                    "profile_image_url": row[2] or "",
+                }
+        except Exception:
+            me = {}
     except Exception:
         categories = []
     finally:
@@ -62,7 +81,8 @@ def feed():
 
     return render_template(
         "users/feed.html",
-        categories=categories
+        categories=categories,
+        me=me
     )
 
 
