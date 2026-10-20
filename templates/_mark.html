@@ -1,0 +1,14 @@
+<svg class="{{ mark_class|default('mf-mark') }}" viewBox="0 0 512 512" aria-hidden="true" focusable="false">
+    <defs>
+        <linearGradient id="mfg{{ mark_id|default('') }}" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1db954"/>
+            <stop offset=".55" stop-color="#039be5"/>
+            <stop offset="1" stop-color="#6c4ff0"/>
+        </linearGradient>
+    </defs>
+    <rect width="512" height="512" rx="112" fill="url(#mfg{{ mark_id|default('') }})"/>
+    <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M136 330V176l120 116 120-116v154" stroke-width="54"/>
+        <g stroke-width="22"><path d="M196 392v10"/><path d="M226 380v34"/><path d="M256 366v62"/><path d="M286 380v34"/><path d="M316 392v10"/></g>
+    </g>
+</svg>
