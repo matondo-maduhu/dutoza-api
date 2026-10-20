@@ -1,116 +1,37 @@
-<!DOCTYPE html>
-<html lang="sw">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Dutoza API - Admin Login</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f3f5f7;
-            font-family: Arial, sans-serif;
-        }
-
-        .box {
-            width: 92%;
-            max-width: 400px;
-            background: white;
-            padding: 30px;
-            border-radius: 18px;
-            box-shadow: 0 10px 35px rgba(0,0,0,.08);
-        }
-
-        h1 {
-            margin-top: 0;
-            text-align: center;
-        }
-
-        input {
-            width: 100%;
-            padding: 14px;
-            margin: 8px 0 14px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            border: 0;
-            border-radius: 10px;
-            background: #111827;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .error {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="box">
-
-    <h1>Dutoza API</h1>
+{% extends "auth_base.html" %}
+{% block title %}Mercfy — Admin{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block tagline %}<span class="mf-tag">Admin</span>{% endblock %}
+{% block content %}
+<section class="mf-card">
+    <h1>Ingia kama Admin</h1>
+    <p class="mf-lead">Eneo hili ni la wasimamizi wa Mercfy tu.</p>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
-            <div class="error">{{ message }}</div>
+            <div class="mf-alert" role="alert">{{ message }}</div>
         {% endfor %}
     {% endwith %}
 
-    <form method="POST">
-
-        <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            required
-        >
-
-        <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            required
-        >
-
-        <button type="submit">
-            Ingia
-        </button>
-
+    <form method="POST" id="adminForm">
+        <div class="mf-field">
+            <label for="username">Username</label>
+            <input id="username" type="text" name="username" autocomplete="username" required>
+        </div>
+        <div class="mf-field">
+            <label for="password">Password</label>
+            <input id="password" type="password" name="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="mf-btn block">Ingia</button>
     </form>
-
-</div>
-
+</section>
+{% endblock %}
+{% block scripts %}
 <script>
-    document.querySelector("form").addEventListener(
-        "submit",
-        function () {
-            const button = this.querySelector("button");
-            button.disabled = true;
-            button.textContent = "Inaingia...";
-        }
-    );
+document.getElementById("adminForm").addEventListener("submit", function () {
+    var button = this.querySelector("button");
+    button.disabled = true;
+    button.textContent = "Inaingia...";
+});
 </script>
-
-</body>
-</html>
+{% endblock %}
