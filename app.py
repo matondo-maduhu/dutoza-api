@@ -81,7 +81,7 @@ def home():
 @app.get("/api")
 def api_info():
     return jsonify({
-        "name": "Dutoza API",
+        "name": "Mercfy API",
         "version": "1.0.0",
         "status": "online",
         "services": [

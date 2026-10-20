@@ -2426,8 +2426,43 @@ def get_profile_posts():
                 **eng,
             })
 
+        # Post za picha
+        try:
+            cursor.execute("""
+                SELECT
+                    p.id, p.content, p.media_url, p.media_type, p.created_at,
+                    u.id, u.full_name, u.username, u.profile_image_url,
+                    (SELECT COUNT(*) FROM post_likes pl WHERE pl.post_id = p.id)
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                WHERE p.status = 'published' AND p.user_id = %s
+                ORDER BY p.created_at DESC
+                LIMIT 50
+            """, (target_id,))
+            for row in cursor.fetchall():
+                feed_items.append({
+                    "type": "post",
+                    "id": row[0],
+                    "content": row[1],
+                    "media_url": row[2],
+                    "media_type": row[3],
+                    "created_at": row[4].isoformat() if row[4] else None,
+                    "likes_count": row[9],
+                    "user": {
+                        "id": row[5],
+                        "full_name": row[6],
+                        "username": row[7] or "",
+                        "profile_image_url": row[8],
+                    },
+                })
+        except Exception:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+
         feed_items.sort(key=lambda x: x.get("created_at") or "", reverse=True)
-        return jsonify({"success": True, "posts": feed_items[:50]})
+        return jsonify({"success": True, "posts": feed_items[:100]})
     except Exception as e:
         return jsonify({"success": False, "error": public_error(e)}), 500
     finally:
