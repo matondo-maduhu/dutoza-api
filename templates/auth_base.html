@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="{% block lang %}sw{% endblock %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
+    <title>{% block title %}Mercfy{% endblock %}</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='icons/favicon-64.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Mercfy">
+    <script>
+        /* Weka mode (giza/mwanga) kabla ya ukurasa kuchorwa: inazuia mweko mweupe */
+        (function () {
+            try {
+                var m = localStorage.getItem("mercfy_theme") || "auto";
+                var dark = m === "dark" || (m === "auto" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+                document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+            } catch (e) {}
+        })();
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mercfy.css') }}?v=2">
+    {% block head %}{% endblock %}
+</head>
+<body class="mf-auth">
+    <main class="mf-wrap{% block wrap_class %}{% endblock %}">
+        <a class="mf-lockup" href="{% block home_href %}/{% endblock %}" aria-label="Mercfy">
+            {% include "_mark.html" %}
+            <span class="mf-word">Mercfy</span>
+            {% block tagline %}{% endblock %}
+        </a>
+        {% block content %}{% endblock %}
+    </main>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
