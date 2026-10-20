@@ -1,51 +1,29 @@
-{% extends "developers/base.html" %}
-{% block title %}Developer Login — Mercfy API{% endblock %}
-{% block extra_css %}
-body { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
-.auth-card {
-  width: min(420px, 100%);
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 28px 24px;
-  box-shadow: 0 12px 40px rgba(15,23,42,.06);
-}
-.auth-head { text-align: center; margin-bottom: 22px; }
-.auth-head .brand-mark { margin: 0 auto 12px; width: 48px; height: 48px; font-size: 18px; border-radius: 14px; }
-.auth-head h1 { margin: 0 0 6px; font-size: 22px; font-weight: 900; }
-.auth-head p { margin: 0; color: var(--muted); font-size: 14px; }
-label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .3px; }
-input {
-  width: 100%; padding: 12px 14px; border: 1.5px solid #e2e8f0; border-radius: 12px;
-  font-size: 15px; font-family: inherit; outline: none;
-}
-input:focus { border-color: var(--brand-green); }
-.btn-primary { width: 100%; justify-content: center; margin-top: 18px; padding: 13px; font-size: 14px; border-radius: 12px; }
-.bottom { text-align: center; margin-top: 18px; font-size: 14px; color: var(--muted); }
-.alert { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: 11px; border-radius: 10px; font-size: 13px; margin-bottom: 12px; }
-.back-home { display: block; text-align: center; margin-top: 14px; font-size: 13px; color: var(--muted); font-weight: 600; }
-{% endblock %}
-{% block body %}
-<div class="auth-card">
-  <div class="auth-head">
-    <div class="brand-mark">I</div>
-    <div class="brand-text" style="font-size:20px;margin-bottom:8px;">Mercfy</div>
-    <h1>Developer Login</h1>
-    <p>Sign in to manage your API keys</p>
-  </div>
-  {% with messages = get_flashed_messages() %}
-  {% if messages %}<div class="alert">{{ messages[-1] }}</div>{% endif %}
-  {% endwith %}
-  <form method="POST" action="/developers/login">
-    <label>Email</label>
-    <input type="email" name="email" placeholder="developer@example.com" required>
-    <label>Password</label>
-    <input type="password" name="password" placeholder="Your password" required>
-    <button type="submit" class="btn btn-primary">Sign in</button>
-  </form>
-  <div class="bottom">
-    Don't have an account? <a href="/developers/register">Create one</a>
-  </div>
-  <a class="back-home" href="/developers">← API Documentation</a>
-</div>
+{% extends "auth_base.html" %}
+{% block title %}Ingia kama Developer — Mercfy{% endblock %}
+{% block home_href %}/developers{% endblock %}
+{% block tagline %}<span class="mf-tag">API kwa Developers</span>{% endblock %}
+{% block content %}
+<section class="mf-card">
+    <h1>Karibu tena</h1>
+    <p class="mf-lead">Ingia ili usimamie API keys zako.</p>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}<div class="mf-alert" role="alert">{{ messages[-1] }}</div>{% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/developers/login">
+        <div class="mf-field">
+            <label for="email">Email</label>
+            <input id="email" type="email" name="email" placeholder="developer@example.com" autocomplete="email" required>
+        </div>
+        <div class="mf-field">
+            <label for="password">Password</label>
+            <input id="password" type="password" name="password"  autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="mf-btn block">Ingia</button>
+    </form>
+
+    <p class="mf-foot">Huna akaunti? <a href="/developers/register">Jisajili</a></p>
+</section>
+<p class="mf-copy"><a href="/developers">← Maelekezo ya API</a></p>
 {% endblock %}
