@@ -1,0 +1,312 @@
+/* ============================================================
+   Mercfy design system: kila ukurasa unatumia vitu hivi hivi.
+   Rangi, herufi, kadi, vitufe, fomu na mode ya giza.
+   Inapakiwa na: templates/auth_base.html, users/base.html,
+   developers/base.html na admin/login.html.
+   ============================================================ */
+:root {
+  --bg: #f5f6f7;
+  --card: #ffffff;
+  --ink: #0f172a;
+  --muted: #586377;
+  --line: #e3e8ee;
+  --soft: #f1f5f9;
+  --link: #0d7a28;
+  --focus: #7c3aed;
+  --danger: #b42318;
+  --danger-bg: #fef3f2;
+  --danger-line: #fecdca;
+  --ok: #067647;
+  --ok-bg: #ecfdf3;
+  --ok-line: #abefc6;
+
+  --g1: #1EB53A;
+  --g2: #00A3DD;
+  --g3: #7c3aed;
+  --brand: linear-gradient(120deg, var(--g1) 0%, var(--g2) 55%, var(--g3) 100%);
+  /* Vitufe vyenye maandishi meupe: rangi zilizokolea kidogo ili zisomeke */
+  --btn: linear-gradient(120deg, #15993a 0%, #0a86bd 58%, #6d28d9 100%);
+
+  --r-card: 20px;
+  --r-input: 14px;
+  --r-btn: 999px;
+  --shadow: 0 10px 34px rgba(15, 23, 42, .07);
+  --font: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+html[data-theme="dark"] {
+  --bg: #0d1018;
+  --card: #151a26;
+  --ink: #e6e8ed;
+  --muted: #9aa5bd;
+  --line: #252e42;
+  --soft: #1c2333;
+  --link: #4ade80;
+  --focus: #a78bfa;
+  --danger: #f97066;
+  --danger-bg: #2a1517;
+  --danger-line: #55262a;
+  --ok: #4ade80;
+  --ok-bg: #12261b;
+  --ok-line: #1f4a30;
+  --shadow: 0 10px 34px rgba(0, 0, 0, .35);
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    --bg: #0d1018; --card: #151a26; --ink: #e6e8ed; --muted: #9aa5bd; --line: #252e42; --soft: #1c2333;
+    --link: #4ade80; --focus: #a78bfa; --danger: #f97066; --danger-bg: #2a1517; --danger-line: #55262a;
+    --ok: #4ade80; --ok-bg: #12261b; --ok-line: #1f4a30; --shadow: 0 10px 34px rgba(0, 0, 0, .35);
+  }
+}
+
+/* ---------- Msingi wa kurasa za kuingia (login, register, chagua akaunti) ---------- */
+.mf-auth {
+  min-height: 100vh; min-height: 100dvh;
+  margin: 0; padding: max(24px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background:
+    radial-gradient(520px 260px at 12% -40px, rgba(30,181,58,.13), transparent 70%),
+    radial-gradient(520px 260px at 92% -30px, rgba(124,58,237,.12), transparent 70%),
+    var(--bg);
+  color: var(--ink); font-family: var(--font);
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+.mf-auth *, .mf-auth *::before, .mf-auth *::after { box-sizing: border-box; }
+.mf-wrap { width: 100%; max-width: 440px; }
+.mf-wrap.wide { max-width: 480px; }
+
+.mf-lockup { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0 0 22px; text-align: center; text-decoration: none; }
+.mf-mark { width: 60px; height: 60px; display: block; border-radius: 17px; box-shadow: 0 10px 26px rgba(0, 163, 221, .25); }
+.mf-word {
+  font-size: 28px; font-weight: 900; letter-spacing: -0.8px; line-height: 1;
+  background: var(--brand); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.mf-tag { margin: -2px 0 0; font-size: 14px; color: var(--muted); }
+
+.mf-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card);
+  padding: 26px 22px; box-shadow: var(--shadow);
+}
+.mf-card h1 { margin: 0; font-size: 24px; line-height: 1.2; font-weight: 800; letter-spacing: -0.4px; }
+.mf-lead { margin: 8px 0 22px; font-size: 14.5px; line-height: 1.55; color: var(--muted); }
+
+.mf-field { margin: 0 0 16px; }
+.mf-field label { display: block; margin: 0 0 7px; font-size: 13px; font-weight: 700; color: var(--ink); }
+.mf-input, .mf-field input, .mf-field textarea, .mf-field select {
+  display: block; width: 100%; height: 50px; padding: 0 15px;
+  font: inherit; font-size: 16px; color: var(--ink); background: var(--card);
+  border: 1.5px solid var(--line); border-radius: var(--r-input); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.mf-field textarea { height: auto; min-height: 96px; padding: 12px 15px; resize: vertical; }
+.mf-input::placeholder, .mf-field input::placeholder, .mf-field textarea::placeholder { color: #8b95a7; }
+html[data-theme="dark"] .mf-field input::placeholder { color: #6b778f; }
+.mf-input:focus, .mf-field input:focus, .mf-field textarea:focus, .mf-field select:focus {
+  border-color: var(--focus); box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 18%, transparent);
+}
+.mf-hint { margin: 6px 2px 0; font-size: 12.5px; color: var(--muted); }
+
+.mf-btn {
+  appearance: none; -webkit-appearance: none; border: 0; cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 50px; padding: 0 24px; border-radius: var(--r-btn);
+  font: inherit; font-size: 16px; font-weight: 800; letter-spacing: .1px;
+  color: #fff; background: var(--btn);
+  box-shadow: 0 8px 20px rgba(10, 134, 189, .22);
+  -webkit-tap-highlight-color: transparent; transition: transform .1s, opacity .15s;
+}
+.mf-btn:hover { opacity: .93; }
+.mf-btn:active { transform: scale(.985); }
+.mf-btn:disabled { opacity: .6; cursor: default; }
+.mf-btn.block { width: 100%; }
+.mf-btn.ghost { color: var(--ink); background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); }
+.mf-btn.small { height: 40px; padding: 0 18px; font-size: 14px; }
+.mf-btn:focus-visible, .mf-link:focus-visible, .mf-opt:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+.mf-alert {
+  margin: 0 0 16px; padding: 11px 13px; border-radius: 12px; font-size: 14px; line-height: 1.45; font-weight: 600;
+  color: var(--danger); background: var(--danger-bg); border: 1px solid var(--danger-line);
+}
+.mf-alert.ok { color: var(--ok); background: var(--ok-bg); border-color: var(--ok-line); }
+
+.mf-foot { margin: 20px 0 0; text-align: center; font-size: 14px; color: var(--muted); line-height: 1.6; }
+.mf-link, .mf-foot a { color: var(--link); font-weight: 800; text-decoration: none; }
+.mf-link:hover, .mf-foot a:hover { text-decoration: underline; }
+.mf-fine { margin: 14px 0 0; text-align: center; font-size: 12.5px; line-height: 1.55; color: var(--muted); }
+.mf-copy { margin: 18px 0 0; text-align: center; font-size: 12.5px; color: var(--muted); }
+.mf-copy a { color: var(--muted); font-weight: 700; text-decoration: none; }
+
+/* Chaguo kubwa la kubonyeza (ukurasa wa kuchagua akaunti) */
+.mf-opts { display: grid; gap: 12px; margin: 0; }
+.mf-opt {
+  display: flex; align-items: center; gap: 14px; padding: 15px 16px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+  color: var(--ink); text-decoration: none; transition: transform .1s, border-color .15s, box-shadow .15s;
+}
+.mf-opt:hover { border-color: color-mix(in srgb, var(--g2) 55%, var(--line)); box-shadow: var(--shadow); }
+.mf-opt:active { transform: scale(.99); }
+.mf-opt-ic {
+  width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0; display: grid; place-items: center;
+  font-size: 18px; font-weight: 900; color: #fff; background: var(--btn);
+}
+.mf-opt-tx { flex: 1; min-width: 0; }
+.mf-opt-tx b { display: block; font-size: 16px; font-weight: 800; }
+.mf-opt-tx span { display: block; margin-top: 3px; font-size: 13px; line-height: 1.45; color: var(--muted); }
+.mf-opt-go { color: var(--muted); font-size: 22px; line-height: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mf-btn, .mf-opt, .mf-input { transition: none; }
+}
+
+/* ============================================================
+   Ndani ya app (feed, search, profile, settings...): vitu vilevile
+   ============================================================ */
+body:not(.mf-auth) { font-family: var(--font); -webkit-font-smoothing: antialiased; }
+html[data-theme="dark"] body:not(.mf-auth) { background: var(--bg); }
+
+/* Kichwa cha juu: nembo + jina, kama kurasa za kuingia */
+.topbar .brand {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: none; -webkit-text-fill-color: initial; color: inherit; font-family: var(--font);
+}
+.topbar .brand::after { display: none; }
+.topbar .brand .mf-mark { width: 30px; height: 30px; border-radius: 9px; box-shadow: none; }
+.topbar .brand .brand-word {
+  font-size: 20px; font-weight: 900; letter-spacing: -0.5px; line-height: 1;
+  background: var(--brand); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* Vitufe vikuu vya kila ukurasa: gradient ya Mercfy, umbo la kidonge */
+.s-btn:not(.danger):not(.ghost),
+.search-box button,
+.mf-primary {
+  background: var(--btn); color: #fff; border-radius: var(--r-btn);
+}
+.s-btn { border-radius: var(--r-btn); min-height: 46px; font-size: 15px; }
+.s-btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+
+/* Kadi na sehemu za fomu */
+.settings-card, .static-card, .pf-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card);
+}
+.s-field input, .s-field textarea, .search-box input {
+  border: 1.5px solid var(--line); border-radius: var(--r-input); color: var(--ink); background: var(--card);
+}
+.s-field input:focus, .s-field textarea:focus, .search-box input:focus {
+  border-color: var(--focus); box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 18%, transparent); outline: none;
+}
+
+/* Chips za kuchuja (search): hali iliyochaguliwa inafanana na tabs za profile/feed */
+.search-filters button { border-radius: var(--r-btn); border-color: var(--line); background: var(--card); color: var(--muted); }
+.search-filters button.active { background: var(--btn); border-color: transparent; color: #fff; }
+.search-box button { min-width: 48px; }
+
+/* Ukurasa wa kupost muziki */
+body.mc-body { font-family: var(--font); background: var(--bg); }
+.mc-back { background: var(--card); box-shadow: 0 0 0 1.5px var(--line); }
+.mc-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card); box-shadow: var(--shadow); }
+.mc-section { border-bottom-color: var(--line); }
+.mc-file-btn, .mc-submit, .mc-audio-icon, .mc-audio-preview { background: var(--btn); color: #fff; }
+.mc-file-btn, .mc-submit, .mc-cancel { border-radius: var(--r-btn); }
+.mc-cancel { background: transparent; color: var(--ink); border: 0; box-shadow: inset 0 0 0 1.5px var(--line); }
+.mc-field input, .mc-field textarea, .mc-field select { border: 1.5px solid var(--line); border-radius: var(--r-input); background: var(--card); color: var(--ink); }
+.mc-field input:focus, .mc-field textarea:focus, .mc-field select:focus {
+  border-color: var(--focus); box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 18%, transparent); outline: none;
+}
+.mc-audio-drop.active { border-color: var(--g2); }
+
+/* ============================================================
+   UI kit: sheria MOJA kwa kila ukurasa (user, developer, admin).
+   Iko mwisho kwa makusudi ili ishinde CSS ya kila ukurasa.
+   Ukitaka kubadilisha mwonekano wa app nzima, badilisha hapa
+   au vigezo vya juu (:root), si ndani ya kila ukurasa.
+   ============================================================ */
+
+/* 1. Vichwa vya kurasa na vya sehemu */
+.settings-title, .static-card h1, .page-head h1, .mc-header-text h1 {
+  margin: 4px 0 6px; font-size: 24px; line-height: 1.2; font-weight: 800; letter-spacing: -0.4px; color: var(--ink);
+}
+.page-head p, .mc-header-text p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
+.settings-card h3, .section-head h2, .mc-section h2, .mc-section-title {
+  font-size: 16px; font-weight: 800; letter-spacing: -0.2px; text-transform: none; color: var(--ink);
+}
+.settings-card h3 { padding: 16px 18px 0; }
+.settings-card form, .settings-links { padding: 12px 18px 18px; }
+.settings-card .hint, .section-head p, .mc-section p { font-size: 13px; color: var(--muted); }
+.danger-zone h3 { color: var(--danger); }
+
+/* 2. Kadi: umbo, mstari na kivuli kimoja */
+.feed-card, .composer-box, .skel-card, .pf-card, .settings-card, .static-card, .mc-card,
+.section, .stat-card, .search-result, .search-user {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card); box-shadow: var(--shadow);
+}
+.static-card { padding: 22px 20px; }
+.static-card p, .static-card li { color: var(--muted); font-size: 14.5px; line-height: 1.65; }
+.static-card h2, .static-card h3 { color: var(--ink); }
+.settings-card { margin-bottom: 14px; }
+
+/* 3. Fomu: lebo na sehemu za kuandika zinafanana na za login */
+.s-field { margin-bottom: 14px; }
+.s-field label, .mc-field label { display: block; margin: 0 0 7px; font-size: 13px; font-weight: 700; color: var(--ink); }
+.s-field input, .s-field textarea, .mc-field input, .mc-field textarea, .mc-field select {
+  font-family: inherit; font-size: 16px; color: var(--ink); background: var(--card);
+  border: 1.5px solid var(--line); border-radius: var(--r-input);
+}
+.s-field input, .mc-field input, .mc-field select { height: 50px; padding: 0 15px; }
+.s-field textarea, .mc-field textarea { padding: 12px 15px; }
+.s-field input:focus, .s-field textarea:focus, .mc-field input:focus, .mc-field textarea:focus, .mc-field select:focus {
+  border-color: var(--focus); box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 18%, transparent); outline: none;
+}
+.s-field .hint, .hint { color: var(--muted); }
+
+/* 4. Vitufe: kidonge cha gradient (kikuu), kidonge cha mstari (cha pili), nyekundu (hatari) */
+.s-btn, .mf-btn, .btn, .mc-submit, .mc-file-btn {
+  font-family: inherit; font-weight: 800; border-radius: var(--r-btn);
+}
+.s-btn { min-height: 50px; font-size: 16px; }
+.s-btn.danger, .btn-danger { color: var(--danger); background: var(--danger-bg); box-shadow: inset 0 0 0 1.5px var(--danger-line); }
+.btn-primary { background: var(--btn); color: #fff; border: 0; box-shadow: 0 8px 20px rgba(10, 134, 189, .22); }
+.btn-secondary { background: transparent; color: var(--ink); border: 0; box-shadow: inset 0 0 0 1.5px var(--line); }
+
+/* 5. Tabs/chips za kuchuja (feed, profile, search): saizi moja na hali moja ya "imechaguliwa" */
+.feed-tabs, .pf-tabs { background: var(--bg); gap: 8px; }
+.feed-tab, .pf-tab, .search-filters button {
+  height: 42px; padding: 0 16px; font-family: inherit; font-size: 14px; font-weight: 800; white-space: nowrap;
+  border: 1.5px solid var(--line); background: var(--card); color: var(--muted); border-radius: var(--r-btn);
+}
+.feed-tab.active, .pf-tab.active, .search-filters button.active { background: var(--btn); color: #fff; border-color: transparent; }
+
+/* 6. Kitufe cha kurudi (rudi nyuma) */
+.static-back, .mc-back {
+  display: inline-flex; align-items: center; gap: 8px; color: var(--ink); text-decoration: none;
+  font-size: 14px; font-weight: 800;
+}
+.static-back { height: 40px; padding: 0 16px 0 12px; margin-bottom: 14px; background: var(--card); border-radius: var(--r-btn); box-shadow: inset 0 0 0 1.5px var(--line); }
+.static-back:hover { color: var(--link); }
+
+/* 7. Maandishi madogo, viungo na hali tupu */
+.profile-empty, .profile-loading, .search-empty, .feed-end { color: var(--muted); }
+.flash {
+  margin: 12px 0 0; padding: 11px 13px; border-radius: 12px; font-size: 14px; font-weight: 600;
+  color: var(--ok); background: var(--ok-bg); border: 1px solid var(--ok-line);
+}
+
+/* 8. Mode ya giza: kadi na sehemu zinafuata vigezo, si rangi zilizoandikwa kila ukurasa */
+html[data-theme="dark"] .feed-card, html[data-theme="dark"] .composer-box, html[data-theme="dark"] .pf-card,
+html[data-theme="dark"] .settings-card, html[data-theme="dark"] .static-card, html[data-theme="dark"] .mc-card,
+html[data-theme="dark"] .section, html[data-theme="dark"] .stat-card {
+  background: var(--card); border-color: var(--line);
+}
+html[data-theme="dark"] .feed-tab, html[data-theme="dark"] .pf-tab, html[data-theme="dark"] .search-filters button {
+  background: var(--card); border-color: var(--line); color: var(--muted);
+}
+html[data-theme="dark"] .feed-tab.active, html[data-theme="dark"] .pf-tab.active, html[data-theme="dark"] .search-filters button.active {
+  background: var(--btn); color: #fff; border-color: transparent;
+}
+html[data-theme="dark"] .static-card p, html[data-theme="dark"] .static-card li { color: var(--muted); }
+html[data-theme="dark"] .static-card h1, html[data-theme="dark"] .settings-title { color: var(--ink); }
+
+/* Kisanduku cha kuandika kiko ndani ya kadi: usiweke mstari wa pili */
+.composer-trigger-box { border: 0; box-shadow: none; background: transparent; padding: 4px; }
+html[data-theme="dark"] .composer-trigger-box { border: 0; background: transparent; }
+html[data-theme="dark"] .settings-card h3, html[data-theme="dark"] .section-head h2 { color: var(--ink); }
+html[data-theme="dark"] .s-field label, html[data-theme="dark"] .mc-field label { color: var(--ink); }
