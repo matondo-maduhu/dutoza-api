@@ -3,7 +3,7 @@
    - HTML ya kurasa HAIHIFADHIWI (ina data ya session ya mtumiaji).
    - /api/ haihifadhiwi kamwe na haipitishwi hapa.
    - Inahifadhi tu: ukurasa wa offline, icons/CSS/JS za app, na Font Awesome kutoka CDN. */
-const VERSION = "v2";
+const VERSION = "v3";
 const SHELL = "mercfy-shell-" + VERSION;
 const ASSETS = "mercfy-assets-" + VERSION;
 const OFFLINE_URL = "/offline";
