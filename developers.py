@@ -129,9 +129,9 @@ def login_post():
 
     if wait:
         flash(
-            "Too many failed attempts. Please wait "
+            "Umejaribu mara nyingi mno. Subiri dakika "
             + str(throttle.minutes_text(wait))
-            + " minute(s) and try again.",
+            + " kisha ujaribu tena.",
             "error"
         )
         return redirect(url_for("developers.login"))
@@ -140,7 +140,7 @@ def login_post():
     password = request.form.get("password", "")
 
     if not email or not password:
-        flash("Email and password are required.")
+        flash("Weka email na password.")
         return redirect(url_for("developers.login"))
 
     connection = None
@@ -165,7 +165,7 @@ def login_post():
             password
         ):
             throttle.record_failure("developer")
-            flash("Invalid email or password.", "error")
+            flash("Email au password si sahihi.", "error")
             return redirect(url_for("developers.login"))
 
         throttle.clear("developer")
@@ -194,7 +194,7 @@ def register_post():
     ensure_developers_table()
 
     if throttle.seconds_locked("developer_register", REGISTER_LIMIT):
-        flash("Too many sign-up attempts. Please try again later.", "error")
+        flash("Umejaribu kujisajili mara nyingi mno. Jaribu tena baadaye.", "error")
         return redirect(url_for("developers.register"))
 
     throttle.record_failure("developer_register")
@@ -204,11 +204,11 @@ def register_post():
     password = request.form.get("password", "")
 
     if not name or not email or not password:
-        flash("All fields are required.")
+        flash("Jaza sehemu zote.")
         return redirect(url_for("developers.register"))
 
     if len(password) < 8:
-        flash("Password must contain at least 8 characters.")
+        flash("Password iwe na angalau herufi 8.")
         return redirect(url_for("developers.register"))
 
     connection = None
@@ -227,7 +227,7 @@ def register_post():
         )
 
         if cursor.fetchone():
-            flash("An account with this email already exists.")
+            flash("Tayari kuna akaunti yenye email hii.")
             return redirect(url_for("developers.login"))
 
         cursor.execute(
@@ -255,8 +255,8 @@ def register_post():
         session["developer_id"] = developer_id
 
         flash(
-            "Account created. Create your first API key below "
-            "to start using the API."
+            "Akaunti imefunguliwa. Tengeneza API key yako ya kwanza hapa chini "
+            "ili uanze kutumia API."
         )
 
         return redirect(url_for("developers.dashboard"))
