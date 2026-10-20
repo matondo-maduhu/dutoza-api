@@ -125,7 +125,7 @@ table.keys code { background: #f1f5f9; padding: 3px 7px; border-radius: 6px; fon
 {% block body %}
 <header class="p-top">
   <a class="p-brand" href="{{ url_for('developers.dashboard') }}">
-    <span class="brand-mark">I</span>
+    {% set mark_class = "p-mark" %}{% set mark_id = "pt" %}{% include "_mark.html" %}
     <span class="brand-text">Mercfy</span>
     <span class="p-sub">Developers</span>
   </a>

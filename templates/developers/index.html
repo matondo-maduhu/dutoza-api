@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>Mercfy API — Developer Docs</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
@@ -23,7 +24,7 @@
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: var(--bg);
   color: var(--ink);
   line-height: 1.5;
@@ -32,8 +33,9 @@ body {
 /* ===== Top bar ===== */
 .top {
   height: var(--top-h);
-  background: #0f172a;
-  color: #fff;
+  background: #fff;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -49,7 +51,7 @@ body {
   gap: 10px;
   min-width: 0;
   text-decoration: none;
-  color: #fff;
+  color: var(--ink);
 }
 .logo {
   width: 34px; height: 34px; border-radius: 10px;
@@ -58,7 +60,7 @@ body {
 }
 .brand-name {
   font-weight: 900; font-size: 17px;
-  background: linear-gradient(120deg, #4ade80, #38bdf8 55%, #c4b5fd);
+  background: linear-gradient(120deg, #1EB53A 0%, #00A3DD 55%, #7c3aed 100%);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -77,12 +79,13 @@ body {
   border-radius: 10px;
   white-space: nowrap;
 }
-.btn-ghost { color: #e2e8f0; background: #1e293b; }
-.btn-green { color: #fff; background: var(--green); }
-.btn-green:hover { background: var(--green-dark); }
+.btn-ghost { color: var(--ink); background: #f1f5f9; }
+.btn-green { color: #fff; background: linear-gradient(120deg, #15993a 0%, #0a86bd 58%, #6d28d9 100%); border-radius: 999px; }
+.btn-green:hover { opacity: .93; }
+.top-actions a { border-radius: 999px; }
 .online {
   display: flex; align-items: center; gap: 7px;
-  font-size: 12px; color: #cbd5e1; margin-left: 4px;
+  font-size: 12px; color: var(--muted); margin-left: 4px;
 }
 .dot {
   width: 8px; height: 8px; border-radius: 50%;
@@ -90,7 +93,7 @@ body {
 }
 .menu-btn {
   display: none;
-  border: 0; background: #1e293b; color: #fff;
+  border: 0; background: #f1f5f9; color: var(--ink);
   width: 40px; height: 40px; border-radius: 10px;
   font-size: 18px; cursor: pointer;
 }
@@ -541,7 +544,7 @@ table.ref td { color: #475569; }
 
 <header class="top">
   <a class="brand" href="/developers">
-    <div class="logo">I</div>
+    {% set mark_class = "logo" %}{% set mark_id = "dx" %}{% include "_mark.html" %}
     <span class="brand-name">Mercfy</span>
     <span class="brand-sub">API</span>
   </a>
@@ -637,7 +640,7 @@ table.ref td { color: #475569; }
                   <tr><td><strong>Project type</strong></td><td>Yes</td><td>Mobile app, Website, Backend / Server, or Learning / Personal.</td></tr>
                   <tr><td><strong>Expected requests per day</strong></td><td>No</td><td>Under 1,000, 1,000 to 10,000, or over 10,000. It helps us set a fair rate limit.</td></tr>
                   <tr><td><strong>Website or app link</strong></td><td>No</td><td>Must start with <code>https://</code> or <code>http://</code>.</td></tr>
-                  <tr><td><strong>Terms</strong></td><td>Yes</td><td>You agree not to resell or redistribute the content, to credit Dutoza where required, and to keep your key private.</td></tr>
+                  <tr><td><strong>Terms</strong></td><td>Yes</td><td>You agree not to resell or redistribute the content, to credit Mercfy where required, and to keep your key private.</td></tr>
                 </tbody>
               </table>
             </div>
@@ -716,7 +719,7 @@ print(res.json()["data"]){% endraw %}</div></div>
             <h4>Keep your key safe</h4>
             <ul class="bul">
               <li>Store it in an <strong>environment variable</strong> or your server's secret manager.</li>
-              <li>Call the API from your <strong>backend</strong>. For a mobile app or website, let your own server call Dutoza and pass the results on.</li>
+              <li>Call the API from your <strong>backend</strong>. For a mobile app or website, let your own server call Mercfy and pass the results on.</li>
               <li>Never commit it to GitHub or put it in browser JavaScript or an app bundle. If it leaks, revoke it and create a new one.</li>
             </ul>
 
@@ -794,7 +797,7 @@ print(res.json()["data"]){% endraw %}</div></div>
                   <tr><td><code>per_page</code></td><td>Quotes, Music</td><td>Items per page, from 1 to 100 (default 20).</td></tr>
                   <tr><td><code>q</code></td><td>Quotes, Music</td><td>Search text.</td></tr>
                   <tr><td><code>language</code></td><td>Quotes, Music</td><td>Filter by language, for example <code>sw</code> or <code>en</code>.</td></tr>
-                  <tr><td><code>source</code></td><td>Quotes, Music</td><td><code>admin</code> for content published by Dutoza, <code>user</code> for community content.</td></tr>
+                  <tr><td><code>source</code></td><td>Quotes, Music</td><td><code>admin</code> for content published by Mercfy, <code>user</code> for community content.</td></tr>
                   <tr><td><code>user_id</code></td><td>Quotes, Music</td><td>Only content from one user.</td></tr>
                   <tr><td><code>category</code></td><td>Quotes</td><td>A category <em>slug</em> from <code>/api/quotes/categories</code>, e.g. <code>motivation</code>.</td></tr>
                   <tr><td><code>artist</code>, <code>album</code></td><td>Music</td><td>An artist or album <em>slug</em> or id.</td></tr>
