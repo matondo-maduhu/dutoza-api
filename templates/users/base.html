@@ -270,6 +270,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark/base.css') }}?v=1">
     {% block dark_css %}{% endblock %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app-shell.css') }}?v=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mercfy.css') }}?v=2">
 </head>
 <body class="{% block body_class %}{% endblock %}">
 
@@ -279,7 +280,8 @@
 {% if show_nav and session.get('user_id') %}
 <header class="topbar">
     <a href="{{ url_for('user_feed.feed') }}" class="brand" id="brandHome" title="Mercfy — Home">
-        Mercfy
+        {% set mark_id = 'tb' %}{% include "_mark.html" %}
+        <span class="brand-word">Mercfy</span>
     </a>
 
     <div class="topbar-right">
