@@ -168,24 +168,49 @@ def load_developer(cursor, developer_id):
     return rows[0] if rows else None
 
 
-def load_keys(cursor, email):
-    """API keys za developer, tayari na maandishi ya kuonyesha (service, status)."""
-    keys = fetch_all(
-        cursor,
-        "SELECT " + ", ".join(KEY_COLUMNS)
-        + " FROM api_keys WHERE owner_email = %s ORDER BY created_at DESC",
-        (email,),
-        KEY_COLUMNS,
-    )
+def decorate_key(key):
+    """Ongeza maandishi ya kuonyesha (service, status) kwenye key."""
+    key["request_count"] = key["request_count"] or 0
+    key["rate_limit"] = key["rate_limit"] or DEFAULT_RATE_LIMIT
+    key["service"] = SERVICE_LABELS.get(key["scopes"], "Quotes")
+    key["status_label"] = STATUS_LABELS.get(key["status"], str(key["status"]).upper())
+    key["status_class"] = STATUS_CLASSES.get(key["status"], "")
 
-    for key in keys:
-        key["request_count"] = key["request_count"] or 0
-        key["rate_limit"] = key["rate_limit"] or DEFAULT_RATE_LIMIT
-        key["service"] = SERVICE_LABELS.get(key["scopes"], "Quotes")
-        key["status_label"] = STATUS_LABELS.get(key["status"], str(key["status"]).upper())
-        key["status_class"] = STATUS_CLASSES.get(key["status"], "")
+    return key
 
-    return keys
+
+# Developer pamoja na keys zake kwa query MOJA. Kila safari ya mtandao kwenda
+# database inagharimu mamia ya ms kama database iko mbali, kwa hiyo hatuitumii mara mbili.
+PORTAL_SQL = (
+    "SELECT "
+    + ", ".join("d." + column for column in DEVELOPER_COLUMNS)
+    + ", "
+    + ", ".join("k." + column for column in KEY_COLUMNS)
+    + " FROM developers d"
+    + " LEFT JOIN api_keys k ON k.owner_email = d.email"
+    + " WHERE d.id = %s"
+    + " ORDER BY k.created_at DESC"
+)
+
+
+def load_portal(cursor, developer_id):
+    """(developer, keys). developer ni None kama akaunti haipo."""
+    split = len(DEVELOPER_COLUMNS)
+
+    cursor.execute(PORTAL_SQL, (developer_id,))
+    rows = cursor.fetchall()
+
+    if not rows:
+        return None, []
+
+    developer = dict(zip(DEVELOPER_COLUMNS, rows[0][:split]))
+    keys = [
+        decorate_key(dict(zip(KEY_COLUMNS, row[split:])))
+        for row in rows
+        if row[split] is not None   # developer asiye na keys: LEFT JOIN inarudisha NULL
+    ]
+
+    return developer, keys
 
 
 def key_stats(keys):
@@ -359,12 +384,10 @@ def logout():
 @developer_required
 def dashboard():
     with db_cursor() as cursor:
-        developer = load_developer(cursor, g.developer_id)
+        developer, keys = load_portal(cursor, g.developer_id)
 
         if not developer:
             return sign_out_missing_developer()
-
-        keys = load_keys(cursor, developer["email"])
 
     return render_template(
         "developers/dashboard.html",
@@ -379,12 +402,10 @@ def dashboard():
 @developer_required
 def keys_page():
     with db_cursor() as cursor:
-        developer = load_developer(cursor, g.developer_id)
+        developer, keys = load_portal(cursor, g.developer_id)
 
         if not developer:
             return sign_out_missing_developer()
-
-        keys = load_keys(cursor, developer["email"])
 
     return render_template(
         "developers/keys.html",
@@ -418,12 +439,10 @@ def render_profile(developer, keys, form=None, error=None, status=200):
 @developer_required
 def profile():
     with db_cursor() as cursor:
-        developer = load_developer(cursor, g.developer_id)
+        developer, keys = load_portal(cursor, g.developer_id)
 
         if not developer:
             return sign_out_missing_developer()
-
-        keys = load_keys(cursor, developer["email"])
 
     return render_profile(developer, keys)
 
@@ -460,12 +479,10 @@ def profile_post():
     form = {field: (request.form.get(field) or "").strip() for field in PROFILE_LIMITS}
 
     with db_cursor(commit=True) as cursor:
-        developer = load_developer(cursor, g.developer_id)
+        developer, keys = load_portal(cursor, g.developer_id)
 
         if not developer:
             return sign_out_missing_developer()
-
-        keys = load_keys(cursor, developer["email"])
 
         if not dev_csrf_ok():
             return render_profile(
