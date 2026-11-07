@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 # Load .env BEFORE importing modules
 load_dotenv()
 
-from flask import Flask, jsonify, render_template, session
+from flask import Flask, jsonify, render_template
 from music import music_bp
 from quotes import quotes_bp
 from admin import admin_bp
@@ -14,7 +14,8 @@ from user_auth import user_auth_bp
 from user_feed import user_feed_bp
 from user_music import user_music_bp
 from schema import ensure_schema
-from perf import init_compression
+from perf import init_compression, init_static_cache
+from templating import init_templating
 from guard import init_user_guard
 from admin_panel import panel_bp
 from pwa import pwa_bp
@@ -31,6 +32,8 @@ app.secret_key = os.getenv(
 # Ulinzi lazima uanze KWANZA (ukaguzi wa chanzo cha ombi unatangulia kila kitu)
 init_security(app)
 init_compression(app)
+init_static_cache(app)
+init_templating(app)
 init_user_guard(app)
 init_errors(app)
 
@@ -64,14 +67,6 @@ try:
 except Exception as error:
     print(f"[startup] schema haikukamilika: {error}")
 
-
-@app.get("/developers")
-def developers():
-    return render_template(
-        "developers/index.html",
-        developer_logged_in=bool(session.get("developer_id")),
-        nav_active="docs"
-    )
 
 @app.get("/")
 def home():

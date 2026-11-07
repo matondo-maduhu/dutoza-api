@@ -9,12 +9,15 @@ ikishindwa (mfano column haipo) nyingine zinaendelea.
 
 import re
 import threading
+import time
 from datetime import datetime, timezone
 
 from db import get_connection
 
 _lock = threading.Lock()
 _done = False
+_last_attempt = None   # saa ya jaribio la mwisho (monotonic)
+RETRY_AFTER_SECONDS = 30  # DB ikiwa chini, jaribu tena baada ya muda huu tu
 
 # Matokeo ya run ya mwisho (yanaonyeshwa kwenye /admin/schema-status)
 _last_run = {"at": None, "failed": [], "total": 0}
@@ -207,7 +210,7 @@ def _run(statements):
 
 def ensure_schema(force=False):
     """Endesha tables + indexes mara moja kwa kila process."""
-    global _done
+    global _done, _last_attempt
 
     if _done and not force:
         return True
@@ -215,6 +218,16 @@ def ensure_schema(force=False):
     with _lock:
         if _done and not force:
             return True
+
+        # DB ikiwa chini, usirudie statements zote kwenye kila request
+        if (
+            not force
+            and _last_attempt is not None
+            and time.monotonic() - _last_attempt < RETRY_AFTER_SECONDS
+        ):
+            return False
+
+        _last_attempt = time.monotonic()
 
         statements = TABLES + ALTERS + INDEXES
         failed = _run(statements)

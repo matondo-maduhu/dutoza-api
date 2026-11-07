@@ -14,7 +14,6 @@ import csv
 import io
 import secrets
 import time
-from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from math import ceil
@@ -37,7 +36,7 @@ import health
 from security import secret_key_is_weak
 from auth import invalidate_key_scopes
 from admin import admin_logged_in, safe_close, slugify
-from db import get_connection
+from db import db_cursor, get_connection
 
 panel_bp = Blueprint("panel", __name__)
 
@@ -58,31 +57,6 @@ USER_STATUSES = ["all", "active", "blocked", "deactivated", "deleted"]
 # ============================================================
 # HELPERS
 # ============================================================
-
-@contextmanager
-def db_cursor(commit=False):
-    """Cursor salama: inafunga connection, na ina-rollback kukiwa na hitilafu."""
-    connection = None
-
-    try:
-        connection = get_connection()
-        cursor = connection.cursor()
-        yield cursor
-
-        if commit:
-            connection.commit()
-
-    except Exception:
-        if connection:
-            try:
-                connection.rollback()
-            except Exception:
-                pass
-        raise
-
-    finally:
-        safe_close(connection)
-
 
 def safe_rollback(cursor):
     try:
@@ -251,23 +225,6 @@ def inject_panel_helpers():
         "panel_open_reports": open_reports_count,
         "panel_pending_keys": pending_keys_count,
     }
-
-
-@panel_bp.app_template_filter("fmt_dt")
-def fmt_dt(value, fmt="%d %b %Y, %H:%M"):
-    if not value:
-        return "-"
-
-    if isinstance(value, str):
-        try:
-            value = datetime.fromisoformat(value.replace(" ", "T")[:19])
-        except ValueError:
-            return value
-
-    try:
-        return value.strftime(fmt)
-    except Exception:
-        return str(value)
 
 
 def page_url(**overrides):

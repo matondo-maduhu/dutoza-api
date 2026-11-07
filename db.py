@@ -2,6 +2,7 @@ import os
 import queue
 import threading
 import time
+from contextlib import contextmanager
 from urllib.parse import urlparse, unquote
 
 import pg8000.dbapi
@@ -157,3 +158,35 @@ def get_connection():
                 continue
 
             raise last_error
+
+
+@contextmanager
+def db_cursor(commit=False):
+    """
+    Cursor salama: inarudisha connection kwenye pool, na ina-rollback kukiwa
+    na hitilafu. Tumia: with db_cursor(commit=True) as cursor: ...
+    """
+    connection = None
+
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        yield cursor
+
+        if commit:
+            connection.commit()
+
+    except Exception:
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
+        raise
+
+    finally:
+        if connection:
+            try:
+                connection.close()
+            except Exception:
+                pass
