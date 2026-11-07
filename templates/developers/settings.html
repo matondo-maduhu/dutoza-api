@@ -12,10 +12,10 @@
   <div class="section-body">
     <div class="fm">
       <label>Email
-        <input type="email" value="{{ developer[2] }}" readonly>
+        <input type="email" value="{{ developer.email }}" readonly>
       </label>
       <label>Member since
-        <input type="text" value="{{ developer[3] | fmt_dt('%d %b %Y') }}" readonly>
+        <input type="text" value="{{ developer.created_at | fmt_dt('%d %b %Y') }}" readonly>
       </label>
     </div>
   </div>

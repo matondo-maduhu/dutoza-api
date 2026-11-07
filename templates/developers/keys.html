@@ -44,21 +44,20 @@
         <tbody>
         {% for key in api_keys %}
           <tr>
-            <td data-label="Name"><b>{{ key[1] }}</b></td>
-            <td data-label="Service"><span class="svc">{{ "Quotes + Music" if key[8] == "quotes,music" else "Music" if key[8] == "music" else "Quotes" }}</span></td>
-            <td data-label="Key"><code>{{ key[2] }}••••••••</code></td>
+            <td data-label="Name"><b>{{ key.name }}</b></td>
+            <td data-label="Service"><span class="svc">{{ key.service }}</span></td>
+            <td data-label="Key"><code>{{ key.key_prefix }}••••••••</code></td>
             <td data-label="Status">
-              {% set st = key[3] %}
-              <span class="status {{ 'revoked' if st in ('revoked', 'rejected') else 'pending' if st == 'pending' else 'inactive' if st == 'inactive' else '' }}">{{ {"active": "ACTIVE", "pending": "PENDING APPROVAL", "rejected": "REJECTED", "revoked": "REVOKED", "inactive": "DISABLED"}.get(st, st | upper) }}</span>
-              {% if st == "rejected" and key[9] %}<div class="note">Reason: {{ key[9] }}</div>{% endif %}
+              <span class="status {{ key.status_class }}">{{ key.status_label }}</span>
+              {% if key.status == "rejected" and key.review_note %}<div class="note">Reason: {{ key.review_note }}</div>{% endif %}
             </td>
-            <td data-label="Requests">{{ '{:,}'.format(key[6] or 0) }}</td>
-            <td data-label="Limit">{{ key[7] or 100 }}/min</td>
-            <td data-label="Last used">{{ key[4] | fmt_dt('%d %b %Y') if key[4] else 'Never' }}</td>
+            <td data-label="Requests">{{ '{:,}'.format(key.request_count) }}</td>
+            <td data-label="Limit">{{ key.rate_limit }}/min</td>
+            <td data-label="Last used">{{ key.last_used_at | fmt_dt('%d %b %Y') if key.last_used_at else 'Never' }}</td>
             <td class="nolabel">
-              {% if key[3] == "active" or key[3] == "pending" %}
-              <form class="plain" method="POST" action="{{ url_for('developers.revoke_api_key', key_id=key[0]) }}" onsubmit="return confirm('{{ 'Revoke this API key?' if key[3] == 'active' else 'Cancel this request?' }}');">
-                <button class="btn btn-danger" type="submit">{{ "Revoke" if key[3] == "active" else "Cancel" }}</button>
+              {% if key.status in ("active", "pending") %}
+              <form class="plain" method="POST" action="{{ url_for('developers.revoke_api_key', key_id=key.id) }}" onsubmit="return confirm('{{ 'Revoke this API key?' if key.status == 'active' else 'Cancel this request?' }}');">
+                <button class="btn btn-danger" type="submit">{{ "Revoke" if key.status == "active" else "Cancel" }}</button>
               </form>
               {% endif %}
             </td>

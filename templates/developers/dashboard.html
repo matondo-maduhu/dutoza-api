@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="page-head">
-  <h1>Welcome back, {{ (developer[1] or 'there').split(' ')[0] }} 👋</h1>
+  <h1>Welcome back, {{ (developer.name or 'there').split(' ')[0] }} 👋</h1>
   <p>Here is an overview of your API access.</p>
 </div>
 
@@ -48,14 +48,13 @@
     {% for key in api_keys[:5] %}
     <div style="display:flex;align-items:center;gap:12px;padding:12px 0;{% if not loop.last %}border-bottom:1px solid #f1f5f9;{% endif %}">
       <div style="flex:1;min-width:0">
-        <div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ key[1] }}</div>
+        <div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ key.name }}</div>
         <div class="muted" style="font-size:12px">
-          <span class="svc">{{ "Quotes + Music" if key[8] == "quotes,music" else "Music" if key[8] == "music" else "Quotes" }}</span>
-          · {{ '{:,}'.format(key[6] or 0) }} requests
+          <span class="svc">{{ key.service }}</span>
+          · {{ '{:,}'.format(key.request_count) }} requests
         </div>
       </div>
-      {% set st = key[3] %}
-      <span class="status {{ 'revoked' if st in ('revoked', 'rejected') else 'pending' if st == 'pending' else 'inactive' if st == 'inactive' else '' }}">{{ {"active": "ACTIVE", "pending": "PENDING", "rejected": "REJECTED", "revoked": "REVOKED", "inactive": "DISABLED"}.get(st, st | upper) }}</span>
+      <span class="status {{ key.status_class }}">{{ key.status_label }}</span>
     </div>
     {% endfor %}
   </div>
